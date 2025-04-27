@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "163873675525",
+    "project_id": "purelux-2bdcd",
+    "storage_bucket": "purelux-2bdcd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:163873675525:android:9f9ec59a56364687937f6c",
+        "android_client_info": {
+          "package_name": "com.example.purelux"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDV1Z0eODmNAfXE_h0Z6c6UH9Q7V-MMH4Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
