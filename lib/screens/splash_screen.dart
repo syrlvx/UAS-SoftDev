@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:async'; // Untuk menggunakan Timer
+import 'dart:async';
+import 'package:purelux/screens/login_screen.dart'; // Untuk menggunakan Timer
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -13,7 +14,10 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     // Menunggu selama 3 detik sebelum pindah ke BottomNavBar
     Timer(Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, '/bottomNav');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
     });
   }
 

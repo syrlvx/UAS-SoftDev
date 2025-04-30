@@ -28,8 +28,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
             _currentIndex = index;
           });
         },
-        backgroundColor: Colors.black,
-        selectedItemColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        selectedItemColor: Color(0xFF999999),
         unselectedItemColor: Color(0xFF999999),
         items: const [
           BottomNavigationBarItem(

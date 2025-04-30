@@ -1,0 +1,2 @@
+C:/Users/syr/OneDrive/Documents/softdev/purelux/android/app/.cxx/Debug/4343361v/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/syr/OneDrive/Documents/softdev/purelux/android/app/.cxx/Debug/4343361v/x86_64/CMakeFiles/rebuild_cache.dir

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:purelux/firebase_options.dart'; // Sesuaikan dengan konfigurasi Firebase Anda
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:purelux/firebase_options.dart';
+import 'package:purelux/widgets/bottom_nav_bar.dart';
+import 'package:purelux/screens/bottom_nav_bar_admin_screen.dart'; // pastikan ini benar
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -22,15 +26,16 @@ class _LoginScreenState extends State<LoginScreen> {
     _initializeFirebase();
   }
 
-  // Initialize Firebase
   Future<void> _initializeFirebase() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions
-          .currentPlatform, // Pastikan Anda sudah mengatur FirebaseOptions
-    );
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } catch (e) {
+      print('Error initializing Firebase: $e');
+    }
   }
 
-  // Login function
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -45,10 +50,36 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // If login is successful, navigate to the Account screen
-      Navigator.pushReplacementNamed(context, '/account');
+      final uid = userCredential.user!.uid;
+      print('UID: $uid');
+
+      // Ambil role dari Firestore
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      if (!userDoc.exists || !userDoc.data()!.containsKey('role')) {
+        throw FirebaseAuthException(
+            code: 'no-role', message: 'Role is not set for this user.');
+      }
+
+      final role = userDoc['role'];
+
+      if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeAdminScreen()),
+        );
+      } else if (role == 'karyawan') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => BottomNavBar()),
+        );
+      } else {
+        throw FirebaseAuthException(
+            code: 'invalid-role', message: 'Unknown role: $role');
+      }
     } on FirebaseAuthException catch (e) {
-      String errorMessage = '';
+      String errorMessage;
       if (e.code == 'user-not-found') {
         errorMessage = 'No user found for that email.';
       } else if (e.code == 'wrong-password') {
@@ -56,22 +87,19 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         errorMessage = e.message ?? 'An error occurred during login.';
       }
+
       showDialog(
         context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Login Failed'),
-            content: Text(errorMessage),
-            actions: <Widget>[
-              TextButton(
-                child: Text('Close'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
+        builder: (context) => AlertDialog(
+          title: Text('Login Failed'),
+          content: Text(errorMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Close'),
+            ),
+          ],
+        ),
       );
     } finally {
       setState(() {
@@ -91,6 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Login'),
         centerTitle: true,
       ),
@@ -101,8 +130,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: ListView(
             children: [
               SizedBox(height: 50),
-
-              // Email Field
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -114,7 +141,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (value == null || value.isEmpty) {
                     return 'Email is required';
                   }
-                  if (!RegExp(r"^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                  if (!RegExp(
+                          r"^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
                       .hasMatch(value)) {
                     return 'Enter a valid email';
                   }
@@ -122,8 +150,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
               SizedBox(height: 20),
-
-              // Password Field
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
@@ -140,8 +166,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
               SizedBox(height: 30),
-
-              // Login Button or Loading Spinner
               _isLoading
                   ? Center(child: CircularProgressIndicator())
                   : ElevatedButton(

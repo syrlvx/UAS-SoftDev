@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:purelux/screens/login_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -29,7 +30,11 @@ class AccountScreen extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () async {
                           await _auth.signOut();
-                          Navigator.pushReplacementNamed(context, '/login');
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LoginScreen()),
+                          );
                         },
                         child: Text('Logout'),
                       ),

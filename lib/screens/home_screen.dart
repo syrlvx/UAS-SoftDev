@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:purelux/screens/absensi_screen.dart';
+import 'package:purelux/screens/akun_screen.dart';
+import 'package:purelux/screens/izincuti_screen.dart';
+import 'package:purelux/screens/tugas_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -49,12 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Fungsi untuk berpindah ke layar login
-  void _goToLoginScreen() {
-    Navigator.pushNamed(
-        context, '/login'); // Ganti '/login' dengan nama rute login kamu
-  }
-
   @override
   void dispose() {
     _timer
@@ -65,13 +63,20 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         leading: IconButton(
           icon: Icon(
             isLoggedIn ? Icons.exit_to_app : Icons.account_circle,
             size: 40, // Ukuran ikon lebih besar
           ),
-          onPressed: _goToLoginScreen, // Navigasi ke layar login
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AccountScreen()),
+            );
+          },
         ),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -96,12 +101,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       'Sherly Olivia',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black, // Warna hitam
+                      ),
                     ),
-                    Text('Junior Developer'),
+                    Text(
+                      'Junior Developer',
+                      style: TextStyle(
+                        color: Colors.black, // Warna hitam
+                      ),
+                    ),
                     SizedBox(height: 8),
-                    Text('Time: $_currentTime'),
+                    Text(
+                      'Time: $_currentTime',
+                      style: TextStyle(
+                        color: Colors.black, // Warna hitam
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -112,7 +130,11 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(height: 20),
             Text(
               'Pilih Fitur:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black, // Tambah warna hitam di sini
+              ),
             ),
             SizedBox(height: 10),
 
@@ -126,7 +148,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Button for Absensi
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(context, '/absensi');
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AbsensiScreen(),
+                          ));
                     },
                     child: Card(
                       elevation: 5,
@@ -162,7 +188,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Button for Izin / Cuti
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(context, '/izin-cuti');
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => IzinCutiScreen(),
+                          ));
                     },
                     child: Card(
                       elevation: 5,
@@ -198,7 +228,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Button for Tugas
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(context, '/tugas');
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TugasScreen(),
+                          ));
                     },
                     child: Card(
                       elevation: 5,
