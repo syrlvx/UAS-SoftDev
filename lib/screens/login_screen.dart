@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:purelux/firebase_options.dart';
 import 'package:purelux/widgets/bottom_nav_bar.dart';
-import 'package:purelux/screens/bottom_nav_bar_admin_screen.dart'; // pastikan ini benar
+import 'package:purelux/widgets/bottom_nav_bar_admin.dart'; // pastikan ini benar
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (role == 'admin') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeAdminScreen()),
+          MaterialPageRoute(builder: (context) => BottomNavBarAdmin()),
         );
       } else if (role == 'karyawan') {
         Navigator.pushReplacement(

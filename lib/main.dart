@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:purelux/screens/splash_screen.dart';
 import 'package:purelux/widgets/bottom_nav_bar.dart';
+import 'package:purelux/widgets/bottom_nav_bar_admin.dart';
 import 'screens/globals.dart' as globals; // Import file globals.dart
 
 void main() async {
@@ -60,37 +61,41 @@ class AuthWrapper extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
-          // Jika pengguna sudah login
-          String uid = snapshot.data!.uid; // Ambil UID pengguna yang login
-          _fetchUserData(uid); // Ambil data pengguna dari Firestore
+          String uid = snapshot.data!.uid;
+          return FutureBuilder<DocumentSnapshot>(
+            future:
+                FirebaseFirestore.instance.collection('user').doc(uid).get(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          return BottomNavBar(); // Ganti dengan tampilan setelah login (misal: BottomNavBar)
+              if (snapshot.hasError ||
+                  !snapshot.hasData ||
+                  !snapshot.data!.exists) {
+                return const Center(
+                    child: Text("Terjadi kesalahan atau data tidak ditemukan"));
+              }
+
+              final userData = snapshot.data!;
+              final role = userData['role'] ?? '';
+
+              globals.uid = userData.id;
+              globals.nama = userData['username'] ?? '';
+
+              if (role == 'admin') {
+                return BottomNavBarAdmin(); // Ganti dengan screen admin
+              } else if (role == 'karyawan') {
+                return BottomNavBar();
+              } else {
+                return const Center(child: Text("Role tidak dikenali"));
+              }
+            },
+          );
         } else {
-          return SplashScreen(); // Tampilkan SplashScreen jika belum login
+          return SplashScreen();
         }
       },
     );
-  }
-
-  // Ambil data pengguna dari Firestore berdasarkan UID
-  Future<void> _fetchUserData(String uid) async {
-    try {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('user') // Pastikan koleksi 'user' ada di Firestore
-          .doc(uid)
-          .get();
-
-      if (userDoc.exists) {
-        globals.uid = userDoc.id;
-        globals.nama =
-            userDoc['username']; // Ambil nama pengguna dari field 'username'
-        print(
-            'Username: ${globals.nama}'); // Tampilkan nama pengguna di console atau simpan di state/global
-      } else {
-        print("Dokumen pengguna tidak ditemukan");
-      }
-    } catch (e) {
-      print("Terjadi kesalahan saat mengambil data pengguna: $e");
-    }
   }
 }
