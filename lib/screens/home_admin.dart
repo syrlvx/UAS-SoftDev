@@ -1,19 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:purelux/screens/akun_screen.dart';
-import 'package:purelux/screens/izincuti_screen.dart';
-import 'package:purelux/screens/notifikasi_screen.dart';
-import 'package:purelux/screens/riwayat_screen.dart';
-import 'package:purelux/screens/tugas_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeAdminScreen extends StatefulWidget {
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _HomeAdminScreenState createState() => _HomeAdminScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeAdminScreenState extends State<HomeAdminScreen> {
   late Timer _timer;
   late String _currentTime;
   bool isLoggedIn = false;
@@ -133,97 +129,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                  Spacer(),
-                  IconButton(
-                    icon: Icon(Icons.notifications,
-                        color: Colors.white, size: 30),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => NotifikasiScreen(),
-                        ),
-                      );
-                    },
-                  ),
                 ],
               ),
             ),
           ),
         ),
       ),
-      body: isLoadingUser
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20),
-                  Text(
-                    'Pilih Fitur:',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  // Grid Menu
-                  Expanded(
-                    child: GridView.count(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      children: <Widget>[
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => PengajuanScreen()),
-                            );
-                          },
-                          child: _buildMenuCard(
-                              Icons.description,
-                              'Pengajuan',
-                              const Color.fromARGB(255, 255, 255, 255)!,
-                              const Color.fromARGB(255, 49, 142, 185)!),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => TugasScreen()),
-                            );
-                          },
-                          child: _buildMenuCard(
-                              Icons.assignment,
-                              'Tugas',
-                              const Color.fromARGB(255, 255, 255, 255)!,
-                              const Color.fromARGB(255, 49, 142, 185)!),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => RiwayatScreen()),
-                            );
-                          },
-                          child: _buildMenuCard(
-                              Icons.history,
-                              'Riwayat',
-                              const Color.fromARGB(255, 255, 255, 255)!,
-                              const Color.fromARGB(255, 49, 142, 185)!),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
     );
   }
 
