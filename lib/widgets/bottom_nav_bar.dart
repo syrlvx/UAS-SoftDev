@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:purelux/screens/absensi_screen.dart';
 import 'package:purelux/screens/data_karyawan.dart';
 import 'package:purelux/screens/home_screen.dart';
+import 'package:purelux/screens/masuk_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
   @override
@@ -13,7 +13,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   final List<Widget> _pages = [
     HomeScreen(), // Panggil HomeScreen dari file home_screen.dart
-    AbsensiScreen(), // Panggil AbsensiScreen dari file absensi_screen.dart
+    MasukScreen(), // Panggil AbsensiScreen dari file absensi_screen.dart
     DataKaryawanScreen(), // Panggil DataAbsensiScreen dari file data_absensi_screen.dart
   ];
 

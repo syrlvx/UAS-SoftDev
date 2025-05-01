@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:purelux/widgets/bottom_nav_bar.dart';
-import 'home_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:purelux/widgets/bottom_nav_bar.dart';
 
-class RiwayatScreen extends StatelessWidget {
+class RiwayatScreen extends StatefulWidget {
+  @override
+  _RiwayatScreenState createState() => _RiwayatScreenState();
+}
+
+class _RiwayatScreenState extends State<RiwayatScreen> {
   final List<Map<String, String>> riwayatData = [
     {
       'tanggal': '2025-04-30',
@@ -42,6 +46,9 @@ class RiwayatScreen extends StatelessWidget {
       'status': 'Pending'
     },
   ];
+
+  bool sortAscending = false;
+  String selectedStatus = 'Semua';
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +112,82 @@ class RiwayatScreen extends StatelessWidget {
                 ],
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  // Sort Button
+                  PopupMenuButton<String>(
+                    icon: Row(
+                      children: [
+                        Icon(Icons.sort, color: Colors.blue), // Ikon tetap biru
+                        SizedBox(width: 4),
+                        Text('Sort',
+                            style: TextStyle(
+                                color: Colors.blue)), // Teks tetap biru
+                      ],
+                    ),
+                    onSelected: (value) {
+                      setState(() {
+                        sortAscending = (value == 'Terlama ke Terbaru');
+                      });
+                    },
+                    color:
+                        Colors.white, // Mengubah background menu menjadi putih
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          8.0), // Menambahkan pembulatan pada sudut
+                    ),
+                    elevation:
+                        4, // Menambahkan sedikit bayangan agar lebih jelas
+                    itemBuilder: (BuildContext context) =>
+                        <PopupMenuEntry<String>>[
+                      PopupMenuItem<String>(
+                        value: 'Terbaru ke Terlama',
+                        child: Container(
+                          color: Colors
+                              .white, // Mengubah background item menjadi putih
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Text('Terbaru ke Terlama'),
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'Terlama ke Terbaru',
+                        child: Container(
+                          color: Colors
+                              .white, // Mengubah background item menjadi putih
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Text('Terlama ke Terbaru'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Spacer(),
+                  // Status Filter
+                  DropdownButton<String>(
+                    value: selectedStatus,
+                    onChanged: (newValue) {
+                      setState(() {
+                        selectedStatus = newValue!;
+                      });
+                    },
+                    items: [
+                      'Semua',
+                      'Hadir',
+                      'Cuti Sakit',
+                      'Disetujui',
+                      'Tidak Hadir',
+                      'Pending'
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
             Expanded(
               child: Container(
                 color: Colors.white,
@@ -124,30 +207,26 @@ class RiwayatScreen extends StatelessWidget {
   }
 
   Widget _buildRiwayatTab(String jenis) {
-    final filteredData =
-        riwayatData.where((item) => item['jenis'] == jenis).toList();
+    // Filter data berdasarkan jenis dan status yang dipilih
+    final filteredData = riwayatData
+        .where((item) =>
+            item['jenis'] == jenis &&
+            (selectedStatus == 'Semua' || item['status'] == selectedStatus))
+        .toList();
+
+    // Sort data sesuai dengan urutan yang dipilih (Terbaru ke Terlama atau Terlama ke Terbaru)
+    if (sortAscending) {
+      filteredData.sort((a, b) => DateTime.parse(a['tanggal']!)
+          .compareTo(DateTime.parse(b['tanggal']!)));
+    } else {
+      filteredData.sort((a, b) => DateTime.parse(b['tanggal']!)
+          .compareTo(DateTime.parse(a['tanggal']!)));
+    }
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          ClipPath(
-            clipper: _CustomClipper(),
-            child: Container(
-              color: Colors.blue,
-              padding: EdgeInsets.symmetric(vertical: 8.0),
-              child: Center(
-                child: Text(
-                  jenis,
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
           SizedBox(height: 10),
           Container(
             padding: EdgeInsets.all(16),
@@ -156,7 +235,7 @@ class RiwayatScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Detail Riwayat: $jenis',
+                  'Detail Riwayat $jenis',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -202,8 +281,8 @@ class RiwayatScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 18,
                               color: item['status'] == 'Hadir'
-                                  ? Colors.green
-                                  : Colors.red,
+                                  ? const Color.fromARGB(255, 255, 255, 255)
+                                  : const Color.fromARGB(255, 255, 255, 255),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -212,42 +291,98 @@ class RiwayatScreen extends StatelessWidget {
                           padding: EdgeInsets.all(8.0),
                           color: Colors.white,
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(
-                                Icons.location_on,
-                                color: Colors.green,
-                                size: 18,
-                              ),
-                              SizedBox(width: 5),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    tanggal,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black54,
-                                    ),
-                                  ),
-                                  SizedBox(height: 3),
-                                  Text(
-                                    'Waktu Mulai',
-                                    style: TextStyle(
-                                      fontSize: 12,
+                              // KIRI
+                              Expanded(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.location_on,
                                       color: Colors.green,
-                                      fontWeight: FontWeight.w500,
+                                      size: 18,
                                     ),
-                                  ),
-                                  SizedBox(height: 3),
-                                  Text(
-                                    waktu,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black54,
+                                    SizedBox(width: 5),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          tanggal,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                        SizedBox(height: 3),
+                                        Text(
+                                          'Waktu Mulai',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        SizedBox(height: 3),
+                                        Text(
+                                          waktu,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
+                              ),
+
+                              SizedBox(width: 10),
+
+                              // KANAN (duplikat)
+                              Expanded(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.access_time,
+                                      color: Colors.orange,
+                                      size: 18,
+                                    ),
+                                    SizedBox(width: 5),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          tanggal,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                        SizedBox(height: 3),
+                                        Text(
+                                          'Waktu Selesai',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.orange,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        SizedBox(height: 3),
+                                        Text(
+                                          waktu,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
@@ -263,21 +398,4 @@ class RiwayatScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class _CustomClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    var path = Path();
-    path.lineTo(0, 0);
-    path.lineTo(0, size.height - 20);
-    path.quadraticBezierTo(
-        size.width / 2, size.height, size.width, size.height - 20);
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

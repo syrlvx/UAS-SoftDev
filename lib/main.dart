@@ -8,9 +8,11 @@ import 'package:purelux/screens/splash_screen.dart';
 import 'package:purelux/widgets/bottom_nav_bar.dart';
 import 'package:purelux/widgets/bottom_nav_bar_admin.dart';
 import 'screens/globals.dart' as globals; // Import file globals.dart
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions
         .currentPlatform, // Pastikan menggunakan FirebaseOptions yang benar
@@ -26,8 +28,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PureLux',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.light,
       theme: ThemeData(
+        primaryColor: Colors.white,
+        popupMenuTheme: PopupMenuThemeData(color: Colors.white),
         textTheme: const TextTheme(
           bodyLarge: TextStyle(
             color: Colors.white,
