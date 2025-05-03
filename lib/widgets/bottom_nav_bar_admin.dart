@@ -27,53 +27,50 @@ class _BottomNavBarAdminState extends State<BottomNavBarAdmin> {
         children: _screens,
       ),
       bottomNavigationBar: Material(
-        elevation: 0, // Ini yang bikin ga ada bayangan/border
+        elevation: 0, // Menghapus bayangan navbar
         color: Colors.white,
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 1), // Padding untuk navbar
-          child: Column(
-            mainAxisSize: MainAxisSize.min, // Agar column tidak meluas
-            children: [
-              Container(
-                height: 1,
-                color: Color(0xFFB0BEC5), // Garis abu-abu di atas navbar
-              ),
-              BottomNavigationBar(
-                elevation: 0, // Tambahin ini juga!
-                backgroundColor: Colors.white,
-                currentIndex: _currentIndex,
-                selectedItemColor: Colors.blue,
-                unselectedItemColor: Colors.grey,
-                type: BottomNavigationBarType.fixed,
-                selectedFontSize: 14,
-                unselectedFontSize: 12,
-                iconSize: 28,
-                onTap: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home),
-                    label: 'Home',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.file_copy),
-                    label: 'Pengajuan',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.assignment),
-                    label: 'Tugas',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.group),
-                    label: 'Karyawan',
-                  ),
-                ],
-              ),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Agar column tidak meluas
+          children: [
+            Container(
+              height: 1, // Tinggi garis
+              color: Color(0xFFB0BEC5), // Warna abu-abu untuk garis
+            ),
+            BottomNavigationBar(
+              elevation: 0, // Menghapus bayangan di navbar
+              backgroundColor: Colors.white,
+              currentIndex: _currentIndex,
+              selectedItemColor: Color(0xFF001F3D),
+              unselectedItemColor: Colors.grey,
+              type: BottomNavigationBarType.fixed,
+              selectedFontSize: 14,
+              unselectedFontSize: 12,
+              iconSize: 28,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.file_copy),
+                  label: 'Pengajuan',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.assignment),
+                  label: 'Tugas',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.group),
+                  label: 'Karyawan',
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

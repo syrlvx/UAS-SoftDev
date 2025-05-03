@@ -82,7 +82,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
                     ),
                     child: Icon(
                       Icons.access_time_filled,
-                      color: Colors.blue, // Ikon tetap biru
+                      color:
+                          Color.fromARGB(255, 127, 157, 195), // Ikon tetap biru
                       size: 30,
                     ),
                   ),
@@ -91,7 +92,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                     "Absensi",
                     style: TextStyle(
                       color: _currentIndex == 1
-                          ? Colors.blue
+                          ? Color.fromARGB(255, 127, 157, 195)
                           : Colors.grey, // Teks jadi biru saat dipencet
                       fontWeight: FontWeight.w500,
                       fontSize: 12,
@@ -117,12 +118,17 @@ class _BottomNavBarState extends State<BottomNavBar> {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: _currentIndex == index ? Colors.blue : Colors.grey),
+          Icon(icon,
+              color: _currentIndex == index
+                  ? Color.fromARGB(255, 127, 157, 195)
+                  : Colors.grey),
           SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: _currentIndex == index ? Colors.blue : Colors.grey,
+              color: _currentIndex == index
+                  ? Color.fromARGB(255, 127, 157, 195)
+                  : Colors.grey,
               fontWeight: FontWeight.w600,
               fontSize: 12,
             ),

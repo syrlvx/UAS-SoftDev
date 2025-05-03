@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _getCurrentTime() {
     final now = DateTime.now();
-    return '${now.hour}:${now.minute}:${now.second}';
+    return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
   }
 
   void _startTimer() {
@@ -75,222 +75,288 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(400),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blueAccent, Colors.indigo],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30),
-            ),
-          ),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: EdgeInsets.only(
-                  top: 30,
-                  left: 16,
-                  right: 16), // 👈 ubah angka top di sini untuk naik/turun
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.account_circle,
-                        size: 60, color: Colors.white),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => AccountScreen()),
-                      );
-                    },
-                  ),
-                  SizedBox(width: 10),
-                  if (!isLoadingUser)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          username ?? 'User',
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          role ?? '',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
-                    ),
-                  Spacer(),
-                  IconButton(
-                    icon: Icon(Icons.notifications,
-                        color: Colors.white, size: 30),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => NotifikasiScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
       body: isLoadingUser
           ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20),
-                  Text(
-                    'Pilih Fitur:',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+          : Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Background Gradient AppBar
+                Container(
+                  height: 300,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFF001F3D), // Biru navy gelap
+                        Color(0xFFFFFFFF), // Putih
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
                     ),
                   ),
-                  SizedBox(height: 10),
-                  // Grid Menu
-                  Expanded(
-                    child: GridView.count(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      children: <Widget>[
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => PengajuanScreen()),
-                            );
-                          },
-                          child: _buildMenuCard(
-                              Icons.description,
-                              'Pengajuan',
-                              const Color.fromARGB(255, 255, 255, 255)!,
-                              const Color.fromARGB(255, 49, 142, 185)!),
+                  child: SafeArea(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                          top: 0, bottom: 150, left: 16, right: 16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.account_circle,
+                                size: 60, color: Colors.white),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => AccountScreen()),
+                              );
+                            },
+                          ),
+                          SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                username ?? 'User',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                role ?? '',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Spacer(),
+                          IconButton(
+                            icon: Icon(Icons.notifications,
+                                color: Colors.white, size: 30),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => NotificationScreen()),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Card yang menimpa AppBar
+                Positioned(
+                  top: 140,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2), // Warna bayangan
+                          blurRadius: 10, // Seberapa kabur bayangannya
+                          spreadRadius: 2, // Seberapa besar area bayangannya
+                          offset: Offset(
+                              0, 2), // Arah bayangan (x, y) → ini ke bawah
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => TugasScreen()),
-                            );
-                          },
-                          child: _buildMenuCard(
-                              Icons.assignment,
-                              'Tugas',
-                              const Color.fromARGB(255, 255, 255, 255)!,
-                              const Color.fromARGB(255, 49, 142, 185)!),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Baris atas: Jam & Tanggal
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.access_time, color: Colors.grey),
+                                SizedBox(width: 8),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Reguler',
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold)),
+                                    Text('08:00 - 17:00',
+                                        style: TextStyle(color: Colors.black)),
+                                    Text('Masuk',
+                                        style: TextStyle(color: Colors.blue)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text('Selasa',
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold)),
+                                Text('22 Februari 2022',
+                                    style: TextStyle(color: Colors.black)),
+                                Text('Pulang',
+                                    style: TextStyle(color: Colors.blue)),
+                              ],
+                            ),
+                          ],
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => RiwayatScreen()),
-                            );
-                          },
-                          child: _buildMenuCard(
-                              Icons.history,
-                              'Riwayat',
-                              const Color.fromARGB(255, 255, 255, 255)!,
-                              const Color.fromARGB(255, 49, 142, 185)!),
+                        SizedBox(height: 16),
+
+                        // Judul tengah
+                        Center(
+                          child: Text(
+                            'Rekap Absensi Bulan Ini',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+
+                        // Statistik absensi
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildStatBox('HADIR', '0 Hari', Colors.green),
+                            _buildStatBox('IZIN', '0 Hari', Colors.blue),
+                            _buildStatBox(
+                                'SISA CUTI', '12 Hari', Colors.orange),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                // Menu Grid bawah card
+                Padding(
+                  padding: EdgeInsets.only(top: 430),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pilih Fitur:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        GridView.count(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          children: [
+                            _buildMenuItem(
+                              Icons.description,
+                              'Pengajuan',
+                              () => Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => PengajuanScreen()),
+                              ),
+                            ),
+                            _buildMenuItem(
+                              Icons.assignment,
+                              'Tugas',
+                              () => Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => TugasScreen()),
+                              ),
+                            ),
+                            _buildMenuItem(
+                              Icons.history,
+                              'Riwayat',
+                              () => Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => RiwayatScreen()),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }
 
-  Widget _buildMenuCard(
-      IconData icon, String title, Color bgColor, Color iconColor) {
-    return Card(
-      elevation: 5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Container(
-        width: double.infinity,
-        height: 120,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: bgColor,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 40, color: iconColor),
-            SizedBox(height: 10),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: iconColor,
+  Widget _buildMenuItem(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        elevation: 2, // Bayangan default dari Card
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Container(
+          width: double.infinity,
+          height: 120,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2), // Warna bayangan
+                spreadRadius: 1, // Jarak bayangan dari widget
+                blurRadius: 5, // Mengaburkan bayangan
+                offset: Offset(0, -1), // Posisi bayangan (horizontal, vertikal)
               ),
-            ),
-          ],
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 40, color: Colors.blue),
+              SizedBox(height: 10),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class CustomFlatAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final Widget child;
-
-  CustomFlatAppBar({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: preferredSize.height, // Pastikan tinggi disesuaikan
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blueAccent, Colors.indigo],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30), // Lengkungan bagian bawah kiri
-          bottomRight: Radius.circular(30), // Lengkungan bagian bawah kanan
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: child,
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Size get preferredSize => Size.fromHeight(400); // Sesuaikan tinggi AppBar
+Widget _buildStatBox(String title, String count, Color color) {
+  return Column(
+    children: [
+      Text(title,
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+      SizedBox(height: 4),
+      Text(count, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+      SizedBox(height: 4),
+      Container(height: 4, width: 40, color: color),
+    ],
+  );
 }

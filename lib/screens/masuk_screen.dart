@@ -16,6 +16,7 @@ class _MasukScreenState extends State<MasukScreen> {
   String? _waktuMasuk;
   String? _waktuKeluar;
   bool _sudahMasuk = false;
+  bool _sudahKeluar = false; // Flag untuk cek keluar
   bool _loading = true;
 
   @override
@@ -91,8 +92,7 @@ class _MasukScreenState extends State<MasukScreen> {
       if (keluarDoc.exists) {
         Timestamp ts = keluarDoc['timestamp'];
         _waktuKeluar = DateFormat('HH:mm').format(ts.toDate());
-        _sudahMasuk =
-            false; // Sudah keluar berarti bukan dalam kondisi masuk lagi
+        _sudahKeluar = true; // Sudah keluar, set flag keluar
       }
 
       _loading = false;
@@ -129,6 +129,7 @@ class _MasukScreenState extends State<MasukScreen> {
       setState(() {
         _waktuKeluar = nowFormatted;
         _sudahMasuk = false;
+        _sudahKeluar = true; // Set flag keluar setelah keluar
       });
     }
   }
@@ -162,25 +163,32 @@ class _MasukScreenState extends State<MasukScreen> {
                       Text("Waktu Keluar: $_waktuKeluar",
                           style: TextStyle(fontSize: 16, color: Colors.black)),
                     SizedBox(height: 40),
-                    ElevatedButton.icon(
-                      icon: Icon(
-                        _sudahMasuk ? Icons.logout : Icons.login,
-                        color: Colors.white,
+                    if (!_sudahKeluar) // Hanya tampilkan tombol jika belum keluar
+                      ElevatedButton.icon(
+                        icon: Icon(
+                          _sudahMasuk ? Icons.logout : Icons.login,
+                          color: Colors.white,
+                        ),
+                        label: Text(
+                          _sudahMasuk ? "Keluar" : "Masuk",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 30, vertical: 14),
+                        ),
+                        onPressed: () async {
+                          await _handleAbsen();
+                          await _cekStatusAbsen(); // Refresh data setelah absen
+                        },
                       ),
-                      label: Text(
-                        _sudahMasuk ? "Keluar" : "Masuk",
-                        style: TextStyle(color: Colors.white),
+                    if (_sudahKeluar) // Menampilkan pesan terima kasih
+                      Text(
+                        'Terima kasih, selamat berlibur!',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 30, vertical: 14),
-                      ),
-                      onPressed: () async {
-                        await _handleAbsen();
-                        await _cekStatusAbsen(); // Refresh data setelah absen
-                      },
-                    ),
                   ],
                 ),
               ),

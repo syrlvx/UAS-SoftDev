@@ -16,7 +16,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _usernameController = TextEditingController(); // Tambahan username
   bool _isLoading = false;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -112,7 +111,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _usernameController.dispose();
     super.dispose();
   }
 
@@ -126,7 +124,10 @@ class _LoginScreenState extends State<LoginScreen> {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.blueAccent, Colors.indigo], // Gradasi warna
+              colors: [
+                Color(0xFF001F3D), // Biru navy gelap
+                Color(0xFFFFFFFF), // Putih
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -149,17 +150,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: ListView(
             children: [
               SizedBox(height: 80),
-              TextFormField(
-                controller: _usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  labelStyle: TextStyle(color: Colors.black),
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person, color: Colors.black),
-                ),
-                style: TextStyle(color: Colors.black),
-              ),
-              SizedBox(height: 20),
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -206,9 +196,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Colors.blueAccent,
-                            Colors.indigo
-                          ], // Gradasi warna
+                            Color(0xFF001F3D), // Biru navy gelap
+                            Color(0xFFFFFFFF), // Putih
+                          ],
                           begin: Alignment.center,
                           end: Alignment.bottomCenter,
                         ),
