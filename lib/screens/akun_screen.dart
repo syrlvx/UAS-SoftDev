@@ -138,13 +138,6 @@ class _AccountScreenState extends State<AccountScreen> {
                               ),
                               Divider(height: 1),
                               ListTile(
-                                leading: Icon(Icons.email_outlined),
-                                title: Text("Ubah Email"),
-                                trailing: Icon(Icons.edit),
-                                onTap: () => _editEmailDialog(context),
-                              ),
-                              Divider(height: 1),
-                              ListTile(
                                 leading: Icon(Icons.lock_outline),
                                 title: Text("Ubah Password"),
                                 trailing: Icon(Icons.edit),

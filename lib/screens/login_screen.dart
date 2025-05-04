@@ -199,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Color(0xFF001F3D), // Biru navy gelap
                             Color(0xFFFFFFFF), // Putih
                           ],
-                          begin: Alignment.center,
+                          begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
                         borderRadius: BorderRadius.circular(30),

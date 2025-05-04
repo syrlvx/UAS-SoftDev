@@ -27,48 +27,51 @@ class _BottomNavBarAdminState extends State<BottomNavBarAdmin> {
         children: _screens,
       ),
       bottomNavigationBar: Material(
-        elevation: 0, // Menghapus bayangan navbar
+        elevation: 0,
         color: Colors.white,
         child: Column(
-          mainAxisSize: MainAxisSize.min, // Agar column tidak meluas
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              height: 1, // Tinggi garis
-              color: Color(0xFFB0BEC5), // Warna abu-abu untuk garis
+              height: 1,
+              color: Color(0xFFB0BEC5),
             ),
-            BottomNavigationBar(
-              elevation: 0, // Menghapus bayangan di navbar
-              backgroundColor: Colors.white,
-              currentIndex: _currentIndex,
-              selectedItemColor: Color(0xFF001F3D),
-              unselectedItemColor: Colors.grey,
-              type: BottomNavigationBarType.fixed,
-              selectedFontSize: 14,
-              unselectedFontSize: 12,
-              iconSize: 28,
-              onTap: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.file_copy),
-                  label: 'Pengajuan',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.assignment),
-                  label: 'Tugas',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.group),
-                  label: 'Karyawan',
-                ),
-              ],
+            SizedBox(
+              height: 80,
+              child: BottomNavigationBar(
+                elevation: 0,
+                backgroundColor: Colors.white,
+                currentIndex: _currentIndex,
+                selectedItemColor: Color.fromARGB(255, 127, 157, 195),
+                unselectedItemColor: Colors.grey,
+                type: BottomNavigationBarType.fixed,
+                selectedFontSize: 14,
+                unselectedFontSize: 12,
+                iconSize: 28,
+                onTap: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home),
+                    label: 'Home',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.file_copy),
+                    label: 'Pengajuan',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.assignment),
+                    label: 'Tugas',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.group),
+                    label: 'Karyawan',
+                  ),
+                ],
+              ),
             ),
           ],
         ),

@@ -102,7 +102,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             Container(
               color: Colors.white,
               child: TabBar(
-                indicatorColor: Colors.blue,
+                indicatorColor: Color.fromARGB(255, 127, 157, 195),
                 labelColor: Colors.black,
                 unselectedLabelColor: Colors.grey,
                 tabs: [

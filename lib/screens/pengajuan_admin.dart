@@ -17,10 +17,25 @@ class _PengajuanAdminScreenState extends State<PengajuanAdminScreen> {
           preferredSize: Size.fromHeight(90),
           child: AppBar(
             elevation: 0,
-            backgroundColor: Colors.white,
+            backgroundColor: Colors
+                .transparent, // Transparent untuk memungkinkan background gradasi
+            automaticallyImplyLeading: false, // Disable the back button
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF001F3D), // Biru navy
+                    Color(0xFF001F3D)
+                        .withOpacity(0.8), // Biru navy lebih gelap di bawah
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
             bottom: TabBar(
-              indicatorColor: Colors.blue,
-              labelColor: Colors.blue,
+              indicatorColor: Colors.white,
+              labelColor: Colors.white,
               unselectedLabelColor: Colors.grey,
               labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               tabs: [
@@ -73,7 +88,6 @@ class _PengajuanListState extends State<PengajuanList> {
   @override
   void initState() {
     super.initState();
-    //loadStatus();
   }
 
   Future<void> loadStatus() async {
@@ -133,29 +147,49 @@ class _PengajuanListState extends State<PengajuanList> {
                   ],
                 ),
                 actions: [
-                  TextButton(
+                  IconButton(
+                    icon: Icon(Icons.check, color: Colors.green),
                     onPressed: () {
                       Navigator.pop(context);
                       updateStatus(id, 'DISETUJUI');
                     },
-                    child: Text("Konfirmasi"),
                   ),
-                  TextButton(
+                  IconButton(
+                    icon: Icon(Icons.close, color: Colors.red),
                     onPressed: () {
                       Navigator.pop(context);
                       updateStatus(id, 'DITOLAK');
                     },
-                    child: Text("Tolak"),
                   ),
                 ],
               ),
             );
           },
-          child: Card(
-            color: Colors.pink[50],
+          child: Container(
             margin: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
+            ),
             child: ListTile(
-              title: Text(item['nama'] ?? ''),
+              leading: CircleAvatar(
+                backgroundColor: Colors.blueAccent,
+                child: Text(
+                  item['nama']![0], // Initials of the name
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              title: Text(
+                item['nama'] ?? '',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

@@ -196,7 +196,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text('08:00 - 17:00',
                                         style: TextStyle(color: Colors.black)),
                                     Text('Masuk',
-                                        style: TextStyle(color: Colors.blue)),
+                                        style: TextStyle(
+                                          color: Color.fromARGB(
+                                              255, 127, 157, 195),
+                                        )),
                                   ],
                                 ),
                               ],
@@ -211,7 +214,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text('22 Februari 2022',
                                     style: TextStyle(color: Colors.black)),
                                 Text('Pulang',
-                                    style: TextStyle(color: Colors.blue)),
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 127, 157, 195),
+                                    )),
                               ],
                             ),
                           ],
@@ -234,7 +239,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             _buildStatBox('HADIR', '0 Hari', Colors.green),
-                            _buildStatBox('IZIN', '0 Hari', Colors.blue),
+                            _buildStatBox('IZIN', '0 Hari',
+                                const Color.fromARGB(255, 243, 33, 33)),
                             _buildStatBox(
                                 'SISA CUTI', '12 Hari', Colors.orange),
                           ],
@@ -330,14 +336,18 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 40, color: Colors.blue),
+              Icon(
+                icon,
+                size: 40,
+                color: Color.fromARGB(255, 127, 157, 195),
+              ),
               SizedBox(height: 10),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: Color.fromARGB(255, 127, 157, 195),
                 ),
               ),
             ],
