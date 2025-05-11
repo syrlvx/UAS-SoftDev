@@ -15,6 +15,35 @@ class TugasScreen extends StatefulWidget {
 class _TugasScreenState extends State<TugasScreen> {
   int selectedDateIndex = 0;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  late List<DateTime> dateList;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeDates();
+  }
+
+  void _initializeDates() {
+    final now = DateTime.now();
+    dateList = List.generate(7, (index) {
+      return now.add(Duration(days: index));
+    });
+  }
+
+  String _getDayName(DateTime date) {
+    return DateFormat('E').format(date).substring(0, 1);
+  }
+
+  String _getFormattedDate(DateTime date) {
+    return DateFormat('dd').format(date);
+  }
+
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,47 +98,67 @@ class _TugasScreenState extends State<TugasScreen> {
                   ),
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                child: Text("Today",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white)),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                child: Row(
+                  children: [
+                    if (_isToday(dateList[selectedDateIndex]))
+                      const Text("Today",
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white)),
+                    const SizedBox(width: 8),
+                    Text(
+                      DateFormat('d MMM yyyy')
+                          .format(dateList[selectedDateIndex]),
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  children: List.generate(5, (index) {
-                    bool isSelected = selectedDateIndex == index;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedDateIndex = index;
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color.fromARGB(255, 149, 212, 240)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.generate(7, (index) {
+                      bool isSelected = selectedDateIndex == index;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedDateIndex = index;
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color.fromARGB(255, 149, 212, 240)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(_getFormattedDate(dateList[index]),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                              Text(_getDayName(dateList[index]),
+                                  style: const TextStyle(color: Colors.white)),
+                            ],
+                          ),
                         ),
-                        child: Column(
-                          children: [
-                            Text("0${index + 1}",
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white)),
-                            Text("MTWTF"[index],
-                                style: const TextStyle(color: Colors.white)),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -126,6 +175,29 @@ class _TugasScreenState extends State<TugasScreen> {
                     stream: FirebaseFirestore.instance
                         .collection('tugas')
                         .where('karyawanUid', isEqualTo: currentUser?.uid)
+                        .where('tanggal',
+                            isGreaterThanOrEqualTo: Timestamp.fromDate(
+                              DateTime(
+                                dateList[selectedDateIndex].year,
+                                dateList[selectedDateIndex].month,
+                                dateList[selectedDateIndex].day,
+                                0,
+                                0,
+                                0,
+                              ),
+                            ))
+                        .where('tanggal',
+                            isLessThan: Timestamp.fromDate(
+                              DateTime(
+                                dateList[selectedDateIndex].year,
+                                dateList[selectedDateIndex].month,
+                                dateList[selectedDateIndex].day,
+                                23,
+                                59,
+                                59,
+                              ),
+                            ))
+                        .orderBy('tanggal', descending: false)
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -133,7 +205,26 @@ class _TugasScreenState extends State<TugasScreen> {
                       }
 
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return const Center(child: Text("Tidak ada tugas."));
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.task_alt,
+                                size: 64,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "Tidak ada tugas untuk tanggal ini",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
                       }
 
                       return ListView(
@@ -146,6 +237,15 @@ class _TugasScreenState extends State<TugasScreen> {
 
                           DateTime deadlineDate = timestampTanggal.toDate();
                           DateTime startTime = timestampWaktuMulai.toDate();
+
+                          if (deadlineDate.year !=
+                                  dateList[selectedDateIndex].year ||
+                              deadlineDate.month !=
+                                  dateList[selectedDateIndex].month ||
+                              deadlineDate.day !=
+                                  dateList[selectedDateIndex].day) {
+                            return const SizedBox.shrink();
+                          }
 
                           String formattedDeadline =
                               DateFormat('d MMM yyyy').format(deadlineDate);

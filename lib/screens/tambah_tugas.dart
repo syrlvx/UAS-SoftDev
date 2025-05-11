@@ -15,17 +15,11 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
   TimeOfDay startTime = TimeOfDay(hour: 10, minute: 0);
   TimeOfDay endTime = TimeOfDay(hour: 11, minute: 0);
   bool isLoading = false; // Untuk menampilkan loading indicator
+  bool isLoadingTasks = true;
 
-  final List<String> allTasks = [
-    'Cuci',
-    'Setrika',
-    'Lipat',
-    'Kemas',
-    'Kering',
-    'Nimbang',
-    'Antar Cucian',
-  ];
+  List<String> allTasks = [];
   final List<String> selectedTasks = [];
+  final TextEditingController _newTaskController = TextEditingController();
 
   final List<String> allEmployees = [
     'Fara',
@@ -46,6 +40,7 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
   void initState() {
     super.initState();
     fetchKaryawan();
+    fetchTasks();
   }
 
   Future<void> fetchKaryawan() async {
@@ -78,6 +73,25 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
       print('Error fetching karyawan: $e');
       setState(() {
         isLoadingKaryawan = false;
+      });
+    }
+  }
+
+  Future<void> fetchTasks() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('tasks')
+          .orderBy('name')
+          .get();
+
+      setState(() {
+        allTasks = snapshot.docs.map((doc) => doc['name'] as String).toList();
+        isLoadingTasks = false;
+      });
+    } catch (e) {
+      print('Error fetching tasks: $e');
+      setState(() {
+        isLoadingTasks = false;
       });
     }
   }
@@ -189,6 +203,108 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
     }
   }
 
+  Future<void> _addNewTask() async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Tambah Tugas Baru'),
+        content: TextField(
+          controller: _newTaskController,
+          decoration: const InputDecoration(
+            hintText: 'Masukkan nama tugas baru',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _newTaskController.clear();
+            },
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (_newTaskController.text.isNotEmpty) {
+                try {
+                  await FirebaseFirestore.instance.collection('tasks').add({
+                    'name': _newTaskController.text,
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
+
+                  await fetchTasks(); // Refresh the task list
+                  Navigator.pop(context);
+                  _newTaskController.clear();
+                } catch (e) {
+                  print('Error adding task: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Gagal menambahkan tugas')),
+                  );
+                }
+              }
+            },
+            child: const Text('Tambah'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _removeTask(String task) async {
+    try {
+      // Find the task document
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('tasks')
+          .where('name', isEqualTo: task)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Delete the task document
+        await querySnapshot.docs.first.reference.delete();
+
+        setState(() {
+          allTasks.remove(task);
+          selectedTasks.remove(task);
+        });
+      }
+    } catch (e) {
+      print('Error removing task: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal menghapus tugas')),
+      );
+    }
+  }
+
+  void _showRemoveTaskDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Tugas'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: allTasks.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(allTasks[index]),
+                onTap: () {
+                  _removeTask(allTasks[index]);
+                  Navigator.pop(context);
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -248,35 +364,58 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      "Pilih Tugas :",
-                      style: TextStyle(color: Color(0xFF001F3D)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Pilih Tugas :",
+                          style: TextStyle(color: Color(0xFF001F3D)),
+                        ),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.add_circle,
+                                  color: Color(0xFF001F3D)),
+                              onPressed: _addNewTask,
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle,
+                                  color: Color(0xFF001F3D)),
+                              onPressed: _showRemoveTaskDialog,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 10,
-                      children: allTasks.map((task) {
-                        final isSelected = selectedTasks.contains(task);
-                        return FilterChip(
-                          label: Text(task),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                selectedTasks.add(task);
-                              } else {
-                                selectedTasks.remove(task);
-                              }
-                            });
-                          },
-                          selectedColor: Colors.blue,
-                          checkmarkColor: Colors.white,
-                          backgroundColor: Colors.blue[50],
-                          labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : Colors.blue),
-                        );
-                      }).toList(),
-                    ),
+                    isLoadingTasks
+                        ? const Center(child: CircularProgressIndicator())
+                        : Wrap(
+                            spacing: 10,
+                            children: allTasks.map((task) {
+                              final isSelected = selectedTasks.contains(task);
+                              return FilterChip(
+                                label: Text(task),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      selectedTasks.add(task);
+                                    } else {
+                                      selectedTasks.remove(task);
+                                    }
+                                  });
+                                },
+                                selectedColor: Colors.blue,
+                                checkmarkColor: Colors.white,
+                                backgroundColor: Colors.blue[50],
+                                labelStyle: TextStyle(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.blue),
+                              );
+                            }).toList(),
+                          ),
                     const SizedBox(height: 20),
                     const Align(
                       alignment: Alignment.centerLeft,

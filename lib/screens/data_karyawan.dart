@@ -41,13 +41,11 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
                   _buildKinerjaKaryawan(), // ✅ Tambahkan bagian kinerja
                   const SizedBox(height: 20),
                   _buildMenuItem(Icons.calendar_today, 'Rekap Absensi',
-                      'Detail rekapitulasi absensimu'),
+                      'Detail rekapitulasi absensi'),
                   _buildMenuItem(Icons.description, 'Rekap Pengajuan',
-                      'Daftar pengajuan izin & cuti kamu'),
-                  _buildMenuItem(Icons.access_time_filled, 'Rekap Lembur',
-                      'Laporan rekapitulasi lemburmu'),
-                  _buildMenuItem(Icons.task, 'Rekap Tugas',
-                      'Tugas-tugas yang diberikan kepadamu'),
+                      'Daftar pengajuan izin & cuti'),
+                  _buildMenuItem(
+                      Icons.task, 'Rekap Tugas', 'Tugas-tugas yang diberikan '),
                 ],
               ),
             ),
@@ -159,7 +157,6 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _buildAbsensiCard('Terlambat', '1 Hari', Colors.amber),
-                  _buildAbsensiCard('Pulang Cepat', '8 Hari', Colors.lightBlue),
                   _buildAbsensiCard(
                       'Tidak Absen Pulang', '1 Hari', Colors.purpleAccent),
                 ],
@@ -250,7 +247,7 @@ Widget _buildKinerjaKaryawan() {
         style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: const Color.fromARGB(255, 255, 255, 255),
         ),
       ),
       const SizedBox(height: 12),
@@ -269,11 +266,9 @@ Widget _buildKinerjaKaryawan() {
         ),
         child: Column(
           children: [
-            _buildKinerjaItem('Tugas Diselesaikan', '12 Tugas'),
-            _buildKinerjaItem('Lembur Disetujui', '5 Lembur'),
-            _buildKinerjaItem('Pengajuan Disetujui', '3 Izin, 1 Cuti'),
-            _buildKinerjaItem('Terlambat Masuk', '2 Kali'),
-            _buildKinerjaItem('Pulang Sebelum Waktu', '1 Kali'),
+            _buildKinerjaItem('Pengajuan Ditolak', '3 Izin, 1 Cuti'),
+            _buildKinerjaItem('Tugas Selesai', '12 Tugas'),
+            _buildKinerjaItem('Tugas Tidak Tepat Waktu', '12 Tugas'),
             const Divider(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

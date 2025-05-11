@@ -13,41 +13,34 @@ class TugasAdminScreen extends StatefulWidget {
 
 class _TugasAdminScreenState extends State<TugasAdminScreen> {
   int selectedDateIndex = 0;
-  int startDate = 4; // Starting from 4 (Sunday)
+  late List<DateTime> dateList;
 
-  String getFormattedDate(int index) {
-    int date = startDate + index;
-    return date < 10 ? '0$date' : '$date';
+  @override
+  void initState() {
+    super.initState();
+    _initializeDates();
   }
 
-  Timestamp getSelectedDateTimestamp() {
-    DateTime now = DateTime.now();
-    // Create DateTime for start of the selected date (midnight)
-    DateTime selectedDate = DateTime(
-      now.year,
-      now.month,
-      startDate + selectedDateIndex,
-      0, // hour
-      0, // minute
-      0, // second
-      0, // millisecond
-    );
-    return Timestamp.fromDate(selectedDate);
+  void _initializeDates() {
+    final now = DateTime.now();
+    dateList = List.generate(7, (index) {
+      return now.add(Duration(days: index));
+    });
   }
 
-  Timestamp getEndOfDayTimestamp() {
-    DateTime now = DateTime.now();
-    // Create DateTime for end of the selected date (23:59:59)
-    DateTime endDate = DateTime(
-      now.year,
-      now.month,
-      startDate + selectedDateIndex,
-      23, // hour
-      59, // minute
-      59, // second
-      999, // millisecond
-    );
-    return Timestamp.fromDate(endDate);
+  String _getDayName(DateTime date) {
+    return DateFormat('E').format(date).substring(0, 1);
+  }
+
+  String _getFormattedDate(DateTime date) {
+    return DateFormat('dd').format(date);
+  }
+
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
   }
 
   @override
@@ -93,51 +86,67 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                child: Text("Today",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white)),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                child: Row(
+                  children: [
+                    if (_isToday(dateList[selectedDateIndex]))
+                      const Text("Today",
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white)),
+                    const SizedBox(width: 8),
+                    Text(
+                      DateFormat('d MMM yyyy')
+                          .format(dateList[selectedDateIndex]),
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6.3),
-                child: Row(
-                  children: List.generate(7, (index) {
-                    bool isSelected = selectedDateIndex == index;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedDateIndex = index;
-                          if (index == 6) {
-                            // If we reach Saturday
-                            startDate += 7; // Move to next week
-                            selectedDateIndex =
-                                0; // Reset selection to first day
-                          }
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color.fromARGB(255, 149, 212, 240)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.generate(7, (index) {
+                      bool isSelected = selectedDateIndex == index;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedDateIndex = index;
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color.fromARGB(255, 149, 212, 240)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(_getFormattedDate(dateList[index]),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                              Text(_getDayName(dateList[index]),
+                                  style: const TextStyle(color: Colors.white)),
+                            ],
+                          ),
                         ),
-                        child: Column(
-                          children: [
-                            Text(getFormattedDate(index),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white)),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -155,9 +164,28 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                     stream: FirebaseFirestore.instance
                         .collection('tugas')
                         .where('tanggal',
-                            isGreaterThanOrEqualTo: getSelectedDateTimestamp())
+                            isGreaterThanOrEqualTo: Timestamp.fromDate(
+                              DateTime(
+                                dateList[selectedDateIndex].year,
+                                dateList[selectedDateIndex].month,
+                                dateList[selectedDateIndex].day,
+                                0,
+                                0,
+                                0,
+                              ),
+                            ))
                         .where('tanggal',
-                            isLessThanOrEqualTo: getEndOfDayTimestamp())
+                            isLessThan: Timestamp.fromDate(
+                              DateTime(
+                                dateList[selectedDateIndex].year,
+                                dateList[selectedDateIndex].month,
+                                dateList[selectedDateIndex].day,
+                                23,
+                                59,
+                                59,
+                              ),
+                            ))
+                        .orderBy('tanggal', descending: false)
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -165,7 +193,26 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                       }
 
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return const Center(child: Text("Tidak ada tugas."));
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.task_alt,
+                                size: 64,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "Tidak ada tugas untuk tanggal ini",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
                       }
 
                       return ListView(
@@ -176,11 +223,18 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                           Timestamp timestampTanggal = data['tanggal'];
                           Timestamp timestampWaktuMulai = data['waktuMulai'];
 
-                          // Convert Timestamp to DateTime
                           DateTime deadlineDate = timestampTanggal.toDate();
                           DateTime startTime = timestampWaktuMulai.toDate();
 
-                          // Format tanggal dan waktu
+                          if (deadlineDate.year !=
+                                  dateList[selectedDateIndex].year ||
+                              deadlineDate.month !=
+                                  dateList[selectedDateIndex].month ||
+                              deadlineDate.day !=
+                                  dateList[selectedDateIndex].day) {
+                            return const SizedBox.shrink();
+                          }
+
                           String formattedDeadline =
                               DateFormat('d MMM yyyy').format(deadlineDate);
                           String formattedStartTime =

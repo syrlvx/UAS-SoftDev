@@ -30,13 +30,18 @@ class _DataAdminScreenState extends State<DataAdminScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading:
+            false, // Tidak menampilkan back button otomatis
         title: Text(
           'Data Karyawan',
           style: GoogleFonts.poppins(
-              fontWeight: FontWeight.bold, color: Colors.black), // Black text
+            fontWeight: FontWeight.bold,
+            color: Colors.black, // Judul hitam
+          ),
         ),
-        backgroundColor: const Color(0xFF001F3D),
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white, // Background putih
+        elevation: 0, // Hilangkan shadow bawah AppBar
+        iconTheme: const IconThemeData(color: Colors.black), // Icon hitam
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add),
@@ -45,45 +50,67 @@ class _DataAdminScreenState extends State<DataAdminScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const AbsensiPieChart(),
-          const SizedBox(height: 20),
-          ...dummyEmployees.map((employee) {
-            return Card(
-              color: Colors.white, // Set the card color to white
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: const Icon(Icons.person),
-                title: Text(
-                  employee["name"] ?? "",
-                  style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black), // Black text
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF001F3D), Color(0xFFFFFFFF) // White
+            ],
+          ),
+        ),
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const AbsensiPieChart(),
+            const SizedBox(height: 20),
+            ...dummyEmployees.map((employee) {
+              return Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                subtitle: Text(
-                  "${employee["position"]} - ${employee["email"]}",
-                  style: GoogleFonts.poppins(
-                      fontSize: 13, color: Colors.black), // Black text
-                ),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          DetailKaryawanScreen(data: employee),
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: const Color(0xFF001F3D),
+                    child: Text(
+                      employee["name"] != null && employee["name"]!.isNotEmpty
+                          ? employee["name"]![0]
+                          : '',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  );
-                },
-              ),
-            );
-          }),
-        ],
+                  ),
+                  title: Text(
+                    employee["name"] ?? "",
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  subtitle: Text(
+                    "${employee["position"]} - ${employee["email"]}",
+                    style:
+                        GoogleFonts.poppins(fontSize: 13, color: Colors.black),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios,
+                      size: 16, color: Colors.black),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DetailKaryawanScreen(data: employee),
+                      ),
+                    );
+                  },
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
