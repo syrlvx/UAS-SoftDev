@@ -4,14 +4,51 @@ import 'package:purelux/screens/tambah_tugas.dart';
 import 'package:intl/intl.dart';
 
 class TugasAdminScreen extends StatefulWidget {
-  const TugasAdminScreen({Key? key}) : super(key: key);
+  const TugasAdminScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _TugasAdminScreenState createState() => _TugasAdminScreenState();
 }
 
 class _TugasAdminScreenState extends State<TugasAdminScreen> {
   int selectedDateIndex = 0;
+  int startDate = 4; // Starting from 4 (Sunday)
+
+  String getFormattedDate(int index) {
+    int date = startDate + index;
+    return date < 10 ? '0$date' : '$date';
+  }
+
+  Timestamp getSelectedDateTimestamp() {
+    DateTime now = DateTime.now();
+    // Create DateTime for start of the selected date (midnight)
+    DateTime selectedDate = DateTime(
+      now.year,
+      now.month,
+      startDate + selectedDateIndex,
+      0, // hour
+      0, // minute
+      0, // second
+      0, // millisecond
+    );
+    return Timestamp.fromDate(selectedDate);
+  }
+
+  Timestamp getEndOfDayTimestamp() {
+    DateTime now = DateTime.now();
+    // Create DateTime for end of the selected date (23:59:59)
+    DateTime endDate = DateTime(
+      now.year,
+      now.month,
+      startDate + selectedDateIndex,
+      23, // hour
+      59, // minute
+      59, // second
+      999, // millisecond
+    );
+    return Timestamp.fromDate(endDate);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +86,7 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => TambahTugasScreen()),
+                              builder: (context) => const TambahTugasScreen()),
                         );
                       },
                     ),
@@ -65,14 +102,20 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                         color: Colors.white)),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 6.3),
                 child: Row(
-                  children: List.generate(5, (index) {
+                  children: List.generate(7, (index) {
                     bool isSelected = selectedDateIndex == index;
                     return GestureDetector(
                       onTap: () {
                         setState(() {
                           selectedDateIndex = index;
+                          if (index == 6) {
+                            // If we reach Saturday
+                            startDate += 7; // Move to next week
+                            selectedDateIndex =
+                                0; // Reset selection to first day
+                          }
                         });
                       },
                       child: Container(
@@ -86,12 +129,10 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                         ),
                         child: Column(
                           children: [
-                            Text("0${index + 1}",
+                            Text(getFormattedDate(index),
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white)),
-                            Text("MTWTF"[index],
-                                style: const TextStyle(color: Colors.white)),
                           ],
                         ),
                       ),
@@ -113,6 +154,10 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                   child: StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('tugas')
+                        .where('tanggal',
+                            isGreaterThanOrEqualTo: getSelectedDateTimestamp())
+                        .where('tanggal',
+                            isLessThanOrEqualTo: getEndOfDayTimestamp())
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -170,20 +215,20 @@ class TaskCard extends StatelessWidget {
   final String status;
 
   const TaskCard({
-    Key? key,
+    super.key,
     required this.employeeName,
     required this.jenisTugasList,
     required this.deadline,
     required this.deadlineTime,
     required this.status,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     Color statusColor = status == 'Selesai' ? Colors.green : Colors.orange;
     IconData statusIcon =
         status == 'Selesai' ? Icons.check : Icons.hourglass_bottom;
-    String statusLabel = status == 'Selesai' ? 'ACC' : 'Pending';
+    String statusLabel = status == 'Selesai' ? 'Selesai' : 'Pending';
 
     return Card(
       color: Colors.white,
@@ -199,6 +244,7 @@ class TaskCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, -10),
@@ -251,13 +297,14 @@ class TaskCard extends StatelessWidget {
                     Row(
                       children: [
                         const Icon(Icons.access_time,
-                            size: 14, color: Colors.black45),
+                            size: 16, color: Color(0xFF001F3D)),
                         const SizedBox(width: 4),
                         Text(
                           deadlineTime,
                           style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.black54,
+                            fontSize: 14,
+                            color: Color(0xFF001F3D),
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
                       ],

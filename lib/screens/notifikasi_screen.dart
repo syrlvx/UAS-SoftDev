@@ -11,38 +11,28 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   List<Map<String, dynamic>> notifications = [
     {
-      'title': 'Pengajuan cuti diterima',
-      'body': 'Cuti tanggal 10-12 disetujui.',
+      'title': 'Pengajuan Cuti',
+      'body': 'Cuti tanggal 10 Mei disetujui',
       'time': '10:00',
+      'datetime': DateTime.now(),
       'category': 'pengajuan',
       'read': false,
-      'datetime': DateTime.now(),
-      'archived': false
+      'archived': false,
     },
     {
-      'title': 'Reminder Tugas',
-      'body': 'Kerjakan tugas harian',
+      'title': 'Tugas Baru',
+      'body': 'Isi laporan mingguan',
       'time': '09:00',
+      'datetime': DateTime.now().subtract(const Duration(days: 1)),
       'category': 'tugas',
       'read': false,
-      'datetime': DateTime.now().subtract(Duration(days: 1)),
-      'archived': false
-    },
-    {
-      'title': 'Notifikasi umum',
-      'body': 'Sistem update berhasil',
-      'time': '08:00',
-      'category': 'lainnya',
-      'read': true,
-      'datetime': DateTime.now().subtract(Duration(days: 2)),
-      'archived': false
+      'archived': false,
     },
   ];
 
   List<Map<String, dynamic>> archivedNotifications = [];
-
   String selectedFilter = 'Semua';
-  String selectedSort = 'Terbaru ke Lama';
+  bool sortAscending = false;
 
   void markAllAsRead() {
     setState(() {
@@ -56,7 +46,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final removed = notifications.removeAt(index);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("Notifikasi dihapus"),
+        content: const Text("Notifikasi dihapus"),
         action: SnackBarAction(
           label: "Undo",
           onPressed: () {
@@ -84,25 +74,22 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final today = DateTime(now.year, now.month, now.day);
     final compare = DateTime(date.year, date.month, date.day);
     if (compare == today) return 'Hari ini';
-    if (compare == today.subtract(Duration(days: 1))) return 'Kemarin';
+    if (compare == today.subtract(const Duration(days: 1))) return 'Kemarin';
     return '${date.day}/${date.month}/${date.year}';
   }
 
   @override
   Widget build(BuildContext context) {
-    // Filter
     List<Map<String, dynamic>> filtered = notifications.where((n) {
       if (selectedFilter == 'Semua') return true;
       if (selectedFilter == 'Belum dibaca') return !n['read'];
       return n['category'] == selectedFilter.toLowerCase();
     }).toList();
 
-    // Sort
-    filtered.sort((a, b) => selectedSort == 'Terbaru ke Lama'
-        ? b['datetime'].compareTo(a['datetime'])
-        : a['datetime'].compareTo(b['datetime']));
+    filtered.sort((a, b) => sortAscending
+        ? a['datetime'].compareTo(b['datetime'])
+        : b['datetime'].compareTo(a['datetime']));
 
-    // Group by date
     Map<String, List<Map<String, dynamic>>> grouped = {};
     for (var notif in filtered) {
       String label = getDateLabel(notif['datetime']);
@@ -111,197 +98,205 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60),
-        child: AppBar(
-          title:
-              const Text('Notifikasi', style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF4A90E2), Color(0xFF007AFF)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text(
+          'Notifikasi',
+          style: TextStyle(color: Colors.white),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.archive, color: Colors.white),
+            tooltip: 'Lihat Arsip',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ArchivedNotificationsScreen(
+                    archivedNotifications: archivedNotifications,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF001F3D), // Biru navy gelap
+                Color(0xFFFFFFFF)
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.archive, color: Colors.white),
-              tooltip: 'Lihat Arsip',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ArchivedNotificationsScreen(
-                      archivedNotifications: archivedNotifications,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: markAllAsRead,
-        icon: Icon(Icons.done_all),
-        label: Text("Tandai semua dibaca"),
+        icon: const Icon(Icons.done_all),
+        label: const Text("Tandai semua dibaca"),
       ),
       body: RefreshIndicator(
         onRefresh: () async => setState(() {}),
         child: ListView(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(12, 100, 12, 12),
           children: [
+            // Filter dan sort
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Sort Dropdown
+                PopupMenuButton<String>(
+                  icon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.sort, size: 20, color: Colors.blueGrey),
+                      const SizedBox(width: 4),
+                      Text(
+                        sortAscending ? 'Terlama' : 'Terbaru',
+                        style: const TextStyle(
+                          color: Colors.blueGrey,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(value: 'Terbaru', child: Text('Terbaru')),
+                    const PopupMenuItem(value: 'Terlama', child: Text('Terlama')),
+                  ],
+                  onSelected: (value) {
+                    setState(() {
+                      sortAscending = (value == 'Terlama');
+                    });
+                  },
+                ),
+                const SizedBox(width: 170),
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    // Hapus bagian decoration agar kotak border hilang
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: selectedSort,
-                        dropdownColor: Colors.white,
-                        style: TextStyle(color: Colors.black),
-                        isExpanded: true,
-                        icon: Icon(Icons.arrow_drop_down,
-                            size: 16, color: Colors.grey), // segitiga kecil abu
-                        onChanged: (val) {
-                          setState(() => selectedSort = val!);
-                        },
-                        selectedItemBuilder: (context) {
-                          return ['Terbaru ke Lama', 'Lama ke Terbaru']
-                              .map((e) {
-                            IconData iconData = e == 'Terbaru ke Lama'
-                                ? Icons.arrow_downward
-                                : Icons.arrow_upward;
-                            return Row(
-                              children: [
-                                Icon(iconData, color: Colors.black, size: 18),
-                                SizedBox(width: 6),
-                                Text(e, style: TextStyle(color: Colors.black)),
-                              ],
-                            );
-                          }).toList();
-                        },
-                        items: ['Terbaru ke Lama', 'Lama ke Terbaru'].map((e) {
-                          return DropdownMenuItem(
-                            value: e,
-                            child:
-                                Text(e, style: TextStyle(color: Colors.black)),
-                          );
-                        }).toList(),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: const Color.fromARGB(255, 127, 157, 195),
+                        width: 1,
+                      ),
+                    ),
+                    child: PopupMenuButton<String>(
+                      initialValue: selectedFilter,
+                      offset: const Offset(0, 40),
+                      onSelected: (String newValue) {
+                        setState(() {
+                          selectedFilter = newValue;
+                        });
+                      },
+                      itemBuilder: (BuildContext context) => [
+                        'Semua',
+                        'Belum dibaca',
+                        'Pengajuan',
+                        'Tugas',
+                        'Lainnya'
+                      ].map((String value) {
+                        return PopupMenuItem<String>(
+                          value: value,
+                          height: 35,
+                          child: Text(
+                            value,
+                            style: const TextStyle(
+                              color: Color.fromARGB(255, 127, 157, 195),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                selectedFilter,
+                                style: const TextStyle(
+                                  color: Color.fromARGB(255, 127, 157, 195),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_drop_down,
+                              color: Color.fromARGB(255, 127, 157, 195),
+                              size: 16,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-
-                SizedBox(width: 16), // Jarak antar dropdown
-
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: selectedFilter,
-                        dropdownColor: Colors.white,
-                        style: TextStyle(color: Colors.black),
-                        isExpanded: true,
-                        icon: SizedBox
-                            .shrink(), // Hilangkan panah segitiga default
-                        onChanged: (val) {
-                          setState(() {
-                            selectedFilter = val!;
-                          });
-                        },
-                        selectedItemBuilder: (context) {
-                          return ['Semua', 'Belum dibaca', 'Pengajuan', 'Tugas']
-                              .map((e) {
-                            return Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.end, // Rata kanan
-                              children: [
-                                Icon(Icons.arrow_drop_down,
-                                    color: Colors.black, size: 16),
-                                SizedBox(
-                                    width: 6), // Jarak antara teks dan ikon
-                                Text(e, style: TextStyle(color: Colors.black)),
-                                SizedBox(
-                                    width: 6), // Jarak antara teks dan panah
-
-                                Icon(Icons.filter_alt_outlined,
-                                    color:
-                                        Colors.black), // Ikon di kanan // Panah
-                              ],
-                            );
-                          }).toList();
-                        },
-                        items: ['Semua', 'Belum dibaca', 'Pengajuan', 'Tugas']
-                            .map((e) {
-                          return DropdownMenuItem(
-                            value: e,
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.end, // Rata kanan
-                              children: [
-                                Text(e, style: TextStyle(color: Colors.black)),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                )
               ],
             ),
             const SizedBox(height: 10),
+
+            // List Notifikasi
             ...grouped.entries.map((entry) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(entry.key,
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  ...entry.value.asMap().entries.map((e) {
-                    int index = notifications.indexOf(e.value);
-                    var notif = e.value;
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                      entry.key,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  ...entry.value.map((notif) {
+                    int index = notifications.indexOf(notif);
                     return Dismissible(
                       key: Key(notif['title'] + notif['time']),
                       direction: DismissDirection.horizontal,
                       onDismissed: (direction) {
                         if (direction == DismissDirection.endToStart) {
                           removeNotification(index);
-                        } else if (direction == DismissDirection.startToEnd) {
+                        } else {
                           archiveNotification(index);
                         }
                       },
                       background: Container(
                         color: Colors.orangeAccent,
                         alignment: Alignment.centerLeft,
-                        padding: EdgeInsets.only(left: 20),
-                        child: Icon(Icons.archive, color: Colors.white),
+                        padding: const EdgeInsets.only(left: 20),
+                        child: const Icon(Icons.archive, color: Colors.white),
                       ),
                       secondaryBackground: Container(
                         color: Colors.redAccent,
                         alignment: Alignment.centerRight,
-                        padding: EdgeInsets.only(right: 20),
-                        child: Icon(Icons.delete, color: Colors.white),
+                        padding: const EdgeInsets.only(right: 20),
+                        child: const Icon(Icons.delete, color: Colors.white),
                       ),
                       child: Card(
-                        elevation: 3,
+                        elevation: 2,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: ListTile(
                           leading: Icon(
                             notif['category'] == 'pengajuan'
@@ -324,9 +319,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(notif['time'],
-                                  style: TextStyle(fontSize: 12)),
+                                  style: const TextStyle(fontSize: 12)),
                               if (!notif['read'])
-                                Icon(Icons.circle, size: 10, color: Colors.red)
+                                const Icon(Icons.circle, size: 10, color: Colors.red),
                             ],
                           ),
                           onTap: () {

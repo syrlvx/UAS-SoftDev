@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:purelux/screens/detail_karyawan.dart';
 
 class DataAdminScreen extends StatefulWidget {
   const DataAdminScreen({super.key});
@@ -9,228 +11,347 @@ class DataAdminScreen extends StatefulWidget {
 }
 
 class _DataAdminScreenState extends State<DataAdminScreen> {
-  String selectedMonth = 'Apr - 2022';
-  final List<String> months = ['Mar - 2022', 'Apr - 2022', 'May - 2022'];
+  final List<Map<String, String>> dummyEmployees = [
+    {
+      "id": "1",
+      "name": "Sherly Olivia",
+      "email": "sherly@example.com",
+      "position": "Frontend Developer",
+    },
+    {
+      "id": "2",
+      "name": "Raka Wijaya",
+      "email": "raka@example.com",
+      "position": "Backend Developer",
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF001F3D), // Dark Navy Blue
-              Color(0xFFFFFFFF), // White
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+      appBar: AppBar(
+        title: Text(
+          'Data Karyawan',
+          style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold, color: Colors.black), // Black text
         ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildRekapAbsensi(),
-                  const SizedBox(height: 20),
-                  _buildMenuItem(Icons.calendar_today, 'Rekap Absensi',
-                      'Detail rekapitulasi absensimu'),
-                  _buildMenuItem(Icons.description, 'Rekap Izin',
-                      'Daftar pengajuan izin & cuti kamu'),
-                  _buildMenuItem(Icons.access_time_filled, 'Rekap Lembur',
-                      'Laporan rekapitulasi lemburmu'),
-                  _buildMenuItem(Icons.task, 'Rekap Tugas',
-                      'Tugas-tugas yang diberikan kepadamu'),
-                ],
-              ),
-            ),
+        backgroundColor: const Color(0xFF001F3D),
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add),
+            onPressed: _showAddEmployeeDialog,
+            tooltip: "Tambah Karyawan",
           ),
-        ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildRekapAbsensi() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Judul + Dropdown
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Rekap Absensi',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const AbsensiPieChart(),
+          const SizedBox(height: 20),
+          ...dummyEmployees.map((employee) {
+            return Card(
+              color: Colors.white, // Set the card color to white
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white, // Warna dropdown
-                borderRadius: BorderRadius.circular(20),
-                border:
-                    Border.all(color: Colors.grey.shade300), // Biar ada batas
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  dropdownColor:
-                      Colors.white, // Pastikan dropdown list juga putih
-                  value: selectedMonth,
-                  items: months.map((month) {
-                    return DropdownMenuItem(
-                      value: month,
-                      child: Text(
-                        month,
-                        style: GoogleFonts.poppins(color: Colors.black),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedMonth = value!;
-                    });
-                  },
-                  icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ListTile(
+                leading: const Icon(Icons.person),
+                title: Text(
+                  employee["name"] ?? "",
+                  style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black), // Black text
                 ),
+                subtitle: Text(
+                  "${employee["position"]} - ${employee["email"]}",
+                  style: GoogleFonts.poppins(
+                      fontSize: 13, color: Colors.black), // Black text
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          DetailKaryawanScreen(data: employee),
+                    ),
+                  );
+                },
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // Card isi rekapnya
-        Container(
-          padding: const EdgeInsets.all(16),
-          margin: const EdgeInsets.only(top: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              )
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 3 di atas
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildAbsensiCard('Hadir', '8 Hari', Colors.green),
-                  _buildAbsensiCard('Alpa', '1 Hari', Colors.red),
-                  _buildAbsensiCard('Lembur', '6 kali', Colors.pink),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // 2 di bawah
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildAbsensiCard('Izin', '8 Hari', Colors.blue),
-                  _buildAbsensiCard('Cuti', '1 Hari', Colors.orange),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // 3 terakhir
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildAbsensiCard('Terlambat', '1 Hari', Colors.amber),
-                  _buildAbsensiCard('Pulang Cepat', '8 Hari', Colors.lightBlue),
-                  _buildAbsensiCard(
-                      'Tidak Absen Pulang', '1 Hari', Colors.purpleAccent),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAbsensiCard(String title, String value, Color color) {
-    return Flexible(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.50),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              value,
-              style: GoogleFonts.poppins(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              height: 4,
-              width: 60, // Panjang garis bawah
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ],
-        ),
+            );
+          }),
+        ],
       ),
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String title, String subtitle) {
+  void _showAddEmployeeDialog() {
+    final nameController = TextEditingController();
+    final emailController = TextEditingController();
+    final positionController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Tambah Karyawan', style: GoogleFonts.poppins()),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildInputField('Nama Lengkap', nameController),
+                const SizedBox(height: 10),
+                _buildInputField('Email', emailController),
+                const SizedBox(height: 10),
+                _buildInputField('Jabatan', positionController),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Batal', style: GoogleFonts.poppins()),
+              onPressed: () => Navigator.pop(context),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF001F3D),
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Simpan', style: GoogleFonts.poppins()),
+              onPressed: () {
+                setState(() {
+                  dummyEmployees.add({
+                    "name": nameController.text,
+                    "email": emailController.text,
+                    "position": positionController.text,
+                  });
+                });
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildInputField(String label, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.poppins(),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Colors.grey.shade100,
+      ),
+    );
+  }
+}
+
+class AbsensiPieChart extends StatelessWidget {
+  const AbsensiPieChart({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final absensiData = [
+      {"label": "Hadir", "value": 50.0, "color": Colors.blue},
+      {"label": "Terlambat", "value": 15.0, "color": Colors.lightBlue},
+      {"label": "Izin", "value": 0.0, "color": Colors.green},
+      {"label": "Cuti", "value": 2.0, "color": Colors.orange},
+      {"label": "Belum Absen", "value": 4.0, "color": Colors.red},
+    ];
+
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Icon(icon, size: 28, color: Colors.black),
-        title: Text(title,
-            style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold, color: Colors.black)),
-        subtitle:
-            Text(subtitle, style: GoogleFonts.poppins(color: Colors.black54)),
-        trailing:
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black),
-        onTap: () {
-          // Handle tap event
-        },
-      ),
-    );
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  "Selasa, 07 Januari 2023",
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.black, // Changed to black
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 35,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.calendar_today,
+                      size: 16, color: Colors.black),
+                  label: Text(
+                    "Kalender Absensi",
+                    style:
+                        GoogleFonts.poppins(fontSize: 12, color: Colors.black),
+                  ),
+                  onPressed: () {},
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.yellow[700],
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  child: Text(
+                    "Lihat Semua",
+                    style:
+                        GoogleFonts.poppins(fontSize: 12, color: Colors.black),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(
+                height: 70), // Menambahkan jarak agar Pie Chart lebih terpisah
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Pie Chart di kiri
+                Expanded(
+                  flex: 2,
+                  child: AspectRatio(
+                    aspectRatio: 1.3,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // PieChart dipindahkan ke dalam Padding biar hanya pie-nya yang geser
+                        Padding(
+                          padding: const EdgeInsets.only(left: 100),
+                          child: PieChart(
+                            PieChartData(
+                              centerSpaceRadius: 50,
+                              sectionsSpace: 2,
+                              centerSpaceColor: Colors.white,
+                              sections: absensiData
+                                  .where((e) => (e['value'] as double) > 0)
+                                  .map((e) => PieChartSectionData(
+                                        color: e['color'] as Color,
+                                        value: e['value'] as double,
+                                        title: '',
+                                        radius: 50,
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+
+                        // Tulisan tetap center, tidak ikut padding
+
+                        Transform.translate(
+                          offset: Offset(50, 0), // Geser ke kanan 10 pixel
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                "Belum Absen",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                "${(absensiData.firstWhere((e) => e['label'] == 'Belum Absen', orElse: () => {
+                                      'value': 0
+                                    })['value'] as num).toInt()}",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(
+                    width:
+                        120), // Menambahkan jarak agar label tidak terlalu dekat dengan Pie Chart
+
+                // Label warna di kanan
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: absensiData.map((entry) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: entry['color'] as Color,
+                              radius: 5,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              entry['label'] as String,
+                              style: GoogleFonts.poppins(
+                                  fontSize: 12, color: Colors.black),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 50),
+
+            // Statistik angka tetap di bawah
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: absensiData
+                  .where((e) => e['label'] != null)
+                  .map((e) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              e['label'] as String,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: Colors.black,
+                              ),
+                            ),
+                            Text(
+                              "${(e['value'] as double).toInt()}",
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            ),
+          ]),
+        ));
   }
 }

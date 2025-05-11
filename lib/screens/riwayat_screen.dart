@@ -3,7 +3,10 @@ import 'package:intl/intl.dart';
 import 'package:purelux/widgets/bottom_nav_bar.dart';
 
 class RiwayatScreen extends StatefulWidget {
+  const RiwayatScreen({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _RiwayatScreenState createState() => _RiwayatScreenState();
 }
 
@@ -56,13 +59,16 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       length: 3,
       child: Scaffold(
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(100),
+          preferredSize: const Size.fromHeight(300),
           child: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blueAccent, Colors.indigo],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF001F3D), // Biru navy gelap
+                  Color(0xFFFFFFFF)
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
             ),
             child: SafeArea(
@@ -72,17 +78,17 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.arrow_back, color: Colors.white),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => BottomNavBar()),
+                              builder: (context) => const BottomNavBar()),
                         );
                       },
                     ),
-                    Spacer(),
-                    Text(
+                    const Spacer(),
+                    const Text(
                       'Riwayat',
                       style: TextStyle(
                         fontSize: 24,
@@ -90,7 +96,10 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                         color: Colors.white,
                       ),
                     ),
-                    Spacer(),
+                    const SizedBox(
+                        height: 100), // Tambahkan ruang agar isi turun
+
+                    const Spacer(),
                   ],
                 ),
               ),
@@ -101,7 +110,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
           children: [
             Container(
               color: Colors.white,
-              child: TabBar(
+              child: const TabBar(
                 indicatorColor: Color.fromARGB(255, 127, 157, 195),
                 labelColor: Colors.black,
                 unselectedLabelColor: Colors.grey,
@@ -112,90 +121,192 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  // Sort Button
-                  PopupMenuButton<String>(
-                    icon: Row(
-                      children: [
-                        Icon(Icons.sort, color: Colors.blue), // Ikon tetap biru
-                        SizedBox(width: 4),
-                        Text('Sort',
-                            style: TextStyle(
-                                color: Colors.blue)), // Teks tetap biru
-                      ],
-                    ),
-                    onSelected: (value) {
-                      setState(() {
-                        sortAscending = (value == 'Terlama ke Terbaru');
-                      });
-                    },
-                    color:
-                        Colors.white, // Mengubah background menu menjadi putih
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                          8.0), // Menambahkan pembulatan pada sudut
-                    ),
-                    elevation:
-                        4, // Menambahkan sedikit bayangan agar lebih jelas
-                    itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<String>>[
-                      PopupMenuItem<String>(
-                        value: 'Terbaru ke Terlama',
-                        child: Container(
-                          color: Colors
-                              .white, // Mengubah background item menjadi putih
-                          padding: const EdgeInsets.symmetric(vertical: 5),
-                          child: Text('Terbaru ke Terlama'),
-                        ),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'Terlama ke Terbaru',
-                        child: Container(
-                          color: Colors
-                              .white, // Mengubah background item menjadi putih
-                          padding: const EdgeInsets.symmetric(vertical: 5),
-                          child: Text('Terlama ke Terbaru'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Spacer(),
-                  // Status Filter
-                  DropdownButton<String>(
-                    value: selectedStatus,
-                    onChanged: (newValue) {
-                      setState(() {
-                        selectedStatus = newValue!;
-                      });
-                    },
-                    items: [
-                      'Semua',
-                      'Hadir',
-                      'Cuti Sakit',
-                      'Disetujui',
-                      'Tidak Hadir',
-                      'Pending'
-                    ].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
-            ),
             Expanded(
               child: Container(
                 color: Colors.white,
-                child: TabBarView(
+                child: Stack(
                   children: [
-                    _buildRiwayatTab('Absensi'),
-                    _buildRiwayatTab('Izin & Cuti'),
-                    _buildRiwayatTab('Lembur'),
+                    Positioned(
+                      left: 16,
+                      top: 1,
+                      child: PopupMenuButton<String>(
+                        icon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.sort,
+                              color: Color.fromARGB(255, 127, 157, 195),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              sortAscending ? 'Terlama' : 'Terbaru',
+                              style: const TextStyle(
+                                color: Color.fromARGB(255, 127, 157, 195),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        offset: const Offset(0, 30),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        color: Colors.white,
+                        elevation: 4,
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'Terbaru',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.arrow_upward,
+                                  color: !sortAscending
+                                      ? const Color.fromARGB(255, 127, 157, 195)
+                                      : Colors.grey,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Terbaru',
+                                  style: TextStyle(
+                                    color: !sortAscending
+                                        ? const Color.fromARGB(
+                                            255, 127, 157, 195)
+                                        : Colors.grey,
+                                    fontWeight: !sortAscending
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'Terlama',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.arrow_downward,
+                                  color: sortAscending
+                                      ? const Color.fromARGB(255, 127, 157, 195)
+                                      : Colors.grey,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Terlama',
+                                  style: TextStyle(
+                                    color: sortAscending
+                                        ? const Color.fromARGB(
+                                            255, 127, 157, 195)
+                                        : Colors.grey,
+                                    fontWeight: sortAscending
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        onSelected: (value) {
+                          setState(() {
+                            sortAscending = (value == 'Terlama');
+                          });
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      right: 16,
+                      top: 7,
+                      child: SizedBox(
+                        width: 100,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color.fromARGB(255, 127, 157, 195),
+                              width: 1,
+                            ),
+                          ),
+                          child: PopupMenuButton<String>(
+                            initialValue: selectedStatus,
+                            offset: const Offset(0, 30),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      selectedStatus,
+                                      style: const TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 127, 157, 195),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.arrow_drop_down,
+                                    color: Color.fromARGB(255, 127, 157, 195),
+                                    size: 16,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            itemBuilder: (BuildContext context) => [
+                              'Semua',
+                              'Hadir',
+                              'Tidak Hadir',
+                              'Terlambat',
+                            ].map((String value) {
+                              return PopupMenuItem<String>(
+                                value: value,
+                                height: 35,
+                                child: Text(
+                                  value,
+                                  style: const TextStyle(
+                                    color: Color.fromARGB(255, 127, 157, 195),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onSelected: (String newValue) {
+                              setState(() {
+                                selectedStatus = newValue;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: 40,
+                      bottom: 0,
+                      child: Container(
+                        color: Colors.white,
+                        child: TabBarView(
+                          children: [
+                            _buildRiwayatTab('Absensi'),
+                            _buildRiwayatTab('Izin & Cuti'),
+                            _buildRiwayatTab('Lembur'),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -227,25 +338,25 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             color: Colors.blue.shade50,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Detail Riwayat $jenis',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.blue,
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text(
                   'Informasi lebih lanjut tentang riwayat $jenis, termasuk status dan tanggal terkait.',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.black54,
                   ),
@@ -253,7 +364,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               ],
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Flexible(
             child: ListView.builder(
               itemCount: filteredData.length,
@@ -264,7 +375,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                 final waktu = item['jam']!.substring(0, 8);
 
                 return Card(
-                  margin: EdgeInsets.symmetric(vertical: 8),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
                   elevation: 3,
                   child: Container(
                     decoration: BoxDecoration(
@@ -275,7 +386,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                       children: [
                         Container(
                           color: Colors.blue,
-                          padding: EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
                           child: Text(
                             '${item['jenis']} - ${item['status']}',
                             style: TextStyle(
@@ -288,7 +399,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
                           color: Colors.white,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -298,25 +409,25 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.location_on,
                                       color: Colors.green,
                                       size: 18,
                                     ),
-                                    SizedBox(width: 5),
+                                    const SizedBox(width: 5),
                                     Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           tanggal,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 14,
                                             color: Colors.black54,
                                           ),
                                         ),
-                                        SizedBox(height: 3),
-                                        Text(
+                                        const SizedBox(height: 3),
+                                        const Text(
                                           'Waktu Mulai',
                                           style: TextStyle(
                                             fontSize: 12,
@@ -324,10 +435,10 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                        SizedBox(height: 3),
+                                        const SizedBox(height: 3),
                                         Text(
                                           waktu,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 14,
                                             color: Colors.black54,
                                           ),
@@ -338,32 +449,32 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                 ),
                               ),
 
-                              SizedBox(width: 10),
+                              const SizedBox(width: 10),
 
                               // KANAN (duplikat)
                               Expanded(
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.access_time,
                                       color: Colors.orange,
                                       size: 18,
                                     ),
-                                    SizedBox(width: 5),
+                                    const SizedBox(width: 5),
                                     Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           tanggal,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 14,
                                             color: Colors.black54,
                                           ),
                                         ),
-                                        SizedBox(height: 3),
-                                        Text(
+                                        const SizedBox(height: 3),
+                                        const Text(
                                           'Waktu Selesai',
                                           style: TextStyle(
                                             fontSize: 12,
@@ -371,10 +482,10 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                        SizedBox(height: 3),
+                                        const SizedBox(height: 3),
                                         Text(
                                           waktu,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 14,
                                             color: Colors.black54,
                                           ),

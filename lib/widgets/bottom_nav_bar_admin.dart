@@ -5,7 +5,10 @@ import 'package:purelux/screens/pengajuan_admin.dart';
 import 'package:purelux/screens/tugas_admin.dart';
 
 class BottomNavBarAdmin extends StatefulWidget {
+  const BottomNavBarAdmin({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _BottomNavBarAdminState createState() => _BottomNavBarAdminState();
 }
 
@@ -15,8 +18,8 @@ class _BottomNavBarAdminState extends State<BottomNavBarAdmin> {
   final List<Widget> _screens = [
     HomeAdminScreen(),
     PengajuanAdminScreen(),
-    TugasAdminScreen(),
-    DataAdminScreen(),
+    const TugasAdminScreen(),
+    const DataAdminScreen(),
   ];
 
   @override
@@ -34,7 +37,7 @@ class _BottomNavBarAdminState extends State<BottomNavBarAdmin> {
           children: [
             Container(
               height: 1,
-              color: Color(0xFFB0BEC5),
+              color: const Color(0xFFB0BEC5),
             ),
             SizedBox(
               height: 80,
@@ -42,7 +45,7 @@ class _BottomNavBarAdminState extends State<BottomNavBarAdmin> {
                 elevation: 0,
                 backgroundColor: Colors.white,
                 currentIndex: _currentIndex,
-                selectedItemColor: Color.fromARGB(255, 127, 157, 195),
+                selectedItemColor: const Color.fromARGB(255, 127, 157, 195),
                 unselectedItemColor: Colors.grey,
                 type: BottomNavigationBarType.fixed,
                 selectedFontSize: 14,

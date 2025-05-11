@@ -7,6 +7,7 @@ class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _AccountScreenState createState() => _AccountScreenState();
 }
 
@@ -37,9 +38,8 @@ class _AccountScreenState extends State<AccountScreen> {
           });
         }
       }
-    } catch (e) {
-      print('Gagal ambil data user: $e');
-    }
+      // ignore: empty_catches
+    } catch (e) {}
   }
 
   @override
@@ -47,14 +47,14 @@ class _AccountScreenState extends State<AccountScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(120), // Ukuran tinggi AppBar
+        preferredSize: const Size.fromHeight(120), // Ukuran tinggi AppBar
         child: AppBar(
-          title: Text("Akun Saya", style: TextStyle(color: Colors.white)),
-          iconTheme: IconThemeData(color: Colors.white),
+          title: const Text("Akun Saya", style: TextStyle(color: Colors.white)),
+          iconTheme: const IconThemeData(color: Colors.white),
           backgroundColor: Colors.transparent,
           elevation: 0,
           flexibleSpace: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
                   Color(0xFF001F3D), // Biru navy gelap
@@ -68,9 +68,9 @@ class _AccountScreenState extends State<AccountScreen> {
         ),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -81,13 +81,13 @@ class _AccountScreenState extends State<AccountScreen> {
                       (username?.isNotEmpty == true)
                           ? username![0].toUpperCase()
                           : '?',
-                      style: TextStyle(fontSize: 36, color: Colors.white),
+                      style: const TextStyle(fontSize: 36, color: Colors.white),
                     ),
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Text(
                     username ?? 'User',
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 20,
                         color: Colors.black,
                         fontWeight: FontWeight.bold),
@@ -98,7 +98,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Card(
                     color: Colors.white,
                     elevation: 2,
@@ -110,20 +110,23 @@ class _AccountScreenState extends State<AccountScreen> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
+                                // ignore: deprecated_member_use
                                 color: Colors.grey.withOpacity(0.2),
                                 blurRadius: 5,
                                 spreadRadius: 1,
-                                offset: Offset(0, -20)),
+                                offset: const Offset(0, -20)),
                             BoxShadow(
+                                // ignore: deprecated_member_use
                                 color: Colors.grey.withOpacity(0.2),
                                 blurRadius: 5,
                                 spreadRadius: 1,
-                                offset: Offset(2, 0)),
+                                offset: const Offset(2, 0)),
                             BoxShadow(
+                                // ignore: deprecated_member_use
                                 color: Colors.grey.withOpacity(0.2),
                                 blurRadius: 5,
                                 spreadRadius: 1,
-                                offset: Offset(-2, 0)),
+                                offset: const Offset(-2, 0)),
                           ],
                         ),
                         child: Padding(
@@ -131,16 +134,16 @@ class _AccountScreenState extends State<AccountScreen> {
                           child: Column(
                             children: [
                               ListTile(
-                                leading: Icon(Icons.person_outline),
-                                title: Text("Ubah Username"),
-                                trailing: Icon(Icons.edit),
+                                leading: const Icon(Icons.person_outline),
+                                title: const Text("Ubah Username"),
+                                trailing: const Icon(Icons.edit),
                                 onTap: () => _editUsernameDialog(context),
                               ),
-                              Divider(height: 1),
+                              const Divider(height: 1),
                               ListTile(
-                                leading: Icon(Icons.lock_outline),
-                                title: Text("Ubah Password"),
-                                trailing: Icon(Icons.edit),
+                                leading: const Icon(Icons.lock_outline),
+                                title: const Text("Ubah Password"),
+                                trailing: const Icon(Icons.edit),
                                 onTap: () => _editPasswordDialog(context),
                               ),
                             ],
@@ -149,20 +152,21 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 30),
                   ElevatedButton.icon(
                     onPressed: () => _showLogoutDialog(context),
-                    icon: Icon(Icons.logout),
-                    label: Text("Logout"),
+                    icon: const Icon(Icons.logout),
+                    label: const Text("Logout"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
-                  SizedBox(height: 30),
-                  Text("Versi 1.0.0", style: TextStyle(color: Colors.grey)),
-                  Text("© 2025 YourCompany",
+                  const SizedBox(height: 150),
+                  const Text("Versi 1.0.0",
+                      style: TextStyle(color: Colors.grey)),
+                  const Text("© 2025 PureLux",
                       style: TextStyle(color: Colors.grey)),
                 ],
               ),
@@ -175,14 +179,15 @@ class _AccountScreenState extends State<AccountScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Ubah Username"),
+        title: const Text("Ubah Username"),
         content: TextField(
           controller: controller,
-          decoration: InputDecoration(border: OutlineInputBorder()),
+          decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context), child: Text("Batal")),
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal")),
           ElevatedButton(
             onPressed: () async {
               final newUsername = controller.text.trim();
@@ -196,38 +201,6 @@ class _AccountScreenState extends State<AccountScreen> {
                 });
                 setState(() => username = newUsername);
                 Navigator.pop(context);
-              }
-            },
-            child: Text("Simpan"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _editEmailDialog(BuildContext context) {
-    final controller = TextEditingController(text: email ?? '');
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Ubah Email"),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(border: OutlineInputBorder()),
-          keyboardType: TextInputType.emailAddress,
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context), child: Text("Batal")),
-          ElevatedButton(
-            onPressed: () async {
-              try {
-                await auth.currentUser?.updateEmail(controller.text.trim());
-                setState(() => email = controller.text.trim());
-                Navigator.pop(context);
-              } catch (e) {
-                Navigator.pop(context);
-                _showError(context, "Gagal update email: $e");
               }
             },
             child: Text("Simpan"),

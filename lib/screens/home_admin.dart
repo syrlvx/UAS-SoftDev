@@ -55,7 +55,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _currentTime = _getCurrentTime();
       });
@@ -123,10 +123,10 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(200),
+          preferredSize: const Size.fromHeight(200),
           child: Container(
             height: 200,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFF001F3D), Color(0xFFFFFFFF)],
                 begin: Alignment.topCenter,
@@ -139,30 +139,30 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
             ),
             child: SafeArea(
               child: Padding(
-                padding:
-                    EdgeInsets.only(top: 20, bottom: 20, left: 16, right: 16),
+                padding: const EdgeInsets.only(
+                    top: 20, bottom: 20, left: 16, right: 16),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.account_circle,
+                      icon: const Icon(Icons.account_circle,
                           size: 60, color: Colors.white),
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => AccountScreen()),
+                              builder: (context) => const AccountScreen()),
                         );
                       },
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           username ?? 'User',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 20,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -170,7 +170,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                         ),
                         Text(
                           role ?? '',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             color: Colors.white70,
                           ),
@@ -187,7 +187,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
           children: [
             Container(
               color: Colors.white,
-              child: TabBar(
+              child: const TabBar(
                 indicatorColor: Colors.blue,
                 labelColor: Colors.black,
                 unselectedLabelColor: Colors.grey,
@@ -203,7 +203,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
               child: Row(
                 children: [
                   PopupMenuButton<String>(
-                    icon: Row(
+                    icon: const Row(
                       children: [
                         Icon(Icons.sort, color: Colors.blue),
                         SizedBox(width: 4),
@@ -216,15 +216,15 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                       });
                     },
                     itemBuilder: (BuildContext context) => [
-                      PopupMenuItem<String>(
+                      const PopupMenuItem<String>(
                           value: 'Terbaru ke Terlama',
                           child: Text('Terbaru ke Terlama')),
-                      PopupMenuItem<String>(
+                      const PopupMenuItem<String>(
                           value: 'Terlama ke Terbaru',
                           child: Text('Terlama ke Terbaru')),
                     ],
                   ),
-                  Spacer(),
+                  const Spacer(),
                   DropdownButton<String>(
                     value: selectedStatus,
                     onChanged: (newValue) {
@@ -304,13 +304,14 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
               Text(
                 DateFormat('EEEE, dd MMMM yyyy', 'id_ID')
                     .format(DateTime.parse(date)),
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               ...dateItems.map((item) {
                 final waktu = item['jam']!.substring(0, 8);
 
                 return Card(
-                  margin: EdgeInsets.symmetric(vertical: 8),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
                   elevation: 3,
                   child: Container(
                     decoration: BoxDecoration(
@@ -321,10 +322,10 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                       children: [
                         Container(
                           color: Colors.blue,
-                          padding: EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
                           child: Text(
                             '${item['jenis']} - ${item['status']}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 18,
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -332,7 +333,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
                           color: Colors.white,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -342,13 +343,13 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                                 children: [
                                   Text(
                                     'Karyawan: ${item['employeeName']}',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 14, color: Colors.black54),
                                   ),
-                                  SizedBox(height: 5),
+                                  const SizedBox(height: 5),
                                   Text(
                                     'Waktu Mulai: $waktu',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 14, color: Colors.black54),
                                   ),
                                 ],

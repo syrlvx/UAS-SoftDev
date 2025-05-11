@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:purelux/screens/notifikasi_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ArchivedNotificationsScreen extends StatefulWidget {
   final List<Map<String, dynamic>> archivedNotifications;
 
   const ArchivedNotificationsScreen(
-      {Key? key, required this.archivedNotifications})
-      : super(key: key);
+      {super.key, required this.archivedNotifications});
 
   @override
   State<ArchivedNotificationsScreen> createState() =>
@@ -56,11 +56,11 @@ class _ArchivedNotificationsScreenState
       });
       Navigator.of(context).pop(); // Menutup dialog jika PIN benar
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('PIN berhasil diverifikasi')),
+        const SnackBar(content: Text('PIN berhasil diverifikasi')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('PIN salah, coba lagi')),
+        const SnackBar(content: Text('PIN salah, coba lagi')),
       );
     }
   }
@@ -73,11 +73,11 @@ class _ArchivedNotificationsScreenState
           false, // Membuat dialog tidak bisa ditutup sembarangan
       builder: (context) {
         return AlertDialog(
-          title: Text('Set PIN'),
+          title: const Text('Set PIN'),
           content: TextField(
             controller: _pinController,
             obscureText: true,
-            decoration: InputDecoration(hintText: 'Masukkan PIN baru'),
+            decoration: const InputDecoration(hintText: 'Masukkan PIN baru'),
             keyboardType: TextInputType.number,
           ),
           actions: [
@@ -91,11 +91,11 @@ class _ArchivedNotificationsScreenState
                   Navigator.of(context)
                       .pop(); // Menutup dialog setelah PIN diset
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('PIN berhasil diset')),
+                    const SnackBar(content: Text('PIN berhasil diset')),
                   );
                 }
               },
-              child: Text('Simpan'),
+              child: const Text('Simpan'),
             ),
           ],
         );
@@ -110,17 +110,17 @@ class _ArchivedNotificationsScreenState
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: Text('Masukkan PIN'),
+          title: const Text('Masukkan PIN'),
           content: TextField(
             controller: _pinController,
             obscureText: true,
-            decoration: InputDecoration(hintText: 'Masukkan PIN'),
+            decoration: const InputDecoration(hintText: 'Masukkan PIN'),
             keyboardType: TextInputType.number,
           ),
           actions: [
             TextButton(
               onPressed: _verifyPin,
-              child: Text('Verifikasi'),
+              child: const Text('Verifikasi'),
             ),
           ],
         );
@@ -132,13 +132,24 @@ class _ArchivedNotificationsScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Arsip Notifikasi'),
+        title: const Text('Arsip Notifikasi'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const NotificationScreen()),
+            );
+          },
+        ),
       ),
       body: _isPinSet
           ? _notifications.isEmpty
-              ? Center(child: Text('Tidak ada notifikasi yang diarsipkan.'))
+              ? const Center(
+                  child: Text('Tidak ada notifikasi yang diarsipkan.'))
               : ListView.builder(
-                  padding: EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
                   itemCount: _notifications.length,
                   itemBuilder: (context, index) {
                     var notif = _notifications[index];
@@ -150,7 +161,7 @@ class _ArchivedNotificationsScreenState
                     );
                   },
                 )
-          : Center(child: CircularProgressIndicator()),
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }

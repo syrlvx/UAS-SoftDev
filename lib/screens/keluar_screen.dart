@@ -77,7 +77,7 @@ class _KeluarScreenState extends State<KeluarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Keluar Screen")),
+      appBar: AppBar(title: const Text("Keluar Screen")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

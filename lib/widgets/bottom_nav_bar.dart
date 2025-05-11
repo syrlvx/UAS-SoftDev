@@ -4,7 +4,10 @@ import 'package:purelux/screens/home_screen.dart';
 import 'package:purelux/screens/masuk_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
+  const BottomNavBar({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _BottomNavBarState createState() => _BottomNavBarState();
 }
 
@@ -14,7 +17,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   final List<Widget> _pages = [
     HomeScreen(), // Panggil HomeScreen dari file home_screen.dart
     MasukScreen(), // Panggil AbsensiScreen dari file absensi_screen.dart
-    DataKaryawanScreen(), // Panggil DataAbsensiScreen dari file data_absensi_screen.dart
+    const DataKaryawanScreen(), // Panggil DataAbsensiScreen dari file data_absensi_screen.dart
   ];
 
   @override
@@ -34,7 +37,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   navItem(Icons.home, "Beranda", 0),
-                  SizedBox(width: 60), // space tengah
+                  const SizedBox(width: 60), // space tengah
                   navItem(Icons.people, "Data Absensi", 2),
                 ],
               ),
@@ -47,7 +50,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             right: 0,
             child: Container(
               height: 1,
-              color: Color(0xFFB0BEC5), // Warna garis
+              color: const Color(0xFFB0BEC5), // Warna garis
             ),
           ),
           Positioned(
@@ -62,7 +65,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
               child: Column(
                 children: [
                   AnimatedContainer(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     height: 70,
                     width: 70,
                     decoration: BoxDecoration(
@@ -71,28 +74,30 @@ class _BottomNavBarState extends State<BottomNavBar> {
                       boxShadow: [
                         BoxShadow(
                           color: _currentIndex == 1
+                              // ignore: deprecated_member_use
                               ? Colors.blue.withOpacity(
                                   0.5) // Efek bayangan biru saat dipencet
                               : Colors.black
+                                  // ignore: deprecated_member_use
                                   .withOpacity(0.4), // Bayangan default
                           blurRadius: 15,
-                          offset: Offset(0, 4),
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.access_time_filled,
                       color:
                           Color.fromARGB(255, 127, 157, 195), // Ikon tetap biru
                       size: 30,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     "Absensi",
                     style: TextStyle(
                       color: _currentIndex == 1
-                          ? Color.fromARGB(255, 127, 157, 195)
+                          ? const Color.fromARGB(255, 127, 157, 195)
                           : Colors.grey, // Teks jadi biru saat dipencet
                       fontWeight: FontWeight.w500,
                       fontSize: 12,
@@ -120,14 +125,14 @@ class _BottomNavBarState extends State<BottomNavBar> {
         children: [
           Icon(icon,
               color: _currentIndex == index
-                  ? Color.fromARGB(255, 127, 157, 195)
+                  ? const Color.fromARGB(255, 127, 157, 195)
                   : Colors.grey),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
               color: _currentIndex == index
-                  ? Color.fromARGB(255, 127, 157, 195)
+                  ? const Color.fromARGB(255, 127, 157, 195)
                   : Colors.grey,
               fontWeight: FontWeight.w600,
               fontSize: 12,
@@ -142,7 +147,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
 class TopCurveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    final double radius = 35.0;
+    const double radius = 35.0;
     final double centerX = size.width / 2;
 
     Path path = Path();
@@ -153,7 +158,7 @@ class TopCurveClipper extends CustomClipper<Path> {
     path.quadraticBezierTo(centerX - radius, 0, centerX - radius, -20);
     path.arcToPoint(
       Offset(centerX + radius, -20),
-      radius: Radius.circular(radius),
+      radius: const Radius.circular(radius),
       clockwise: false,
     );
     path.quadraticBezierTo(centerX + radius, 0, centerX + radius + 15, 0);

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:purelux/screens/PetaScreen.dart';
 
 class MasukScreen extends StatefulWidget {
   @override
@@ -16,8 +17,9 @@ class _MasukScreenState extends State<MasukScreen> {
   String? _waktuMasuk;
   String? _waktuKeluar;
   bool _sudahMasuk = false;
-  bool _sudahKeluar = false; // Flag untuk cek keluar
+  bool _sudahKeluar = false;
   bool _loading = true;
+  Position? _currentPosition; // Diperlukan untuk akses lokasi
 
   @override
   void initState() {
@@ -54,6 +56,8 @@ class _MasukScreenState extends State<MasukScreen> {
 
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
+
+    _currentPosition = position; // Simpan posisi ke variabel global
 
     try {
       List<Placemark> placemarks =
@@ -92,7 +96,7 @@ class _MasukScreenState extends State<MasukScreen> {
       if (keluarDoc.exists) {
         Timestamp ts = keluarDoc['timestamp'];
         _waktuKeluar = DateFormat('HH:mm').format(ts.toDate());
-        _sudahKeluar = true; // Sudah keluar, set flag keluar
+        _sudahKeluar = true;
       }
 
       _loading = false;
@@ -129,7 +133,7 @@ class _MasukScreenState extends State<MasukScreen> {
       setState(() {
         _waktuKeluar = nowFormatted;
         _sudahMasuk = false;
-        _sudahKeluar = true; // Set flag keluar setelah keluar
+        _sudahKeluar = true;
       });
     }
   }
@@ -163,7 +167,7 @@ class _MasukScreenState extends State<MasukScreen> {
                       Text("Waktu Keluar: $_waktuKeluar",
                           style: TextStyle(fontSize: 16, color: Colors.black)),
                     SizedBox(height: 40),
-                    if (!_sudahKeluar) // Hanya tampilkan tombol jika belum keluar
+                    if (!_sudahKeluar)
                       ElevatedButton.icon(
                         icon: Icon(
                           _sudahMasuk ? Icons.logout : Icons.login,
@@ -179,11 +183,28 @@ class _MasukScreenState extends State<MasukScreen> {
                               horizontal: 30, vertical: 14),
                         ),
                         onPressed: () async {
-                          await _handleAbsen();
-                          await _cekStatusAbsen(); // Refresh data setelah absen
+                          if (_currentPosition != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PetaScreen(
+                                  latitude: _currentPosition!.latitude,
+                                  longitude: _currentPosition!.longitude,
+                                ),
+                              ),
+                            );
+                            await _handleAbsen();
+                            await _cekStatusAbsen();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Lokasi belum tersedia'),
+                              ),
+                            );
+                          }
                         },
                       ),
-                    if (_sudahKeluar) // Menampilkan pesan terima kasih
+                    if (_sudahKeluar)
                       Text(
                         'Terima kasih, selamat berlibur!',
                         style: TextStyle(

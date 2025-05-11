@@ -12,106 +12,234 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // background putih
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.blue, // background biru untuk app bar
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back,
-              color: Colors.white), // Tombol back warna putih
-          onPressed: () {
-            // Ganti HomeScreen() dengan screen utama aplikasi Anda
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      BottomNavBar()), // Sesuaikan dengan screen utama
-            );
-          },
+        toolbarHeight: 100,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF001F3D), // Biru navy gelap
+                Color(0xFFFFFFFF), // Putih
+              ],
+            ),
+          ),
         ),
-        title: Text(
-          'Pengajuan', // Teks Pengajuan
-          style: TextStyle(
-            color: Colors.white, // Teks putih
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+        leading: Padding(
+          padding: EdgeInsets.all(8),
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new,
+              color: Colors.white,
+              size: 18,
+            ),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => BottomNavBar()),
+              );
+            },
+          ),
+        ),
+        leadingWidth: 80,
+        title: Center(
+          child: Container(
+            constraints: BoxConstraints(maxWidth: 200),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ShaderMask(
+                  shaderCallback: (bounds) => LinearGradient(
+                    colors: [Colors.white, Colors.white70],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ).createShader(bounds),
+                  child: Text(
+                    "PENGAJUAN",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "[ IZIN & CUTI ]",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.blue[200],
+                    fontSize: 12,
+                    letterSpacing: 3,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         centerTitle: true,
+        actions: [
+          SizedBox(width: 65),
+        ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(35),
+          child: Container(
+            width: double.infinity,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(25),
+                topRight: Radius.circular(25),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  offset: Offset(0, -2),
+                  blurRadius: 5,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: EdgeInsets.only(bottom: 15),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => IzinScreen(),
-                  ),
-                );
-              },
-              child: _buildMenuCard(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              _buildMenuCard(
+                context,
                 Icons.report_problem,
-                'Izin',
-                Colors.blue[50]!,
-                Colors.blue,
-              ),
-            ),
-            SizedBox(height: 20),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
+                'Pengajuan Izin',
+                'Ajukan izin ketidakhadiran',
+                Color(0xFF001F3D),
+                Color(0xFF1E3A8A),
+                () => Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => CutiScreen(),
-                  ),
-                );
-              },
-              child: _buildMenuCard(
-                Icons.beach_access,
-                'Cuti',
-                Colors.orange[50]!,
-                Colors.orange,
+                  MaterialPageRoute(builder: (context) => IzinScreen()),
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: 20),
+              _buildMenuCard(
+                context,
+                Icons.beach_access,
+                'Pengajuan Cuti',
+                'Ajukan cuti tahunan',
+                Color(0xFF001F3D),
+                Color(0xFF1E3A8A),
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CutiScreen()),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildMenuCard(
-      IconData icon, String label, Color backgroundColor, Color iconColor) {
-    return Card(
-      elevation: 5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+    Color gradientStart,
+    Color gradientEnd,
+    VoidCallback onTap,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
       ),
-      child: Container(
-        width: double.infinity,
-        height: 120,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: backgroundColor,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 40, color: iconColor),
-            SizedBox(height: 10),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: iconColor,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(15),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Colors.white],
               ),
+              borderRadius: BorderRadius.circular(15),
             ),
-          ],
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [gradientStart, gradientEnd],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 24),
+                ),
+                SizedBox(width: 15),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF001F3D),
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Color(0xFF1E3A8A),
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

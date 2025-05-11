@@ -119,18 +119,14 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: Colors.white, // Background putih
       appBar: AppBar(
-        toolbarHeight: 100,
+        toolbarHeight: 120,
         automaticallyImplyLeading: false,
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFF001F3D), // Biru navy gelap
-                Color(0xFFFFFFFF), // Putih
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: LinearGradient(colors: [
+              Color(0xFF001F3D), // Biru navy gelap
+              Color(0xFFFFFFFF), // Putih
+            ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
           ),
         ),
         centerTitle: true,
@@ -149,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              SizedBox(height: 80),
+              SizedBox(height: 50),
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -197,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         gradient: LinearGradient(
                           colors: [
                             Color(0xFF001F3D), // Biru navy gelap
-                            Color(0xFFFFFFFF), // Putih
+                            Color(0xFF001F3D)
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,

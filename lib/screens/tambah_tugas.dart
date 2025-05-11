@@ -214,7 +214,8 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => BottomNavBarAdmin()),
+                  MaterialPageRoute(
+                      builder: (context) => const BottomNavBarAdmin()),
                 );
               },
             ),
@@ -317,14 +318,14 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                       child: InputDecorator(
                         decoration: InputDecoration(
                           labelText: "Tanggal",
-                          prefixIcon: Icon(Icons.calendar_today),
+                          prefixIcon: const Icon(Icons.calendar_today),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: Text(
                           "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             color: Colors.black,
                           ),
@@ -340,14 +341,14 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                             child: InputDecorator(
                               decoration: InputDecoration(
                                 labelText: "Mulai",
-                                prefixIcon: Icon(Icons.access_time),
+                                prefixIcon: const Icon(Icons.access_time),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                               child: Text(
                                 startTime.format(context),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.black,
                                 ),
@@ -362,16 +363,16 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                             child: InputDecorator(
                               decoration: InputDecoration(
                                 labelText: "Selesai",
-                                prefixIcon: Icon(Icons.access_time),
+                                prefixIcon: const Icon(Icons.access_time),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                               child: Text(
                                 endTime.format(context),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 16,
-                                  color: Colors.black,
+                                  color: Color.fromARGB(255, 0, 0, 0),
                                 ),
                               ),
                             ),
@@ -394,7 +395,7 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                         child: Ink(
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF001F3D), Color(0xFFFFFFFF)],
+                              colors: [Color(0xFF001F3D), Color(0xFF001F3D)],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                             ),
