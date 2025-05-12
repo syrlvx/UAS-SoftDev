@@ -70,16 +70,6 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  "[ IZIN & CUTI ]",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.blue[200],
-                    fontSize: 12,
-                    letterSpacing: 3,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
               ],
             ),
           ),
@@ -131,8 +121,8 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
                 Icons.report_problem,
                 'Pengajuan Izin',
                 'Ajukan izin ketidakhadiran',
-                Color(0xFF001F3D),
-                Color(0xFF1E3A8A),
+                Color(0xFF001F3D), // Biru navy gelap
+                Color(0xFFFFFFFF), // Putih
                 () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => IzinScreen()),
@@ -144,8 +134,8 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
                 Icons.beach_access,
                 'Pengajuan Cuti',
                 'Ajukan cuti tahunan',
-                Color(0xFF001F3D),
-                Color(0xFF1E3A8A),
+                Color(0xFF001F3D), // Biru navy gelap
+                Color(0xFFFFFFFF), // Putih
                 () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => CutiScreen()),

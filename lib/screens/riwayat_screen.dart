@@ -97,7 +97,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                       ),
                     ),
                     const SizedBox(
-                        height: 100), // Tambahkan ruang agar isi turun
+                        height: 70), // Tambahkan ruang agar isi turun
 
                     const Spacer(),
                   ],

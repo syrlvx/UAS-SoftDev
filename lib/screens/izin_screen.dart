@@ -68,7 +68,7 @@ class _IzinScreenState extends State<IzinScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: Colors.blue,
+              primary: Color(0xFF001F3D),
               onPrimary: Colors.white,
               surface: Colors.white,
               onSurface: Colors.black,
@@ -232,16 +232,6 @@ class _IzinScreenState extends State<IzinScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  "[ PENGAJUAN IZIN ]",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.blue[200],
-                    fontSize: 12,
-                    letterSpacing: 3,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
               ],
             ),
           ),
@@ -310,7 +300,7 @@ class _IzinScreenState extends State<IzinScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+                      color: Color(0xFF001F3D),
                     ),
                   ),
                   SizedBox(height: 20),
@@ -321,19 +311,20 @@ class _IzinScreenState extends State<IzinScreen> {
                         color: Colors.black87, fontWeight: FontWeight.w500),
                     decoration: InputDecoration(
                       labelText: 'Nama',
-                      labelStyle: TextStyle(color: Colors.blue),
-                      prefixIcon: Icon(Icons.person, color: Colors.blue),
+                      labelStyle: TextStyle(color: Color(0xFF001F3D)),
+                      prefixIcon: Icon(Icons.person, color: Color(0xFF001F3D)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Colors.blue),
+                        borderSide: BorderSide(color: Color(0xFF001F3D)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Colors.blue.shade200),
+                        borderSide: BorderSide(color: Color(0xFF001F3D)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Colors.blue, width: 2),
+                        borderSide:
+                            BorderSide(color: Color(0xFF001F3D), width: 2),
                       ),
                       filled: true,
                       fillColor: Colors.grey[100],
@@ -343,25 +334,25 @@ class _IzinScreenState extends State<IzinScreen> {
                   SizedBox(height: 20),
                   InkWell(
                     onTap: () => _selectDate(context),
-                    splashColor: Colors.blue.withOpacity(0.2),
-                    highlightColor: Colors.blue.withOpacity(0.1),
+                    splashColor: Color(0xFF001F3D).withOpacity(0.2),
+                    highlightColor: Color(0xFF001F3D).withOpacity(0.1),
                     child: Container(
                       padding:
                           EdgeInsets.symmetric(horizontal: 12, vertical: 15),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(15),
-                        border: Border.all(color: Colors.blue.shade200),
+                        border: Border.all(color: Color(0xFF001F3D)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.calendar_today, color: Colors.blue),
+                          Icon(Icons.calendar_today, color: Color(0xFF001F3D)),
                           SizedBox(width: 10),
                           Text(
                             "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.blue,
+                              color: Color(0xFF001F3D),
                             ),
                           ),
                         ],
@@ -376,19 +367,21 @@ class _IzinScreenState extends State<IzinScreen> {
                     style: TextStyle(color: Colors.black87),
                     decoration: InputDecoration(
                       labelText: 'Keterangan',
-                      labelStyle: TextStyle(color: Colors.blue),
-                      prefixIcon: Icon(Icons.description, color: Colors.blue),
+                      labelStyle: TextStyle(color: Color(0xFF001F3D)),
+                      prefixIcon:
+                          Icon(Icons.description, color: Color(0xFF001F3D)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Colors.blue),
+                        borderSide: BorderSide(color: Color(0xFF001F3D)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Colors.blue.shade200),
+                        borderSide: BorderSide(color: Color(0xFF001F3D)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Colors.blue, width: 2),
+                        borderSide:
+                            BorderSide(color: Color(0xFF001F3D), width: 2),
                       ),
                       filled: true,
                       fillColor: Colors.white,
@@ -417,11 +410,11 @@ class _IzinScreenState extends State<IzinScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                             colors: [
-                              Color(0xFF0B1033),
-                              Color(0xFF1E3A8A),
+                              Color(0xFF001F3D), // Biru navy gelap
+                              Color(0xFFFFFFFF), // Putih
                             ],
                           ),
                           borderRadius: BorderRadius.circular(15),

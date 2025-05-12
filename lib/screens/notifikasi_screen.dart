@@ -143,8 +143,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: markAllAsRead,
-        icon: const Icon(Icons.done_all),
-        label: const Text("Tandai semua dibaca"),
+        icon: const Icon(Icons.done_all, color: Colors.white),
+        label: const Text(
+          "Tandai semua dibaca",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Color(0xFF001F3D), // warna navy
       ),
       body: RefreshIndicator(
         onRefresh: () async => setState(() {}),
@@ -172,8 +176,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     ],
                   ),
                   itemBuilder: (context) => [
-                    const PopupMenuItem(value: 'Terbaru', child: Text('Terbaru')),
-                    const PopupMenuItem(value: 'Terlama', child: Text('Terlama')),
+                    const PopupMenuItem(
+                        value: 'Terbaru', child: Text('Terbaru')),
+                    const PopupMenuItem(
+                        value: 'Terlama', child: Text('Terlama')),
                   ],
                   onSelected: (value) {
                     setState(() {
@@ -206,7 +212,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         'Belum dibaca',
                         'Pengajuan',
                         'Tugas',
-                        'Lainnya'
                       ].map((String value) {
                         return PopupMenuItem<String>(
                           value: value,
@@ -293,9 +298,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         child: const Icon(Icons.delete, color: Colors.white),
                       ),
                       child: Card(
-                        elevation: 2,
+                        color: Colors.white,
+                        elevation: 2, // tanpa bayangan
+                        shadowColor: Colors.grey.withOpacity(0.3),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                              color: Colors.grey.shade300), // garis tipis
                         ),
                         child: ListTile(
                           leading: Icon(
@@ -304,7 +313,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 : notif['category'] == 'tugas'
                                     ? Icons.assignment
                                     : Icons.notifications_active,
-                            color: Colors.blueAccent,
+                            color: Color(0xFF001F3D),
                           ),
                           title: Text(
                             notif['title'],
@@ -321,7 +330,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               Text(notif['time'],
                                   style: const TextStyle(fontSize: 12)),
                               if (!notif['read'])
-                                const Icon(Icons.circle, size: 10, color: Colors.red),
+                                const Icon(Icons.circle,
+                                    size: 10, color: Colors.red),
                             ],
                           ),
                           onTap: () {

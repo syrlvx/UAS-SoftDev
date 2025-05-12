@@ -193,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         gradient: LinearGradient(
                           colors: [
                             Color(0xFF001F3D), // Biru navy gelap
-                            Color(0xFF001F3D)
+                            Color(0xFFFFFFFF),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,

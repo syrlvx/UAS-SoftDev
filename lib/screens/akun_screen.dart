@@ -7,7 +7,6 @@ class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _AccountScreenState createState() => _AccountScreenState();
 }
 
@@ -15,6 +14,7 @@ class _AccountScreenState extends State<AccountScreen> {
   final auth = FirebaseAuth.instance;
   String? username;
   String? email;
+  String? phoneNumber;
   bool isLoading = true;
 
   @override
@@ -34,12 +34,14 @@ class _AccountScreenState extends State<AccountScreen> {
           setState(() {
             username = doc['username'];
             email = user.email;
+            phoneNumber = doc.data()?['phone'] ?? '';
             isLoading = false;
           });
         }
       }
-      // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      _showError(context, "Gagal mengambil data: $e");
+    }
   }
 
   @override
@@ -47,7 +49,7 @@ class _AccountScreenState extends State<AccountScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(120), // Ukuran tinggi AppBar
+        preferredSize: const Size.fromHeight(80),
         child: AppBar(
           title: const Text("Akun Saya", style: TextStyle(color: Colors.white)),
           iconTheme: const IconThemeData(color: Colors.white),
@@ -57,8 +59,8 @@ class _AccountScreenState extends State<AccountScreen> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xFF001F3D), // Biru navy gelap
-                  Color(0xFFFFFFFF), // Putih
+                  Color(0xFF001F3D),
+                  Color(0xFFFFFFFF),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -98,6 +100,12 @@ class _AccountScreenState extends State<AccountScreen> {
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     textAlign: TextAlign.center,
                   ),
+                  if (phoneNumber != null && phoneNumber!.isNotEmpty)
+                    Text(
+                      phoneNumber!,
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      textAlign: TextAlign.center,
+                    ),
                   const SizedBox(height: 20),
                   Card(
                     color: Colors.white,
@@ -110,19 +118,16 @@ class _AccountScreenState extends State<AccountScreen> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                                // ignore: deprecated_member_use
                                 color: Colors.grey.withOpacity(0.2),
                                 blurRadius: 5,
                                 spreadRadius: 1,
                                 offset: const Offset(0, -20)),
                             BoxShadow(
-                                // ignore: deprecated_member_use
                                 color: Colors.grey.withOpacity(0.2),
                                 blurRadius: 5,
                                 spreadRadius: 1,
                                 offset: const Offset(2, 0)),
                             BoxShadow(
-                                // ignore: deprecated_member_use
                                 color: Colors.grey.withOpacity(0.2),
                                 blurRadius: 5,
                                 spreadRadius: 1,
@@ -146,6 +151,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                 trailing: const Icon(Icons.edit),
                                 onTap: () => _editPasswordDialog(context),
                               ),
+                              const Divider(height: 1),
+                              ListTile(
+                                leading: const Icon(Icons.phone_android),
+                                title: const Text("Ubah No Telepon"),
+                                trailing: const Icon(Icons.edit),
+                                onTap: () => _editPhoneDialog(context),
+                              ),
                             ],
                           ),
                         ),
@@ -155,15 +167,19 @@ class _AccountScreenState extends State<AccountScreen> {
                   const SizedBox(height: 30),
                   ElevatedButton.icon(
                     onPressed: () => _showLogoutDialog(context),
-                    icon: const Icon(Icons.logout),
-                    label: const Text("Logout"),
+                    icon: const Icon(Icons.logout, color: Colors.white),
+                    label: const Text("Logout",
+                        style: TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
+                      foregroundColor:
+                          Colors.white, // untuk teks dan icon default
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 150),
+                  const SizedBox(height: 120),
                   const Text("Versi 1.0.0",
                       style: TextStyle(color: Colors.grey)),
                   const Text("© 2025 PureLux",
@@ -179,15 +195,26 @@ class _AccountScreenState extends State<AccountScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Ubah Username"),
+        backgroundColor: Colors.white,
+        title: const Text(
+          "Ubah Username",
+          style: TextStyle(color: Colors.black),
+        ),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
+          decoration: const InputDecoration(
+            prefixIcon: Icon(Icons.person_outline, color: Colors.black),
+            hintText: "Masukkan username baru",
+            hintStyle: TextStyle(color: Colors.black54),
+            border: OutlineInputBorder(),
+          ),
+          style: const TextStyle(color: Colors.black),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal")),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal", style: TextStyle(color: Colors.black)),
+          ),
           ElevatedButton(
             onPressed: () async {
               final newUsername = controller.text.trim();
@@ -196,14 +223,15 @@ class _AccountScreenState extends State<AccountScreen> {
                 await FirebaseFirestore.instance
                     .collection('user')
                     .doc(uid)
-                    .update({
-                  'username': newUsername,
-                });
+                    .update({'username': newUsername});
                 setState(() => username = newUsername);
                 Navigator.pop(context);
               }
             },
-            child: Text("Simpan"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+            ),
+            child: const Text("Simpan", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -216,35 +244,50 @@ class _AccountScreenState extends State<AccountScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Ubah Password"),
+        backgroundColor: Colors.white,
+        title:
+            const Text("Ubah Password", style: TextStyle(color: Colors.black)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: oldPassController,
               obscureText: true,
-              decoration: InputDecoration(
-                  labelText: "Password Lama", border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.lock_outline, color: Colors.black),
+                labelText: "Password Lama",
+                labelStyle: TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(),
+              ),
+              style: const TextStyle(color: Colors.black),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             TextField(
               controller: newPassController,
               obscureText: true,
-              decoration: InputDecoration(
-                  labelText: "Password Baru", border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.lock_open, color: Colors.black),
+                labelText: "Password Baru",
+                labelStyle: TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(),
+              ),
+              style: const TextStyle(color: Colors.black),
             ),
           ],
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context), child: Text("Batal")),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal", style: TextStyle(color: Colors.black)),
+          ),
           ElevatedButton(
             onPressed: () async {
               try {
                 final user = auth.currentUser!;
                 final cred = EmailAuthProvider.credential(
-                    email: user.email!,
-                    password: oldPassController.text.trim());
+                  email: user.email!,
+                  password: oldPassController.text.trim(),
+                );
                 await user.reauthenticateWithCredential(cred);
                 await user.updatePassword(newPassController.text.trim());
                 Navigator.pop(context);
@@ -253,7 +296,59 @@ class _AccountScreenState extends State<AccountScreen> {
                 _showError(context, "Gagal update password: $e");
               }
             },
-            child: Text("Simpan"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+            ),
+            child: const Text("Simpan", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editPhoneDialog(BuildContext context) {
+    final controller = TextEditingController(text: phoneNumber ?? '');
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text(
+          "Ubah Nomor Telepon",
+          style: TextStyle(color: Colors.black),
+        ),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.phone,
+          decoration: const InputDecoration(
+            prefixIcon: Icon(Icons.phone_android, color: Colors.black),
+            hintText: "Masukkan nomor telepon",
+            hintStyle: TextStyle(color: Colors.black54),
+            border: OutlineInputBorder(),
+          ),
+          style: const TextStyle(color: Colors.black),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal", style: TextStyle(color: Colors.black)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newPhone = controller.text.trim();
+              if (newPhone.isNotEmpty) {
+                final uid = auth.currentUser!.uid;
+                await FirebaseFirestore.instance
+                    .collection('user')
+                    .doc(uid)
+                    .update({'phone': newPhone});
+                setState(() => phoneNumber = newPhone);
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+            ),
+            child: const Text("Simpan", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -264,11 +359,12 @@ class _AccountScreenState extends State<AccountScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Konfirmasi"),
-        content: Text("Anda yakin ingin logout?"),
+        title: const Text("Konfirmasi"),
+        content: const Text("Anda yakin ingin logout?"),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context), child: Text("Batal")),
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal")),
           ElevatedButton(
             onPressed: () async {
               await auth.signOut();
@@ -276,7 +372,7 @@ class _AccountScreenState extends State<AccountScreen> {
               Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (_) => LoginScreen()));
             },
-            child: Text("Logout"),
+            child: const Text("Logout"),
           ),
         ],
       ),
@@ -287,11 +383,12 @@ class _AccountScreenState extends State<AccountScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Terjadi Kesalahan"),
+        title: const Text("Terjadi Kesalahan"),
         content: Text(message),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context), child: Text("Tutup"))
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Tutup"))
         ],
       ),
     );
