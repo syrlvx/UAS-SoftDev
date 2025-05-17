@@ -49,7 +49,7 @@ class _AccountScreenState extends State<AccountScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
+        preferredSize: const Size.fromHeight(70),
         child: AppBar(
           title: const Text("Akun Saya", style: TextStyle(color: Colors.white)),
           iconTheme: const IconThemeData(color: Colors.white),
@@ -203,17 +203,18 @@ class _AccountScreenState extends State<AccountScreen> {
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
-            prefixIcon: Icon(Icons.person_outline, color: Colors.black),
+            prefixIcon: Icon(Icons.person_outline, color: Color(0xFF001F3D)),
             hintText: "Masukkan username baru",
-            hintStyle: TextStyle(color: Colors.black54),
+            hintStyle: TextStyle(color: Color(0xFF001F3D)),
             border: OutlineInputBorder(),
           ),
-          style: const TextStyle(color: Colors.black),
+          style: const TextStyle(color: Color(0xFF001F3D)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Batal", style: TextStyle(color: Colors.black)),
+            child:
+                const Text("Batal", style: TextStyle(color: Color(0xFF001F3D))),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -229,7 +230,7 @@ class _AccountScreenState extends State<AccountScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
+              backgroundColor: Color(0xFF001F3D),
             ),
             child: const Text("Simpan", style: TextStyle(color: Colors.white)),
           ),
@@ -245,8 +246,8 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Colors.white,
-        title:
-            const Text("Ubah Password", style: TextStyle(color: Colors.black)),
+        title: const Text("Ubah Password",
+            style: TextStyle(color: Color(0xFF001F3D))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -357,26 +358,44 @@ class _AccountScreenState extends State<AccountScreen> {
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Konfirmasi"),
-        content: const Text("Anda yakin ingin logout?"),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal")),
-          ElevatedButton(
-            onPressed: () async {
-              await auth.signOut();
-              Navigator.pop(context);
-              Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (_) => LoginScreen()));
-            },
-            child: const Text("Logout"),
-          ),
-        ],
-      ),
-    );
+        context: context,
+        builder: (_) => AlertDialog(
+              backgroundColor: Colors.white,
+              title: const Text(
+                "Konfirmasi",
+                style: TextStyle(color: Color(0xFF001F3D)), // Navy
+              ),
+              content: const Text(
+                "Anda yakin ingin logout?",
+                style: TextStyle(color: Color(0xFF001F3D)), // Navy
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "Batal",
+                    style: TextStyle(color: Color(0xFF001F3D)), // Navy
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF001F3D), // Navy
+                  ),
+                  onPressed: () async {
+                    await auth.signOut();
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => LoginScreen()),
+                    );
+                  },
+                  child: const Text(
+                    "Logout",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ));
   }
 
   void _showError(BuildContext context, String message) {

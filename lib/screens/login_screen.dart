@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:purelux/firebase_options.dart';
 import 'package:purelux/widgets/bottom_nav_bar.dart';
 import 'package:purelux/widgets/bottom_nav_bar_admin.dart';
@@ -52,6 +52,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final uid = userCredential.user!.uid;
       print('UID: $uid');
+
+      // Simpan OneSignal playerId ke Firestore
+      String? playerId = OneSignal.User.pushSubscription.id;
+      if (playerId != null) {
+        await FirebaseFirestore.instance
+            .collection('user')
+            .doc(uid)
+            .update({'onesignalPlayerId': playerId});
+      }
 
       final userDoc =
           await FirebaseFirestore.instance.collection('user').doc(uid).get();

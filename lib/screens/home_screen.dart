@@ -17,6 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late Timer _timer;
   late String _currentTime;
   bool isLoggedIn = false;
+  bool hasUnreadNotifications = false;
 
   String? username;
   String? role;
@@ -28,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _currentTime = _getCurrentTime();
     _startTimer();
     _fetchUserData();
+    _checkUnreadNotifications();
   }
 
   Future<void> _fetchUserData() async {
@@ -50,6 +52,21 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       print("Error fetching user data: $e");
     }
+  }
+
+  Future<void> _checkUnreadNotifications() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('notifications')
+        .where('userId', isEqualTo: user.uid)
+        .where('read', isEqualTo: false)
+        .get();
+
+    setState(() {
+      hasUnreadNotifications = snapshot.docs.isNotEmpty;
+    });
   }
 
   String _getCurrentTime() {
@@ -138,16 +155,48 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                           Spacer(),
-                          IconButton(
-                            icon: Icon(Icons.notifications,
-                                color: Colors.white, size: 30),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => NotificationScreen()),
-                              );
-                            },
+                          Stack(
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.notifications,
+                                    color: Colors.white, size: 30),
+                                onPressed: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            NotificationScreen()),
+                                  );
+                                  // Check for unread notifications after returning from notification screen
+                                  _checkUnreadNotifications();
+                                },
+                              ),
+                              if (hasUnreadNotifications)
+                                Positioned(
+                                  right: 8,
+                                  top: 8,
+                                  child: Container(
+                                    padding: EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    constraints: BoxConstraints(
+                                      minWidth: 16,
+                                      minHeight: 16,
+                                    ),
+                                    child: Text(
+                                      '!',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ],
                       ),

@@ -124,11 +124,12 @@ class _DataAdminScreenState extends State<DataAdminScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: Colors.white, // Warna putih untuk card
           title: Text('Tambah Karyawan', style: GoogleFonts.poppins()),
           content: SingleChildScrollView(
             child: Column(
               children: [
-                _buildInputField('Nama Lengkap', nameController),
+                _buildInputField('Nama', nameController),
                 const SizedBox(height: 10),
                 _buildInputField('Email', emailController),
                 const SizedBox(height: 10),
@@ -138,7 +139,8 @@ class _DataAdminScreenState extends State<DataAdminScreen> {
           ),
           actions: [
             TextButton(
-              child: Text('Batal', style: GoogleFonts.poppins()),
+              child: Text('Batal',
+                  style: TextStyle(color: const Color(0xFF001F3D))),
               onPressed: () => Navigator.pop(context),
             ),
             ElevatedButton(
@@ -165,11 +167,25 @@ class _DataAdminScreenState extends State<DataAdminScreen> {
   }
 
   Widget _buildInputField(String label, TextEditingController controller) {
+    IconData icon;
+
+    // Beri nilai default tergantung label
+    if (label == 'Nama') {
+      icon = Icons.person;
+    } else if (label == 'Email') {
+      icon = Icons.email;
+    } else if (label == 'Jabatan') {
+      icon = Icons.work;
+    } else {
+      icon = Icons.input; // default jika label tidak dikenali
+    }
+
     return TextField(
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.poppins(),
+        prefixIcon: Icon(icon, color: Color(0xFF001F3D)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
         fillColor: Colors.grey.shade100,

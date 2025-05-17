@@ -9,14 +9,22 @@ import 'package:purelux/widgets/bottom_nav_bar.dart';
 import 'package:purelux/widgets/bottom_nav_bar_admin.dart';
 import 'screens/globals.dart' as globals; // Import file globals.dart
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
-void main() async {
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions
         .currentPlatform, // Pastikan menggunakan FirebaseOptions yang benar
   );
+
+  // Initialize OneSignal
+  OneSignal.initialize('f15e15fd-ac05-4fa8-a0d8-56d22546a3cf');
+  OneSignal.Notifications.requestPermission(true);
+
   runApp(const MyApp());
 }
 
@@ -26,6 +34,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'PureLux',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,

@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:purelux/screens/PetaScreen.dart';
 import 'dart:async';
 
 class MasukScreen extends StatefulWidget {
@@ -22,7 +21,7 @@ class _MasukScreenState extends State<MasukScreen> {
   bool _sudahMasuk = false;
   bool _sudahKeluar = false;
   bool _loading = true;
-  Position? _currentPosition; // Diperlukan untuk akses lokasi
+  Position? _currentPosition;
 
   @override
   void initState() {
@@ -201,115 +200,191 @@ class _MasukScreenState extends State<MasukScreen> {
       backgroundColor: Colors.white,
       body: _loading
           ? Center(child: CircularProgressIndicator())
-          : SafeArea(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+          : Stack(
+              children: [
+                if (_currentPosition != null)
+                  FlutterMap(
+                    options: MapOptions(
+                      initialCenter: LatLng(
+                        _currentPosition!.latitude,
+                        _currentPosition!.longitude,
+                      ),
+                      initialZoom: 16.0,
+                    ),
                     children: [
-                      Text(
-                        'Tanggal: ${DateFormat('dd MMMM yyyy').format(DateTime.now())}',
-                        style: TextStyle(fontSize: 18, color: Colors.black),
+                      TileLayer(
+                        urlTemplate:
+                            "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        userAgentPackageName: 'com.example.app',
                       ),
-                      SizedBox(height: 10),
-                      Text(
-                        'Lokasi: ${_location ?? "Loading..."}',
-                        style: TextStyle(fontSize: 16, color: Colors.black),
-                      ),
-                      SizedBox(height: 20),
-                      if (_waktuMasuk != null)
-                        Text("Waktu Masuk: $_waktuMasuk",
-                            style:
-                                TextStyle(fontSize: 16, color: Colors.black)),
-                      if (_waktuKeluar != null)
-                        Text("Waktu Keluar: $_waktuKeluar",
-                            style:
-                                TextStyle(fontSize: 16, color: Colors.black)),
-                      SizedBox(height: 20),
-                      if (_currentPosition != null)
-                        Container(
-                          height: 300,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(
+                              _currentPosition!.latitude,
+                              _currentPosition!.longitude,
+                            ),
+                            width: 40,
+                            height: 40,
+                            child: const Icon(
+                              Icons.location_pin,
+                              color: Colors.red,
+                              size: 40,
+                            ),
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: FlutterMap(
-                              options: MapOptions(
-                                initialCenter: LatLng(
-                                  _currentPosition!.latitude,
-                                  _currentPosition!.longitude,
-                                ),
-                                initialZoom: 16.0,
+                        ],
+                      ),
+                    ],
+                  ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, -2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today, color: Colors.grey),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Tanggal: ${DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(DateTime.now())}',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.black),
                               ),
-                              children: [
-                                TileLayer(
-                                  urlTemplate:
-                                      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                                  userAgentPackageName: 'com.example.app',
-                                ),
-                                MarkerLayer(
-                                  markers: [
-                                    Marker(
-                                      point: LatLng(
-                                        _currentPosition!.latitude,
-                                        _currentPosition!.longitude,
-                                      ),
-                                      width: 40,
-                                      height: 40,
-                                      child: const Icon(
-                                        Icons.location_pin,
-                                        color: Colors.red,
-                                        size: 40,
-                                      ),
+                            ),
+                          ],
+                        ),
+                        Divider(thickness: 1, color: Colors.grey[300]),
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, color: Colors.grey),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Lokasi: ${_location ?? "-"}',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.black),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Divider(thickness: 1, color: Colors.grey[300]),
+                        if (_waktuMasuk != null || _waktuKeluar != null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (_waktuMasuk != null)
+                                Row(
+                                  children: [
+                                    Icon(Icons.login, color: Colors.grey),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'Jam Masuk: $_waktuMasuk',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black),
                                     ),
                                   ],
                                 ),
-                              ],
+                              if (_waktuKeluar != null)
+                                Row(
+                                  children: [
+                                    Icon(Icons.logout, color: Colors.grey),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'Jam Keluar: $_waktuKeluar',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  // Navigasi ke riwayat aktivitas
+                                },
+                                icon: Icon(Icons.history),
+                                label: Text('Aktivitas'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.black,
+                                  side: BorderSide(color: Colors.grey),
+                                  padding: EdgeInsets.symmetric(vertical: 14),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _sudahKeluar
+                                    ? null
+                                    : () async {
+                                        if (_currentPosition != null) {
+                                          await _handleAbsen();
+                                          await _cekStatusAbsen();
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content:
+                                                Text('Lokasi belum tersedia'),
+                                          ));
+                                        }
+                                      },
+                                icon: Icon(
+                                  _sudahMasuk ? Icons.logout : Icons.login,
+                                  color: Colors.white,
+                                ),
+                                label: Text(
+                                  _sudahMasuk ? 'Keluar' : 'Masuk',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  padding: EdgeInsets.symmetric(vertical: 14),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_sudahKeluar)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Text(
+                                'Terima kasih, selamat berlibur!',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      SizedBox(height: 20),
-                      if (!_sudahKeluar)
-                        ElevatedButton.icon(
-                          icon: Icon(
-                            _sudahMasuk ? Icons.logout : Icons.login,
-                            color: Colors.white,
-                          ),
-                          label: Text(
-                            _sudahMasuk ? "Keluar" : "Masuk",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black,
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 30, vertical: 14),
-                          ),
-                          onPressed: () async {
-                            if (_currentPosition != null) {
-                              await _handleAbsen();
-                              await _cekStatusAbsen();
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Lokasi belum tersedia'),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                      if (_sudahKeluar)
-                        Text(
-                          'Terima kasih, selamat berlibur!',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
     );
   }

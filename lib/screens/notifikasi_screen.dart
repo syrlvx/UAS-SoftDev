@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:purelux/screens/arsip_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({Key? key}) : super(key: key);
@@ -9,61 +11,106 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  List<Map<String, dynamic>> notifications = [
-    {
-      'title': 'Pengajuan Cuti',
-      'body': 'Cuti tanggal 10 Mei disetujui',
-      'time': '10:00',
-      'datetime': DateTime.now(),
-      'category': 'pengajuan',
-      'read': false,
-      'archived': false,
-    },
-    {
-      'title': 'Tugas Baru',
-      'body': 'Isi laporan mingguan',
-      'time': '09:00',
-      'datetime': DateTime.now().subtract(const Duration(days: 1)),
-      'category': 'tugas',
-      'read': false,
-      'archived': false,
-    },
-  ];
-
+  List<Map<String, dynamic>> notifications = [];
   List<Map<String, dynamic>> archivedNotifications = [];
   String selectedFilter = 'Semua';
   bool sortAscending = false;
 
-  void markAllAsRead() {
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('notifications')
+        .where('userId', isEqualTo: user.uid)
+        .get();
+
     setState(() {
-      for (var notif in notifications) {
-        notif['read'] = true;
-      }
+      notifications = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'id': doc.id,
+          'title': data['title'] ?? '',
+          'body': data['message'] ?? '',
+          'time': data['createdAt'] != null
+              ? (data['createdAt'] as Timestamp)
+                  .toDate()
+                  .toString()
+                  .split(' ')[1]
+                  .substring(0, 5)
+              : '',
+          'datetime': data['createdAt'] != null
+              ? (data['createdAt'] as Timestamp).toDate()
+              : DateTime.now(),
+          'category': data['category'] ?? 'pengajuan',
+          'read': data['read'] ?? false,
+          'archived': data['archived'] ?? false,
+        };
+      }).toList();
+
+      // Sort notifications by datetime
+      notifications.sort((a, b) => b['datetime'].compareTo(a['datetime']));
     });
   }
 
-  void removeNotification(int index) {
-    final removed = notifications.removeAt(index);
+  void markAllAsRead() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final batch = FirebaseFirestore.instance.batch();
+
+    for (var notif in notifications) {
+      if (!notif['read']) {
+        final docRef = FirebaseFirestore.instance
+            .collection('notifications')
+            .doc(notif['id']);
+        batch.update(docRef, {'read': true});
+      }
+    }
+
+    await batch.commit();
+    await _loadNotifications();
+  }
+
+  void removeNotification(int index) async {
+    final notif = notifications[index];
+    await FirebaseFirestore.instance
+        .collection('notifications')
+        .doc(notif['id'])
+        .delete();
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text("Notifikasi dihapus"),
         action: SnackBarAction(
           label: "Undo",
-          onPressed: () {
-            setState(() {
-              notifications.insert(index, removed);
-            });
+          onPressed: () async {
+            await FirebaseFirestore.instance
+                .collection('notifications')
+                .doc(notif['id'])
+                .set(notif);
+            await _loadNotifications();
           },
         ),
       ),
     );
-    setState(() {});
+    await _loadNotifications();
   }
 
-  void archiveNotification(int index) {
+  void archiveNotification(int index) async {
+    final notif = notifications[index];
+    await FirebaseFirestore.instance
+        .collection('notifications')
+        .doc(notif['id'])
+        .update({'archived': true});
+
     setState(() {
-      var notif = notifications[index];
-      notif['archived'] = true;
       archivedNotifications.add(notif);
       notifications.removeAt(index);
     });
@@ -151,7 +198,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         backgroundColor: Color(0xFF001F3D), // warna navy
       ),
       body: RefreshIndicator(
-        onRefresh: () async => setState(() {}),
+        onRefresh: _loadNotifications,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(12, 100, 12, 12),
           children: [
@@ -276,7 +323,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   ...entry.value.map((notif) {
                     int index = notifications.indexOf(notif);
                     return Dismissible(
-                      key: Key(notif['title'] + notif['time']),
+                      key: Key(notif['id']),
                       direction: DismissDirection.horizontal,
                       onDismissed: (direction) {
                         if (direction == DismissDirection.endToStart) {
@@ -299,12 +346,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                       child: Card(
                         color: Colors.white,
-                        elevation: 2, // tanpa bayangan
+                        elevation: 2,
                         shadowColor: Colors.grey.withOpacity(0.3),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                              color: Colors.grey.shade300), // garis tipis
+                          side: BorderSide(color: Colors.grey.shade300),
                         ),
                         child: ListTile(
                           leading: Icon(
@@ -329,15 +375,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             children: [
                               Text(notif['time'],
                                   style: const TextStyle(fontSize: 12)),
-                              if (!notif['read'])
-                                const Icon(Icons.circle,
-                                    size: 10, color: Colors.red),
                             ],
                           ),
-                          onTap: () {
-                            setState(() {
-                              notif['read'] = true;
-                            });
+                          onTap: () async {
+                            if (!notif['read']) {
+                              await FirebaseFirestore.instance
+                                  .collection('notifications')
+                                  .doc(notif['id'])
+                                  .update({'read': true});
+                              await _loadNotifications();
+                            }
                           },
                         ),
                       ),

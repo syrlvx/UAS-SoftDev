@@ -488,6 +488,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  onesignal_flutter:
+    dependency: "direct main"
+    description:
+      name: onesignal_flutter
+      sha256: acb0e04ab9fe8dc7e8d7b507ce880907261f57309bca5f0ae44dda89125c46fd
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.3.2"
   path:
     dependency: transitive
     description:

@@ -131,17 +131,45 @@ class _ArchivedNotificationsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Arsip Notifikasi'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const NotificationScreen()),
-            );
-          },
+      backgroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70), // Tinggi custom
+        child: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF001F3D), // Navy
+                  Colors.white // Putih
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+          title: const Padding(
+            padding: EdgeInsets.only(top: 5.0), // Geser teks ke bawah
+            child: Text(
+              'Arsip Notifikasi',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+              ),
+            ),
+          ),
+          centerTitle: true,
+          leading: Padding(
+            padding: const EdgeInsets.only(top: 5.0), // Geser ikon ke bawah
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ),
         ),
       ),
       body: _isPinSet

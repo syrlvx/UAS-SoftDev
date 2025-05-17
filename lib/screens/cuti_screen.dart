@@ -106,10 +106,11 @@ class _CutiScreenState extends State<CutiScreen> {
           'status': 'Pending',
           'userId': user.uid,
           'createdAt': Timestamp.now(),
+          'jenis': 'cuti',
         };
 
         // Submit to Firestore
-        await FirebaseFirestore.instance.collection('cuti').add(data);
+        await FirebaseFirestore.instance.collection('pengajuan').add(data);
 
         // Reset form
         _linkFileController.clear();

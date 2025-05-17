@@ -116,6 +116,7 @@ class _IzinScreenState extends State<IzinScreen> {
           'status': 'Pending',
           'userId': user.uid,
           'createdAt': Timestamp.now(),
+          'jenis': 'izin',
         };
 
         // Submit to Firestore

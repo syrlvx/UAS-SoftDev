@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:purelux/screens/rekap_pengajuan.dart';
 
 class DataKaryawanScreen extends StatefulWidget {
   const DataKaryawanScreen({super.key});
@@ -35,17 +36,39 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildProfileAkun(), // ✅ Tambahkan bagian profil
+                  _buildProfileAkun(),
                   const SizedBox(height: 24),
                   _buildRekapAbsensi(),
-                  _buildKinerjaKaryawan(), // ✅ Tambahkan bagian kinerja
+                  _buildKinerjaKaryawan(),
                   const SizedBox(height: 20),
-                  _buildMenuItem(Icons.calendar_today, 'Rekap Absensi',
-                      'Detail rekapitulasi absensi'),
-                  _buildMenuItem(Icons.description, 'Rekap Pengajuan',
-                      'Daftar pengajuan izin & cuti'),
                   _buildMenuItem(
-                      Icons.task, 'Rekap Tugas', 'Tugas-tugas yang diberikan '),
+                    Icons.calendar_today,
+                    'Rekap Absensi',
+                    'Detail rekapitulasi absensi',
+                    () {
+                      // Navigasi ke screen absensi (kalau ada)
+                    },
+                  ),
+                  _buildMenuItem(
+                    Icons.description,
+                    'Rekap Pengajuan',
+                    'Daftar pengajuan izin & cuti',
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const RekapPengajuanScreen()),
+                      );
+                    },
+                  ),
+                  _buildMenuItem(
+                    Icons.task,
+                    'Rekap Tugas',
+                    'Tugas-tugas yang diberikan',
+                    () {
+                      // Navigasi ke screen rekap tugas (kalau ada)
+                    },
+                  ),
                 ],
               ),
             ),
@@ -217,7 +240,8 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String title, String subtitle) {
+  Widget _buildMenuItem(
+      IconData icon, String title, String subtitle, VoidCallback onTap) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
@@ -229,9 +253,7 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
             Text(subtitle, style: GoogleFonts.poppins(color: Colors.black54)),
         trailing:
             const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black),
-        onTap: () {
-          // Handle tap event
-        },
+        onTap: onTap, // <- ini penting
       ),
     );
   }
