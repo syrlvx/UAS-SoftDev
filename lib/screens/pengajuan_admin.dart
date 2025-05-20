@@ -220,7 +220,7 @@ class _PengajuanListState extends State<PengajuanList> {
                 );
               },
               child: Container(
-                margin: EdgeInsets.all(8),
+                margin: EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -233,14 +233,44 @@ class _PengajuanListState extends State<PengajuanList> {
                   ],
                 ),
                 child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Color(0xFF001F3D),
-                    child: Text(
-                      (data['nama'] as String).isNotEmpty
-                          ? (data['nama'] as String)[0].toUpperCase()
-                          : '?',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                  leading: FutureBuilder<DocumentSnapshot>(
+                    future: FirebaseFirestore.instance
+                        .collection('user')
+                        .doc(data['userId'])
+                        .get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data!.exists) {
+                        final userData =
+                            snapshot.data!.data() as Map<String, dynamic>;
+                        final photoUrl = userData['foto'];
+
+                        return CircleAvatar(
+                          backgroundColor: Color(0xFF001F3D),
+                          backgroundImage:
+                              (photoUrl != null && photoUrl.isNotEmpty)
+                                  ? NetworkImage(photoUrl)
+                                  : null,
+                          child: (photoUrl == null || photoUrl.isEmpty)
+                              ? Text(
+                                  (data['nama'] as String).isNotEmpty
+                                      ? (data['nama'] as String)[0]
+                                          .toUpperCase()
+                                      : '?',
+                                  style: TextStyle(color: Colors.white),
+                                )
+                              : null,
+                        );
+                      }
+                      return CircleAvatar(
+                        backgroundColor: Color(0xFF001F3D),
+                        child: Text(
+                          (data['nama'] as String).isNotEmpty
+                              ? (data['nama'] as String)[0].toUpperCase()
+                              : '?',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      );
+                    },
                   ),
                   title: Text(
                     data['nama'] ?? '',

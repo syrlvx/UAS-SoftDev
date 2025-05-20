@@ -18,13 +18,13 @@ class DetailKaryawanScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
+        preferredSize: const Size.fromHeight(70),
         child: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF001F3D), Color(0xFFFFFFFF)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
           child: AppBar(
@@ -43,22 +43,33 @@ class DetailKaryawanScreen extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text("Hapus Karyawan?"),
+                        backgroundColor: Colors.white,
+                        title: Text(
+                          "Hapus Karyawan?",
+                          style: GoogleFonts.poppins(
+                            color: Colors.black,
+                            fontWeight: FontWeight
+                                .bold, // atau FontWeight.w600 untuk semi-bold
+                          ),
+                        ),
                         content: Text(
-                            "Apakah kamu yakin ingin menghapus ${data['name']}?"),
+                          "Apakah kamu yakin ingin menghapus ${data['name']}?",
+                          style: GoogleFonts.poppins(color: Colors.black),
+                        ),
                         actions: [
                           TextButton(
-                            child: const Text("Batal"),
+                            child: Text("Batal",
+                                style:
+                                    GoogleFonts.poppins(color: Colors.black)),
                             onPressed: () => Navigator.pop(context),
                           ),
                           TextButton(
-                            child: const Text("Hapus",
-                                style: TextStyle(color: Colors.red)),
+                            child: Text("Hapus",
+                                style: GoogleFonts.poppins(color: Colors.red)),
                             onPressed: () {
                               deleteKaryawan(data['id'], context);
                               Navigator.pop(context);
-                              Navigator.pop(
-                                  context); // kembali ke list setelah hapus
+                              Navigator.pop(context);
                             },
                           ),
                         ],
@@ -323,10 +334,19 @@ class DetailKaryawanScreen extends StatelessWidget {
     required String title,
     required String subtitle,
   }) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: const Color(0xFFFFF0F3),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: ListTile(
         leading: CircleAvatar(backgroundColor: color, radius: 8),
         title: Text(title,
@@ -335,17 +355,17 @@ class DetailKaryawanScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-void deleteKaryawan(String id, BuildContext context) async {
-  try {
-    await FirebaseFirestore.instance.collection('karyawan').doc(id).delete();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Karyawan berhasil dihapus')),
-    );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Gagal menghapus karyawan: $e')),
-    );
+  void deleteKaryawan(String id, BuildContext context) async {
+    try {
+      await FirebaseFirestore.instance.collection('karyawan').doc(id).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Karyawan berhasil dihapus')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menghapus karyawan: $e')),
+      );
+    }
   }
 }

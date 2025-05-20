@@ -18,7 +18,7 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
         elevation: 0,
         toolbarHeight: 100,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -30,17 +30,16 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
           ),
         ),
         leading: Padding(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           child: IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.arrow_back_ios_new,
               color: Colors.white,
-              size: 18,
             ),
             onPressed: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => BottomNavBar()),
+                MaterialPageRoute(builder: (context) => const BottomNavBar()),
               );
             },
           ),
@@ -48,18 +47,18 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
         leadingWidth: 80,
         title: Center(
           child: Container(
-            constraints: BoxConstraints(maxWidth: 200),
+            constraints: const BoxConstraints(maxWidth: 200),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 ShaderMask(
-                  shaderCallback: (bounds) => LinearGradient(
+                  shaderCallback: (bounds) => const LinearGradient(
                     colors: [Colors.white, Colors.white70],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ).createShader(bounds),
-                  child: Text(
-                    "PENGAJUAN",
+                  child: const Text(
+                    "Pengajuan",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -75,24 +74,24 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
           ),
         ),
         centerTitle: true,
-        actions: [
+        actions: const [
           SizedBox(width: 65),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(35),
+          preferredSize: const Size.fromHeight(35),
           child: Container(
             width: double.infinity,
             height: 40,
             decoration: BoxDecoration(
               color: Colors.grey[100],
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(25),
                 topRight: Radius.circular(25),
               ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
-                  offset: Offset(0, -2),
+                  offset: const Offset(0, -2),
                   blurRadius: 5,
                 ),
               ],
@@ -101,7 +100,7 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
               child: Container(
                 width: 40,
                 height: 4,
-                margin: EdgeInsets.only(bottom: 15),
+                margin: const EdgeInsets.only(bottom: 15),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(10),
@@ -121,24 +120,24 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
                 Icons.report_problem,
                 'Pengajuan Izin',
                 'Ajukan izin ketidakhadiran',
-                Color(0xFF001F3D), // Biru navy gelap
-                Color(0xFFFFFFFF), // Putih
+                const Color(0xFF001F3D), // Biru navy gelap
+                const Color(0xFFFFFFFF), // Putih
                 () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => IzinScreen()),
+                  MaterialPageRoute(builder: (context) => const IzinScreen()),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               _buildMenuCard(
                 context,
                 Icons.beach_access,
                 'Pengajuan Cuti',
                 'Ajukan cuti tahunan',
-                Color(0xFF001F3D), // Biru navy gelap
-                Color(0xFFFFFFFF), // Putih
+                const Color(0xFF001F3D), // Biru navy gelap
+                const Color(0xFFFFFFFF), // Putih
                 () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CutiScreen()),
+                  MaterialPageRoute(builder: (context) => const CutiScreen()),
                 ),
               ),
             ],
@@ -175,9 +174,9 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
           borderRadius: BorderRadius.circular(15),
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [Colors.white, Colors.white],

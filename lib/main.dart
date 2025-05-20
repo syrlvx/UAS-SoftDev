@@ -10,6 +10,9 @@ import 'package:purelux/widgets/bottom_nav_bar_admin.dart';
 import 'screens/globals.dart' as globals; // Import file globals.dart
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -17,13 +20,19 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions
-        .currentPlatform, // Pastikan menggunakan FirebaseOptions yang benar
+    options: DefaultFirebaseOptions.currentPlatform,
   );
 
   // Initialize OneSignal
   OneSignal.initialize('f15e15fd-ac05-4fa8-a0d8-56d22546a3cf');
   OneSignal.Notifications.requestPermission(true);
+
+  await supabase.Supabase.initialize(
+    url:
+        'https://zmxqbmzpmwpouhgxoala.supabase.co', // Ganti dengan URL project kamu
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpteHFibXpwbXdwb3VoZ3hvYWxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0ODEyMzMsImV4cCI6MjA2MzA1NzIzM30.YOVx6Eh5hqnMZO4zNSa8KiI8BS7ZxoAA23_tGu8o8kM', // Ganti dengan anon key project kamu
+  );
 
   runApp(const MyApp());
 }
@@ -40,23 +49,44 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.light,
       theme: ThemeData(
         primaryColor: Colors.white,
-        popupMenuTheme: PopupMenuThemeData(color: Colors.white),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(
+        popupMenuTheme: const PopupMenuThemeData(color: Colors.white),
+        textTheme: GoogleFonts.poppinsTextTheme().copyWith(
+          bodyLarge: const TextStyle(
             color: Colors.white,
             fontSize: 24,
           ),
-          bodyMedium: TextStyle(
+          bodyMedium: const TextStyle(
             color: Colors.white,
             fontSize: 20,
           ),
         ),
-        fontFamily: GoogleFonts.ptSans().fontFamily,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          titleTextStyle: GoogleFonts.poppins(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 0.5,
+          ),
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color.fromARGB(255, 193, 64, 127))
-            .copyWith(surface: Colors.black),
+          seedColor: const Color.fromARGB(255, 193, 64, 127),
+        ).copyWith(surface: Colors.black),
       ),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        MonthYearPickerLocalizations.delegate, // PENTING
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('id'), // Tambahkan jika ingin dukung Bahasa Indonesia
+      ],
+
       // Home screen tergantung status login
       home: AuthWrapper(),
     );

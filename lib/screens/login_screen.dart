@@ -32,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
         options: DefaultFirebaseOptions.currentPlatform,
       );
     } catch (e) {
+      // ignore: avoid_print
       print('Error initializing Firebase: $e');
     }
   }
@@ -51,6 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       final uid = userCredential.user!.uid;
+      // ignore: avoid_print
       print('UID: $uid');
 
       // Simpan OneSignal playerId ke Firestore
@@ -75,12 +77,12 @@ class _LoginScreenState extends State<LoginScreen> {
       if (role == 'admin') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => BottomNavBarAdmin()),
+          MaterialPageRoute(builder: (context) => const BottomNavBarAdmin()),
         );
       } else if (role == 'karyawan') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => BottomNavBar()),
+          MaterialPageRoute(builder: (context) => const BottomNavBar()),
         );
       } else {
         throw FirebaseAuthException(
@@ -99,12 +101,12 @@ class _LoginScreenState extends State<LoginScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Login Failed'),
+          title: const Text('Login Failed'),
           content: Text(errorMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Close'),
+              child: const Text('Close'),
             ),
           ],
         ),
@@ -131,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
         toolbarHeight: 120,
         automaticallyImplyLeading: false,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(colors: [
               Color(0xFF001F3D), // Biru navy gelap
               Color(0xFFFFFFFF), // Putih
@@ -139,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         centerTitle: true,
-        title: Text(
+        title: const Text(
           'Login',
           style: TextStyle(
             color: Colors.white,
@@ -154,16 +156,16 @@ class _LoginScreenState extends State<LoginScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              SizedBox(height: 50),
+              const SizedBox(height: 50),
               TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Email',
                   labelStyle: TextStyle(color: Colors.black),
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email, color: Colors.black),
                 ),
-                style: TextStyle(color: Colors.black),
+                style: const TextStyle(color: Colors.black),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Email is required';
@@ -176,17 +178,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Password',
                   labelStyle: TextStyle(color: Colors.black),
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.lock, color: Colors.black),
                 ),
-                style: TextStyle(color: Colors.black),
+                style: const TextStyle(color: Colors.black),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Password is required';
@@ -194,12 +196,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 80),
+              const SizedBox(height: 80),
               _isLoading
-                  ? Center(child: CircularProgressIndicator())
+                  ? const Center(child: CircularProgressIndicator())
                   : Container(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [
                             Color(0xFF001F3D), // Biru navy gelap
                             Color(0xFFFFFFFF),
@@ -214,15 +216,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               Colors.transparent, // Membuat tombol transparan
-                          padding: EdgeInsets.symmetric(vertical: 15),
-                          minimumSize: Size(double.infinity, 50),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          minimumSize: const Size(double.infinity, 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
                           side:
                               BorderSide.none, // Menghilangkan border jika ada
                         ),
-                        child: Text(
+                        child: const Text(
                           'Login',
                           style: TextStyle(
                             fontSize: 18,

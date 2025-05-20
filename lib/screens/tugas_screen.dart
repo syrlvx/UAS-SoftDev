@@ -74,8 +74,8 @@ class _TugasScreenState extends State<TugasScreen> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: IconButton(
-                          icon:
-                              const Icon(Icons.arrow_back, color: Colors.white),
+                          icon: const Icon(Icons.arrow_back_ios_new,
+                              color: Colors.white),
                           onPressed: () {
                             Navigator.pushReplacement(
                               context,
@@ -104,7 +104,7 @@ class _TugasScreenState extends State<TugasScreen> {
                 child: Row(
                   children: [
                     if (_isToday(dateList[selectedDateIndex]))
-                      const Text("Today",
+                      const Text("Today,",
                           style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
@@ -234,9 +234,13 @@ class _TugasScreenState extends State<TugasScreen> {
                               List<String>.from(data['jenisTugas'] ?? []);
                           Timestamp timestampTanggal = data['tanggal'];
                           Timestamp timestampWaktuMulai = data['waktuMulai'];
+                          Timestamp timestampWaktuSelesai =
+                              data['waktuSelesai'];
 
                           DateTime deadlineDate = timestampTanggal.toDate();
                           DateTime startTime = timestampWaktuMulai.toDate();
+                          DateTime waktuSelesaiDate =
+                              timestampWaktuSelesai.toDate();
 
                           if (deadlineDate.year !=
                                   dateList[selectedDateIndex].year ||
@@ -251,14 +255,23 @@ class _TugasScreenState extends State<TugasScreen> {
                               DateFormat('d MMM yyyy').format(deadlineDate);
                           String formattedStartTime =
                               DateFormat('HH:mm').format(startTime);
+                          String formattedEndTime =
+                              DateFormat('HH:mm').format(waktuSelesaiDate);
+
+                          bool isLate =
+                              waktuSelesaiDate.isBefore(DateTime.now()) &&
+                                  (data['status'] != 'Selesai');
 
                           return TaskCard(
                             docId: doc.id,
                             employeeName: data['karyawanNama'] ?? 'Unknown',
                             jenisTugasList: jenisTugasList,
                             deadline: formattedDeadline,
-                            deadlineTime: formattedStartTime,
+                            deadlineTime: formattedEndTime,
                             status: data['status'] ?? 'Pending',
+                            isLate: isLate,
+                            isLateForSelesai:
+                                waktuSelesaiDate.isBefore(DateTime.now()),
                           );
                         }).toList(),
                       );
@@ -281,6 +294,8 @@ class TaskCard extends StatelessWidget {
   final String deadline;
   final String deadlineTime;
   final String status;
+  final bool isLate;
+  final bool isLateForSelesai;
 
   const TaskCard({
     super.key,
@@ -290,6 +305,8 @@ class TaskCard extends StatelessWidget {
     required this.deadline,
     required this.deadlineTime,
     required this.status,
+    required this.isLate,
+    required this.isLateForSelesai,
   });
 
   @override
@@ -335,6 +352,18 @@ class TaskCard extends StatelessWidget {
                             fontSize: 11,
                             color: statusColor,
                             fontWeight: FontWeight.bold)),
+                    if (isLate)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          'Terlambat',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
                 const SizedBox(width: 16),
@@ -405,9 +434,21 @@ class TaskCard extends StatelessWidget {
                             fontSize: 11,
                             color: statusColor,
                             fontWeight: FontWeight.bold)),
+                    if (isLateForSelesai)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          'Terlambat',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
                   ],
                   const SizedBox(height: 8),
-                  if (status != 'Selesai')
+                  if (status != 'Selesai') ...[
                     ElevatedButton(
                       onPressed: () async {
                         await FirebaseFirestore.instance
@@ -428,6 +469,7 @@ class TaskCard extends StatelessWidget {
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
+                  ],
                 ],
               ),
             ],

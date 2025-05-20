@@ -45,9 +45,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
           ),
           // Menambahkan garis di atas bottom navigation bar
           Positioned(
-            top: -2, // Garis sedikit di atas navbar
-            left: 0,
-            right: 0,
             child: Container(
               height: 1,
               color: const Color(0xFFB0BEC5), // Warna garis

@@ -146,44 +146,44 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text(
-          'Notifikasi',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.archive, color: Colors.white),
-            tooltip: 'Lihat Arsip',
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70), // Tinggi AppBar
+        child: AppBar(
+          title: const Text(
+            'Notifikasi',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ArchivedNotificationsScreen(
-                    archivedNotifications: archivedNotifications,
-                  ),
-                ),
-              );
+              Navigator.pop(context);
             },
           ),
-        ],
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFF001F3D), // Biru navy gelap
-                Color(0xFFFFFFFF)
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.archive, color: Colors.white),
+              tooltip: 'Lihat Arsip',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ArchivedNotificationsScreen(
+                      archivedNotifications: archivedNotifications,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF001F3D), Color(0xFFFFFFFF)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
           ),
         ),
@@ -195,7 +195,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           "Tandai semua dibaca",
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Color(0xFF001F3D), // warna navy
+        backgroundColor: const Color(0xFF001F3D), // warna navy
       ),
       body: RefreshIndicator(
         onRefresh: _loadNotifications,
@@ -234,7 +234,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     });
                   },
                 ),
-                const SizedBox(width: 170),
+                const SizedBox(width: 160),
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -359,7 +359,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 : notif['category'] == 'tugas'
                                     ? Icons.assignment
                                     : Icons.notifications_active,
-                            color: Color(0xFF001F3D),
+                            color: const Color(0xFF001F3D),
                           ),
                           title: Text(
                             notif['title'],

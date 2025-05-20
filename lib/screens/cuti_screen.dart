@@ -40,9 +40,10 @@ class _CutiScreenState extends State<CutiScreen> {
         }
       }
     } catch (e) {
+      // ignore: avoid_print
       print('Error loading user data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Gagal memuat data pengguna'),
           backgroundColor: Colors.red,
         ),
@@ -62,11 +63,11 @@ class _CutiScreenState extends State<CutiScreen> {
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
+            colorScheme: const ColorScheme.light(
               primary: Color(0xFF001F3D),
               onPrimary: Colors.white,
               surface: Colors.white,
@@ -123,8 +124,8 @@ class _CutiScreenState extends State<CutiScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
-              children: const [
+            content: const Row(
+              children: [
                 Icon(Icons.check_circle, color: Colors.white),
                 SizedBox(width: 10),
                 Text('Pengajuan cuti berhasil dikirim'),
@@ -146,8 +147,8 @@ class _CutiScreenState extends State<CutiScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
-              children: const [
+            content: const Row(
+              children: [
                 Icon(Icons.error, color: Colors.white),
                 SizedBox(width: 10),
                 Text('Gagal mengirim pengajuan'),
@@ -173,7 +174,7 @@ class _CutiScreenState extends State<CutiScreen> {
         elevation: 0,
         toolbarHeight: 100,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -185,9 +186,9 @@ class _CutiScreenState extends State<CutiScreen> {
           ),
         ),
         leading: Padding(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           child: IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.arrow_back_ios_new,
               color: Colors.white,
               size: 18,
@@ -198,22 +199,21 @@ class _CutiScreenState extends State<CutiScreen> {
         leadingWidth: 80,
         title: Center(
           child: Container(
-            constraints: BoxConstraints(maxWidth: 200),
+            constraints: const BoxConstraints(maxWidth: 200),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 ShaderMask(
-                  shaderCallback: (bounds) => LinearGradient(
+                  shaderCallback: (bounds) => const LinearGradient(
                     colors: [Colors.white, Colors.white70],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ).createShader(bounds),
-                  child: Text(
-                    "FORM CUTI",
+                  child: const Text(
+                    "Form Cuti",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2,
                     ),
@@ -225,24 +225,24 @@ class _CutiScreenState extends State<CutiScreen> {
           ),
         ),
         centerTitle: true,
-        actions: [
+        actions: const [
           SizedBox(width: 65),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(35),
+          preferredSize: const Size.fromHeight(35),
           child: Container(
             width: double.infinity,
             height: 40,
             decoration: BoxDecoration(
               color: Colors.grey[100],
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(25),
                 topRight: Radius.circular(25),
               ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
-                  offset: Offset(0, -2),
+                  offset: const Offset(0, -2),
                   blurRadius: 5,
                 ),
               ],
@@ -251,7 +251,7 @@ class _CutiScreenState extends State<CutiScreen> {
               child: Container(
                 width: 40,
                 height: 4,
-                margin: EdgeInsets.only(bottom: 15),
+                margin: const EdgeInsets.only(bottom: 15),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(10),
@@ -276,68 +276,83 @@ class _CutiScreenState extends State<CutiScreen> {
                 ),
               ],
             ),
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     "Data Pengajuan",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF001F3D),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 25),
                   TextFormField(
                     controller: _namaController,
                     enabled: false,
-                    style: TextStyle(
-                        color: Colors.black87, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 20,
+                      // Ukuran font input
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Nama',
-                      labelStyle: TextStyle(color: Color(0xFF001F3D)),
-                      prefixIcon: Icon(Icons.person, color: Color(0xFF001F3D)),
+                      labelStyle: const TextStyle(
+                        color: Color(0xFF001F3D),
+                        fontSize: 21, // Ukuran font label
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.person,
+                        color: Color(0xFF001F3D),
+                        size: 24, // Ukuran ikon kalau mau dikecilkan juga
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Color(0xFF001F3D)),
+                        borderSide: const BorderSide(color: Color(0xFF001F3D)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Color(0xFF001F3D)),
+                        borderSide: const BorderSide(color: Color(0xFF001F3D)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide:
-                            BorderSide(color: Color(0xFF001F3D), width: 2),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF001F3D), width: 2),
                       ),
                       filled: true,
                       fillColor: Colors.grey[100],
-                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 18, // Ukuran font hint
+                      ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   InkWell(
                     onTap: () => _selectDate(context),
-                    splashColor: Color(0xFF001F3D).withOpacity(0.2),
-                    highlightColor: Color(0xFF001F3D).withOpacity(0.1),
+                    splashColor: const Color(0xFF001F3D).withOpacity(0.2),
+                    highlightColor: const Color(0xFF001F3D).withOpacity(0.1),
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 15),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(15),
-                        border: Border.all(color: Color(0xFF001F3D)),
+                        border: Border.all(color: const Color(0xFF001F3D)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.calendar_today, color: Color(0xFF001F3D)),
-                          SizedBox(width: 10),
+                          const Icon(Icons.calendar_today,
+                              color: Color(0xFF001F3D)),
+                          const SizedBox(width: 10),
                           Text(
                             "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                               color: Color(0xFF001F3D),
                             ),
@@ -349,11 +364,19 @@ class _CutiScreenState extends State<CutiScreen> {
                   SizedBox(height: 20),
                   TextFormField(
                     controller: _linkFileController,
-                    style: TextStyle(color: Colors.black87),
+                    style: TextStyle(
+                      // <- font dalam text field
+                      color: Colors.black87,
+                      fontSize: 16, // ubah ukuran font isian di sini
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Link File Bukti Cuti',
-                      labelStyle: TextStyle(color: Color(0xFF001F3D)),
-                      prefixIcon: Icon(Icons.link, color: Color(0xFF001F3D)),
+                      labelStyle: TextStyle(
+                        color: Color(0xFF001F3D),
+                        fontSize: 16, // font label
+                      ),
+                      prefixIcon:
+                          Icon(Icons.link, color: Color(0xFF001F3D), size: 22),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide(color: Color(0xFF001F3D)),
@@ -369,9 +392,13 @@ class _CutiScreenState extends State<CutiScreen> {
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      hintStyle: TextStyle(color: Colors.grey.shade400),
-                      helperText:
-                          'Masukkan link Google Drive atau penyimpanan cloud lainnya',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade300,
+                        fontSize: 16,
+                      ),
+                      helperText: 'Masukkan link Google Drive',
+                      helperStyle:
+                          TextStyle(fontSize: 12), // <- font helperText
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -387,7 +414,7 @@ class _CutiScreenState extends State<CutiScreen> {
                   SizedBox(height: 30),
                   Container(
                     width: double.infinity,
-                    height: 50,
+                    height: 55,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _submitForm,
                       style: ElevatedButton.styleFrom(
@@ -422,7 +449,7 @@ class _CutiScreenState extends State<CutiScreen> {
                                     'kirim pengajuan',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 16,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),

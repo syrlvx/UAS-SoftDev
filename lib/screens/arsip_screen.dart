@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:purelux/screens/notifikasi_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ArchivedNotificationsScreen extends StatefulWidget {

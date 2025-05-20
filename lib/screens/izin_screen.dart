@@ -32,7 +32,7 @@ class _IzinScreenState extends State<IzinScreen> {
             .doc(user.uid)
             .get();
 
-        if (userData.exists) {
+        if (userData.exists && mounted) {
           setState(() {
             _username = userData.data()?['username'] ?? 'Unknown';
             _namaController.text = _username ?? '';
@@ -41,6 +41,7 @@ class _IzinScreenState extends State<IzinScreen> {
       }
     } catch (e) {
       print('Error loading user data: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Gagal memuat data pengguna'),
@@ -61,9 +62,8 @@ class _IzinScreenState extends State<IzinScreen> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
-      firstDate: DateTime.now(), // Hanya bisa pilih hari ini dan seterusnya
-      lastDate:
-          DateTime.now().add(Duration(days: 365)), // Maksimal 1 tahun ke depan
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(Duration(days: 365)),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -80,7 +80,7 @@ class _IzinScreenState extends State<IzinScreen> {
       },
     );
 
-    if (picked != null && picked != _selectedDate) {
+    if (picked != null && picked != _selectedDate && mounted) {
       setState(() {
         _selectedDate = picked;
       });
@@ -89,6 +89,7 @@ class _IzinScreenState extends State<IzinScreen> {
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      if (!mounted) return;
       setState(() {
         _isLoading = true;
       });
@@ -124,6 +125,7 @@ class _IzinScreenState extends State<IzinScreen> {
 
         // Reset form
         _keteranganController.clear();
+        if (!mounted) return;
         setState(() {
           _selectedDate = DateTime.now();
           _isLoading = false;
@@ -147,7 +149,12 @@ class _IzinScreenState extends State<IzinScreen> {
             ),
           ),
         );
+
+        // Navigate back after successful submission
+        if (!mounted) return;
+        Navigator.of(context).pop();
       } catch (e) {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
@@ -203,7 +210,6 @@ class _IzinScreenState extends State<IzinScreen> {
               size: 18,
             ),
             onPressed: () {
-              _submitForm();
               Navigator.of(context).pop();
             },
           ),
@@ -222,11 +228,10 @@ class _IzinScreenState extends State<IzinScreen> {
                     end: Alignment.bottomCenter,
                   ).createShader(bounds),
                   child: Text(
-                    "FORM IZIN",
+                    "Form Izin",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2,
                     ),
@@ -299,7 +304,7 @@ class _IzinScreenState extends State<IzinScreen> {
                   Text(
                     "Data Pengajuan",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF001F3D),
                     ),
@@ -308,28 +313,42 @@ class _IzinScreenState extends State<IzinScreen> {
                   TextFormField(
                     controller: _namaController,
                     enabled: false,
-                    style: TextStyle(
-                        color: Colors.black87, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 20,
+                      // Ukuran font input
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Nama',
-                      labelStyle: TextStyle(color: Color(0xFF001F3D)),
-                      prefixIcon: Icon(Icons.person, color: Color(0xFF001F3D)),
+                      labelStyle: const TextStyle(
+                        color: Color(0xFF001F3D),
+                        fontSize: 21, // Ukuran font label
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.person,
+                        color: Color(0xFF001F3D),
+                        size: 24, // Ukuran ikon kalau mau dikecilkan juga
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Color(0xFF001F3D)),
+                        borderSide: const BorderSide(color: Color(0xFF001F3D)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Color(0xFF001F3D)),
+                        borderSide: const BorderSide(color: Color(0xFF001F3D)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide:
-                            BorderSide(color: Color(0xFF001F3D), width: 2),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF001F3D), width: 2),
                       ),
                       filled: true,
                       fillColor: Colors.grey[100],
-                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 18, // Ukuran font hint
+                      ),
                     ),
                   ),
                   SizedBox(height: 20),
@@ -365,28 +384,41 @@ class _IzinScreenState extends State<IzinScreen> {
                     controller: _keteranganController,
                     obscureText: false,
                     maxLines: 4,
-                    style: TextStyle(color: Colors.black87),
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16, // Ukuran font untuk input
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Keterangan',
-                      labelStyle: TextStyle(color: Color(0xFF001F3D)),
-                      prefixIcon:
-                          Icon(Icons.description, color: Color(0xFF001F3D)),
+                      labelStyle: const TextStyle(
+                        color: Color(0xFF001F3D),
+                        fontSize: 17, // Ukuran font untuk label
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.description,
+                        color: Color(0xFF001F3D),
+                        size:
+                            24, // Ukuran ikon (bisa diubah jika ingin lebih besar/kecil)
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Color(0xFF001F3D)),
+                        borderSide: const BorderSide(color: Color(0xFF001F3D)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(color: Color(0xFF001F3D)),
+                        borderSide: const BorderSide(color: Color(0xFF001F3D)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide:
-                            BorderSide(color: Color(0xFF001F3D), width: 2),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF001F3D), width: 2),
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 16, // Ukuran font untuk hint
+                      ),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -398,7 +430,7 @@ class _IzinScreenState extends State<IzinScreen> {
                   SizedBox(height: 30),
                   Container(
                     width: double.infinity,
-                    height: 50,
+                    height: 55,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _submitForm,
                       style: ElevatedButton.styleFrom(
@@ -430,10 +462,10 @@ class _IzinScreenState extends State<IzinScreen> {
                                   Icon(Icons.send, color: Colors.white),
                                   SizedBox(width: 10),
                                   Text(
-                                    'Kirim Pengajuan',
+                                    'kirim pengajuan',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 16,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),

@@ -92,7 +92,7 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                 child: Row(
                   children: [
                     if (_isToday(dateList[selectedDateIndex]))
-                      const Text("Today",
+                      const Text("Today,",
                           style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
@@ -222,9 +222,13 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                               List<String>.from(data['jenisTugas'] ?? []);
                           Timestamp timestampTanggal = data['tanggal'];
                           Timestamp timestampWaktuMulai = data['waktuMulai'];
+                          Timestamp timestampWaktuSelesai =
+                              data['waktuSelesai'];
 
                           DateTime deadlineDate = timestampTanggal.toDate();
                           DateTime startTime = timestampWaktuMulai.toDate();
+                          DateTime waktuSelesaiDate =
+                              timestampWaktuSelesai.toDate();
 
                           if (deadlineDate.year !=
                                   dateList[selectedDateIndex].year ||
@@ -239,13 +243,22 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                               DateFormat('d MMM yyyy').format(deadlineDate);
                           String formattedStartTime =
                               DateFormat('HH:mm').format(startTime);
+                          String formattedEndTime =
+                              DateFormat('HH:mm').format(waktuSelesaiDate);
+
+                          bool isLate =
+                              waktuSelesaiDate.isBefore(DateTime.now()) &&
+                                  (data['status'] != 'Selesai');
 
                           return TaskCard(
                             employeeName: data['karyawanNama'] ?? 'Unknown',
                             jenisTugasList: jenisTugasList,
                             deadline: formattedDeadline,
-                            deadlineTime: formattedStartTime,
+                            deadlineTime: formattedEndTime,
                             status: data['status'] ?? 'Pending',
+                            isLate: isLate,
+                            isLateForSelesai:
+                                waktuSelesaiDate.isBefore(DateTime.now()),
                           );
                         }).toList(),
                       );
@@ -267,6 +280,8 @@ class TaskCard extends StatelessWidget {
   final String deadline;
   final String deadlineTime;
   final String status;
+  final bool isLate;
+  final bool isLateForSelesai;
 
   const TaskCard({
     super.key,
@@ -275,6 +290,8 @@ class TaskCard extends StatelessWidget {
     required this.deadline,
     required this.deadlineTime,
     required this.status,
+    required this.isLate,
+    required this.isLateForSelesai,
   });
 
   @override
@@ -290,18 +307,17 @@ class TaskCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      elevation: 8, // Increased elevation for a more prominent shadow
-      shadowColor: Colors.black45, // Darker shadow for better visibility
+      elevation: 8,
+      shadowColor: Colors.black45,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              // ignore: deprecated_member_use
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withOpacity(0.4),
               blurRadius: 10,
-              offset: const Offset(0, -10),
+              offset: const Offset(0, 4),
             )
           ],
         ),
@@ -310,6 +326,36 @@ class TaskCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              if (status != 'Selesai') ...[
+                Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 21,
+                      backgroundColor: statusColor,
+                      child: Icon(statusIcon, size: 20, color: Colors.white),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(statusLabel,
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: statusColor,
+                            fontWeight: FontWeight.bold)),
+                    if (isLate)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          'Terlambat',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,20 +424,34 @@ class TaskCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  CircleAvatar(
-                    radius: 14,
-                    backgroundColor: statusColor,
-                    child: Icon(statusIcon, size: 16, color: Colors.white),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    statusLabel,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: statusColor,
-                      fontWeight: FontWeight.bold,
+                  if (status == 'Selesai') ...[
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: statusColor,
+                      child: Icon(statusIcon, size: 16, color: Colors.white),
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    Text(
+                      statusLabel,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (isLateForSelesai)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          'Terlambat',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                  ],
                 ],
               ),
             ],

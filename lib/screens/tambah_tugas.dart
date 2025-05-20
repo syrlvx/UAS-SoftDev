@@ -12,8 +12,8 @@ class TambahTugasScreen extends StatefulWidget {
 
 class _TambahTugasScreenState extends State<TambahTugasScreen> {
   DateTime selectedDate = DateTime.now();
-  TimeOfDay startTime = TimeOfDay(hour: 10, minute: 0);
-  TimeOfDay endTime = TimeOfDay(hour: 11, minute: 0);
+  TimeOfDay startTime = const TimeOfDay(hour: 10, minute: 0);
+  TimeOfDay endTime = const TimeOfDay(hour: 11, minute: 0);
   bool isLoading = false; // Untuk menampilkan loading indicator
   bool isLoadingTasks = true;
 
@@ -70,6 +70,7 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
         isLoadingKaryawan = false;
       });
     } catch (e) {
+      // ignore: avoid_print
       print('Error fetching karyawan: $e');
       setState(() {
         isLoadingKaryawan = false;
@@ -89,6 +90,7 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
         isLoadingTasks = false;
       });
     } catch (e) {
+      // ignore: avoid_print
       print('Error fetching tasks: $e');
       setState(() {
         isLoadingTasks = false;
@@ -187,8 +189,8 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
         selectedTasks.clear();
         selectedKaryawan = null;
         selectedDate = DateTime.now();
-        startTime = TimeOfDay(hour: 10, minute: 0);
-        endTime = TimeOfDay(hour: 11, minute: 0);
+        startTime = const TimeOfDay(hour: 10, minute: 0);
+        endTime = const TimeOfDay(hour: 11, minute: 0);
       });
     } catch (e) {
       setState(() {
@@ -199,6 +201,7 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
       );
+      // ignore: avoid_print
       print('Error saving tugas: $e');
     }
   }
@@ -235,6 +238,7 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                   Navigator.pop(context);
                   _newTaskController.clear();
                 } catch (e) {
+                  // ignore: avoid_print
                   print('Error adding task: $e');
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Gagal menambahkan tugas')),
@@ -267,6 +271,7 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
         });
       }
     } catch (e) {
+      // ignore: avoid_print
       print('Error removing task: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Gagal menghapus tugas')),
@@ -326,7 +331,7 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
             top: 35,
             left: 10,
             child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
               onPressed: () {
                 Navigator.pushReplacement(
                   context,

@@ -10,6 +10,7 @@ class FirebaseAuthService {
           email: email, password: password);
       return credential.user;
     } catch (e) {
+      // ignore: avoid_print
       print("some error occured");
     }
     return null;
@@ -22,6 +23,7 @@ class FirebaseAuthService {
           email: email, password: password);
       return credential.user;
     } catch (e) {
+      // ignore: avoid_print
       print("some error occured");
     }
     return null;

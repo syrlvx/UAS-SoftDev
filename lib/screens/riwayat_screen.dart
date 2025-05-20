@@ -25,22 +25,28 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
     _loadAbsensiData();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   Future<void> _loadAbsensiData() async {
     try {
-      setState(() {
-        isLoading = true;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = true;
+        });
+      }
 
       final User? currentUser = _auth.currentUser;
       if (currentUser == null) {
-        setState(() {
-          isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+        }
         return;
       }
-
-      final String uid = currentUser.uid;
-      List<Map<String, dynamic>> allData = [];
 
       // Mendapatkan 30 hari terakhir
       final DateTime today = DateTime.now();
@@ -49,129 +55,80 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
         (index) => today.subtract(Duration(days: index)),
       );
 
-      // Set untuk melacak tanggal yang sudah ada data absensinya
-      Set<String> datesWithAttendance = {};
+      // Format tanggal untuk query
+      final List<String> formattedDates = last30Days
+          .map((date) => DateFormat('yyyy-MM-dd').format(date))
+          .toList();
 
-      // 1. Muat data absensi untuk setiap tanggal (30 hari terakhir)
-      for (DateTime day in last30Days) {
-        final String formattedDate = DateFormat('yyyy-MM-dd').format(day);
+      try {
+        // Query koleksi absensi untuk data 30 hari terakhir
+        final QuerySnapshot absensiSnapshot = await _firestore
+            .collection('absensi')
+            .where('user_id', isEqualTo: currentUser.uid)
+            .where('tanggal', whereIn: formattedDates)
+            .get();
 
-        try {
-          // Periksa apakah subcollection tanggal ini ada
-          final collectionRef = _firestore
-              .collection('user_data')
-              .doc(uid)
-              .collection(formattedDate);
+        List<Map<String, dynamic>> allData = [];
 
-          final QuerySnapshot snapshot = await collectionRef.limit(1).get();
+        for (var doc in absensiSnapshot.docs) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-          // Jika ada dokumen di subcollection tanggal ini
-          if (snapshot.docs.isNotEmpty) {
-            // Ambil data dari dokumen pertama (seharusnya hanya ada satu untuk absensi harian)
-            final DocumentSnapshot attendanceDoc = snapshot.docs.first;
-            Map<String, dynamic> data =
-                attendanceDoc.data() as Map<String, dynamic>;
+          // Konversi data untuk menyesuaikan dengan format yang diharapkan UI
+          Map<String, dynamic> formattedData = {
+            'tanggal': data['tanggal'],
+            'jenis': 'Absensi',
+            'status': 'Hadir', // Default status
+            'jam_masuk': data['waktu_masuk'] != null
+                ? DateFormat('HH:mm:ss')
+                    .format((data['waktu_masuk'] as Timestamp).toDate())
+                : '08:00:00',
+            'jam_keluar': data['waktu_keluar'] != null
+                ? DateFormat('HH:mm:ss')
+                    .format((data['waktu_keluar'] as Timestamp).toDate())
+                : '17:00:00',
+            'keterangan': data['keterangan'] ?? '',
+          };
 
-            // Tambahkan informasi tanggal dan jenis
-            data['tanggal'] = formattedDate;
-            data['jenis'] = 'Absensi';
-            data['status'] = data['status'] ??
-                'Hadir'; // Default ke 'Hadir' jika tidak ada status
+          allData.add(formattedData);
+        }
 
-            // Pastikan data memiliki nilai default
-            data['jam_masuk'] ??= '08:00:00';
-            data['jam_keluar'] ??= '17:00:00';
-
-            allData.add(data);
-            datesWithAttendance.add(formattedDate);
+        // Tambahkan data "Tidak Hadir" untuk tanggal yang tidak ada di database
+        for (String date in formattedDates) {
+          bool dateExists = allData.any((item) => item['tanggal'] == date);
+          if (!dateExists) {
+            // Tambahkan "Tidak Hadir" untuk semua hari tanpa absensi
+            allData.add({
+              'tanggal': date,
+              'jenis': 'Absensi',
+              'status': 'Tidak Hadir',
+              'jam_masuk': '08:00:00',
+              'jam_keluar': '17:00:00',
+              'keterangan': 'Tidak hadir',
+            });
           }
-          // Jika tidak ada dokumen dan hari kerja (bukan weekend), tambahkan sebagai 'Tidak Hadir'
-          else {
-            final int weekday = day.weekday; // 1 = Senin, 7 = Minggu
-            if (weekday < 6) {
-              // Hari kerja (Senin-Jumat)
-              allData.add({
-                'tanggal': formattedDate,
-                'jam_masuk': '08:00:00',
-                'jam_keluar': '17:00:00',
-                'jenis': 'Absensi',
-                'status': 'Tidak Hadir',
-              });
-            }
-          }
-        } catch (e) {
-          debugPrint('Error checking attendance for date $formattedDate: $e');
+        }
+
+        if (mounted) {
+          setState(() {
+            absensiData = allData;
+            isLoading = false;
+          });
+        }
+      } catch (e) {
+        print('Error querying absensi: $e');
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
         }
       }
-
-      // 2. Load data izin & cuti (juga dari subcollection tanggal)
-      for (DateTime day in last30Days) {
-        final String formattedDate = DateFormat('yyyy-MM-dd').format(day);
-
-        try {
-          // Periksa apakah ada dokumen izin & cuti untuk tanggal ini
-          final collectionRef = _firestore
-              .collection('user_data')
-              .doc(uid)
-              .collection(formattedDate);
-
-          final QuerySnapshot izinCutiDocs = await collectionRef
-              .where('jenis', isEqualTo: 'Izin & Cuti')
-              .get();
-
-          for (var doc in izinCutiDocs.docs) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-            data['tanggal'] = formattedDate;
-
-            // Pastikan field yang diperlukan ada
-            data['jam_masuk'] ??= '08:00:00';
-            data['jam_keluar'] ??= '17:00:00';
-
-            allData.add(data);
-          }
-        } catch (e) {
-          debugPrint('Error checking izin & cuti for date $formattedDate: $e');
-        }
-      }
-
-      // 3. Load data lembur (juga dari subcollection tanggal)
-      for (DateTime day in last30Days) {
-        final String formattedDate = DateFormat('yyyy-MM-dd').format(day);
-
-        try {
-          // Periksa apakah ada dokumen lembur untuk tanggal ini
-          final collectionRef = _firestore
-              .collection('user_data')
-              .doc(uid)
-              .collection(formattedDate);
-
-          final QuerySnapshot lemburDocs =
-              await collectionRef.where('jenis', isEqualTo: 'Lembur').get();
-
-          for (var doc in lemburDocs.docs) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-            data['tanggal'] = formattedDate;
-
-            // Pastikan field yang diperlukan ada
-            data['jam_masuk'] ??= '08:00:00';
-            data['jam_keluar'] ??= '17:00:00';
-
-            allData.add(data);
-          }
-        } catch (e) {
-          debugPrint('Error checking lembur for date $formattedDate: $e');
-        }
-      }
-
-      setState(() {
-        absensiData = allData;
-        isLoading = false;
-      });
     } catch (e) {
-      debugPrint('Error in _loadAbsensiData: $e');
-      setState(() {
-        isLoading = false;
-      });
+      print('Error in _loadAbsensiData: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -181,7 +138,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       length: 3,
       child: Scaffold(
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(150),
+          preferredSize: const Size.fromHeight(60),
           child: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -195,31 +152,34 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             ),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const BottomNavBar()),
-                        );
-                      },
-                    ),
-                    const Spacer(),
-                    const Text(
-                      'Riwayat',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    Positioned(
+                      left: 0,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new,
+                            color: Colors.white),
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const BottomNavBar()),
+                          );
+                        },
                       ),
                     ),
-                    const SizedBox(height: 70),
-                    const Spacer(),
+                    const Center(
+                      child: Text(
+                        'Riwayat',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -232,7 +192,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               color: Colors.white,
               child: const TabBar(
                 indicatorColor: Color.fromARGB(255, 127, 157, 195),
-                labelColor: Colors.black,
+                labelColor: Color.fromARGB(255, 127, 157, 195),
                 unselectedLabelColor: Colors.grey,
                 tabs: [
                   Tab(text: 'Absensi'),
@@ -332,9 +292,11 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                           ),
                         ],
                         onSelected: (value) {
-                          setState(() {
-                            sortAscending = (value == 'Terlama');
-                          });
+                          if (mounted) {
+                            setState(() {
+                              sortAscending = (value == 'Terlama');
+                            });
+                          }
                         },
                       ),
                     ),
@@ -383,29 +345,86 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                 ],
                               ),
                             ),
-                            itemBuilder: (BuildContext context) => [
-                              'Semua',
-                              'Hadir',
-                              'Tidak Hadir',
-                              'Terlambat',
-                            ].map((String value) {
-                              return PopupMenuItem<String>(
-                                value: value,
-                                height: 35,
-                                child: Text(
-                                  value,
-                                  style: const TextStyle(
-                                    color: Color.fromARGB(255, 127, 157, 195),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                            itemBuilder: (BuildContext context) {
+                              // Get current tab index
+                              final currentTab =
+                                  DefaultTabController.of(context).index;
+
+                              if (currentTab == 0) {
+                                // Tab Absensi
+                                return [
+                                  'Semua',
+                                  'Hadir',
+                                  'Tidak Hadir',
+                                ].map((String value) {
+                                  return PopupMenuItem<String>(
+                                    value: value,
+                                    height: 35,
+                                    child: Text(
+                                      value,
+                                      style: const TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 127, 157, 195),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  );
+                                }).toList();
+                              } else if (currentTab == 1) {
+                                // Tab Izin & Cuti
+                                return [
+                                  'Semua',
+                                  'Izin',
+                                  'Cuti',
+                                  'Disetujui',
+                                  'Pending',
+                                  'Ditolak',
+                                ].map((String value) {
+                                  return PopupMenuItem<String>(
+                                    value: value,
+                                    height: 35,
+                                    child: Text(
+                                      value,
+                                      style: const TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 127, 157, 195),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  );
+                                }).toList();
+                              } else {
+                                // Tab Lembur
+                                return [
+                                  'Semua',
+                                  'Disetujui',
+                                  'Pending',
+                                  'Ditolak',
+                                ].map((String value) {
+                                  return PopupMenuItem<String>(
+                                    value: value,
+                                    height: 35,
+                                    child: Text(
+                                      value,
+                                      style: const TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 127, 157, 195),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  );
+                                }).toList();
+                              }
+                            },
                             onSelected: (String newValue) {
-                              setState(() {
-                                selectedStatus = newValue;
-                              });
+                              if (mounted) {
+                                setState(() {
+                                  selectedStatus = newValue;
+                                });
+                              }
                             },
                           ),
                         ),
@@ -440,6 +459,107 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   }
 
   Widget _buildRiwayatTab(String jenis) {
+    if (jenis == 'Izin & Cuti') {
+      return FutureBuilder<QuerySnapshot>(
+        future: FirebaseFirestore.instance
+            .collection('pengajuan')
+            .where('userId', isEqualTo: _auth.currentUser?.uid)
+            .get(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          var docs = snapshot.data?.docs ?? [];
+
+          // Filter untuk Izin & Cuti
+          docs = docs.where((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            final jenisPengajuan = data['jenis'] as String;
+            return jenisPengajuan == 'izin' || jenisPengajuan == 'cuti';
+          }).toList();
+
+          // Filter berdasarkan status yang dipilih
+          if (selectedStatus != 'Semua') {
+            docs = docs.where((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              if (selectedStatus.toLowerCase() == 'izin' ||
+                  selectedStatus.toLowerCase() == 'cuti') {
+                return data['jenis'] == selectedStatus.toLowerCase();
+              } else {
+                return data['status'] == selectedStatus;
+              }
+            }).toList();
+          }
+
+          // Sort documents
+          docs.sort((a, b) {
+            final aData = a.data() as Map<String, dynamic>;
+            final bData = b.data() as Map<String, dynamic>;
+            final aDate = (aData['createdAt'] as Timestamp).toDate();
+            final bDate = (bData['createdAt'] as Timestamp).toDate();
+            return sortAscending
+                ? aDate.compareTo(bDate)
+                : bDate.compareTo(aDate);
+          });
+
+          if (docs.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.history,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Tidak ada data $jenis',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final doc = docs[index];
+              final data = doc.data() as Map<String, dynamic>;
+              final tanggal = (data['tanggal'] as Timestamp).toDate();
+              final formattedDate =
+                  DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(tanggal);
+              final formattedWaktu = DateFormat('dd/MM/yyyy').format(tanggal);
+
+              return IzinItem(
+                date: formattedDate,
+                title: data['keterangan'] ??
+                    data['linkFile'] ??
+                    'Tidak ada keterangan',
+                color: data['jenis'] == 'cuti' ? Colors.purple : Colors.green,
+                type: data['jenis'] == 'cuti' ? 'CUTI' : 'IZIN',
+                waktu: formattedWaktu,
+                status: data['status'] ?? 'Pending',
+              );
+            },
+          );
+        },
+      );
+    }
+
     // Filter data berdasarkan jenis dan status yang dipilih
     final filteredData = absensiData
         .where((item) =>
@@ -577,7 +697,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Icon(
-                                      Icons.location_on,
+                                      Icons.access_time,
                                       color: Colors.green,
                                       size: 18,
                                     ),
@@ -610,16 +730,6 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                             color: Colors.black54,
                                           ),
                                         ),
-                                        if (item['lokasi_masuk'] != null) ...[
-                                          const SizedBox(height: 3),
-                                          Text(
-                                            item['lokasi_masuk'],
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.black54,
-                                            ),
-                                          ),
-                                        ],
                                       ],
                                     ),
                                   ],
@@ -635,7 +745,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                   children: [
                                     const Icon(
                                       Icons.access_time,
-                                      color: Colors.orange,
+                                      color: Colors.green,
                                       size: 18,
                                     ),
                                     const SizedBox(width: 5),
@@ -655,7 +765,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                           'Waktu Selesai',
                                           style: TextStyle(
                                             fontSize: 12,
-                                            color: Colors.orange,
+                                            color: Colors.green,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -667,16 +777,6 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                             color: Colors.black54,
                                           ),
                                         ),
-                                        if (item['lokasi_keluar'] != null) ...[
-                                          const SizedBox(height: 3),
-                                          Text(
-                                            item['lokasi_keluar'],
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.black54,
-                                            ),
-                                          ),
-                                        ],
                                       ],
                                     ),
                                   ],
@@ -685,33 +785,6 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                             ],
                           ),
                         ),
-                        if (item['keterangan'] != null)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(8.0),
-                            color: Colors.grey[100],
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Keterangan:',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  item['keterangan'],
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                       ],
                     ),
                   ),
@@ -721,6 +794,96 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _izinDetail(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class IzinItem extends StatelessWidget {
+  final String date, title, type, waktu, status;
+  final Color color;
+
+  const IzinItem({
+    Key? key,
+    required this.date,
+    required this.title,
+    required this.color,
+    required this.type,
+    required this.waktu,
+    required this.status,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (date.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, top: 10.0),
+            child: Text(
+              date,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.black),
+            ),
+          ),
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+          child: ListTile(
+            leading: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.description, color: color),
+                Text(
+                  type,
+                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            title: Text(
+              title,
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 6),
+                Text('Waktu        : $waktu'),
+                Text('Status Izin  : $status'),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

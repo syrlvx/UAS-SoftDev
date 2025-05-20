@@ -10,11 +10,16 @@ class RekapPengajuanScreen extends StatelessWidget {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(70),
         child: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
           title: const Text('Rekap Pengajuan'),
-          leading: const BackButton(),
-          actions: [],
+          centerTitle: true, // <- ini membuat title berada di tengah
           flexibleSpace: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFF001F3D), Colors.white],
                 begin: Alignment.topCenter,
@@ -23,6 +28,8 @@ class RekapPengajuanScreen extends StatelessWidget {
             ),
           ),
           foregroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
         ),
       ),
       body: ListView(
@@ -148,14 +155,15 @@ class IzinCard extends StatelessWidget {
                 PopupMenuButton<String>(
                   onSelected: (value) {
                     if (value == 'delete') {
+                      // ignore: avoid_print
                       print('Item deleted');
                     }
                   },
                   itemBuilder: (BuildContext context) => [
-                    PopupMenuItem<String>(
+                    const PopupMenuItem<String>(
                       value: 'delete',
                       child: Row(
-                        children: const [
+                        children: [
                           Icon(Icons.delete, color: Colors.red),
                           SizedBox(width: 8),
                           Text('Hapus', style: TextStyle(color: Colors.red)),

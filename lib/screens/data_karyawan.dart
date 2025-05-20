@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:purelux/screens/rekap_absensi.dart';
 import 'package:purelux/screens/rekap_pengajuan.dart';
+import 'package:purelux/screens/rekap_tugas.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 
 class DataKaryawanScreen extends StatefulWidget {
   const DataKaryawanScreen({super.key});
@@ -12,8 +15,185 @@ class DataKaryawanScreen extends StatefulWidget {
 }
 
 class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
-  String selectedMonth = 'Apr - 2022';
-  final List<String> months = ['Mar - 2022', 'Apr - 2022', 'May - 2022'];
+  String? username;
+  String? role;
+  String? photoUrl;
+  bool isLoadingUser = true;
+
+  // Menghapus month picker yang bermasalah
+  DateTime selectedDate = DateTime.now();
+  String _getMonthName(int month) {
+    const monthNames = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember'
+    ];
+    return monthNames[month - 1];
+  }
+
+  late String selectedMonthYear;
+
+  // Daftar tahun yang dapat dipilih
+  final List<int> years = [2021, 2022, 2023, 2024, 2025];
+  late int selectedYear;
+
+  // Daftar bulan yang dapat dipilih
+  final List<String> months = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember'
+  ];
+  late String selectedMonth;
+
+  Future<void> _fetchUserData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final uid = user.uid;
+        final doc =
+            await FirebaseFirestore.instance.collection('user').doc(uid).get();
+        if (doc.exists) {
+          setState(() {
+            username = doc['username'];
+            role = doc['role'];
+            photoUrl = doc.data()?['foto'];
+            isLoadingUser = false;
+          });
+        } else {
+          // ignore: avoid_print
+          print("User document not found.");
+        }
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print("Error fetching user data: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+    selectedMonth = months[selectedDate.month - 1];
+    selectedYear = selectedDate.year;
+    selectedMonthYear = '$selectedMonth $selectedYear';
+  }
+
+  // Fungsi untuk menampilkan dialog pemilihan bulan dan tahun
+  Future<void> _showMonthYearPickerDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            'Pilih Bulan dan Tahun',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Container(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Pilih Bulan
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: 'Bulan',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  value: selectedMonth,
+                  items: months.map((String month) {
+                    return DropdownMenuItem<String>(
+                      value: month,
+                      child: Text(month),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      selectedMonth = newValue;
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                // Pilih Tahun
+                DropdownButtonFormField<int>(
+                  decoration: InputDecoration(
+                    labelText: 'Tahun',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  value: selectedYear,
+                  items: years.map((int year) {
+                    return DropdownMenuItem<int>(
+                      value: year,
+                      child: Text(year.toString()),
+                    );
+                  }).toList(),
+                  onChanged: (int? newValue) {
+                    if (newValue != null) {
+                      selectedYear = newValue;
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(
+                'Batal',
+                style: GoogleFonts.poppins(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  selectedMonthYear = '$selectedMonth $selectedYear';
+                  // Update selectedDate dengan bulan dan tahun yang baru
+                  int monthIndex = months.indexOf(selectedMonth) + 1;
+                  selectedDate = DateTime(selectedYear, monthIndex);
+                });
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF001F3D),
+              ),
+              child: Text(
+                'Pilih',
+                style: GoogleFonts.poppins(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,14 +221,14 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
                   _buildRekapAbsensi(),
                   _buildKinerjaKaryawan(),
                   const SizedBox(height: 20),
-                  _buildMenuItem(
-                    Icons.calendar_today,
-                    'Rekap Absensi',
-                    'Detail rekapitulasi absensi',
-                    () {
-                      // Navigasi ke screen absensi (kalau ada)
-                    },
-                  ),
+                  _buildMenuItem(Icons.arrow_drop_down, 'Rekap Absensi',
+                      'Detail rekapitulasi absensi', () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const RekapAbsensiScreen()),
+                    );
+                  }),
                   _buildMenuItem(
                     Icons.description,
                     'Rekap Pengajuan',
@@ -66,7 +246,11 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
                     'Rekap Tugas',
                     'Tugas-tugas yang diberikan',
                     () {
-                      // Navigasi ke screen rekap tugas (kalau ada)
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const RekapTugasScreen()),
+                      );
                     },
                   ),
                 ],
@@ -79,187 +263,279 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
   }
 
   Widget _buildRekapAbsensi() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Judul + Dropdown
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final user = FirebaseAuth.instance.currentUser;
+
+    return FutureBuilder(
+      future: Future.wait([
+        // Ambil semua dokumen absensi user, tanpa filter status
+        FirebaseFirestore.instance
+            .collection('absensi')
+            .where('user_id', isEqualTo: user?.uid)
+            .get(),
+        // Ambil pengajuan izin dan cuti user
+        FirebaseFirestore.instance
+            .collection('pengajuan')
+            .where('userId', isEqualTo: user?.uid)
+            .get(),
+      ]),
+      builder: (context, AsyncSnapshot<List<QuerySnapshot>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const Center(child: Text('Data tidak ditemukan'));
+        }
+
+        final hadirCount = snapshot.data![0].docs.length;
+        final pengajuanDocs = snapshot.data![1].docs;
+
+        int izin = pengajuanDocs.where((d) => d['jenis'] == 'izin').length;
+        int cuti = pengajuanDocs.where((d) => d['jenis'] == 'cuti').length;
+
+        // Debug print
+        print('Debug hadirCount: $hadirCount');
+        print('Debug izin: $izin');
+        print('Debug cuti: $cuti');
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Rekap Absensi',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+            // Judul + Dropdown bulan - DIGANTI DENGAN IMPLEMENTASI BARU
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Rekap Absensi',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _showMonthYearPickerDialog(),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          selectedMonthYear,
+                          style: GoogleFonts.poppins(color: Colors.black),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.calendar_month,
+                            color: Colors.black, size: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
+            const SizedBox(height: 16),
+
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(top: 12),
               decoration: BoxDecoration(
-                color: Colors.white, // Warna dropdown
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                border:
-                    Border.all(color: Colors.grey.shade300), // Biar ada batas
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  dropdownColor:
-                      Colors.white, // Pastikan dropdown list juga putih
-                  value: selectedMonth,
-                  items: months.map((month) {
-                    return DropdownMenuItem(
-                      value: month,
-                      child: Text(
-                        month,
-                        style: GoogleFonts.poppins(color: Colors.black),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            'Total Kehadiran : $hadirCount Hari',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedMonth = value!;
-                    });
-                  },
-                  icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
-                ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Baris atas: Hadir - Terlambat - Alpha (dummy dulu)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                          child: _buildAbsensiCard(
+                              'Hadir', '$hadirCount Hari', Colors.green)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: _buildAbsensiCard(
+                              'Terlambat', '1 Hari', Colors.amber)), // dummy
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: _buildAbsensiCard(
+                              'Alpha', '8 Hari', Colors.redAccent)), // dummy
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Baris bawah: Izin - Cuti
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                          child: _buildAbsensiCard(
+                              'Izin', '$izin Hari', Colors.blue)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: _buildAbsensiCard(
+                              'Cuti', '$cuti Hari', Colors.orange)),
+                    ],
+                  ),
+                ],
               ),
             ),
+            const SizedBox(height: 12),
           ],
-        ),
-        const SizedBox(height: 16),
+        );
+      },
+    );
+  }
 
-        // Card isi rekapnya
-        Container(
-          padding: const EdgeInsets.all(16),
-          margin: const EdgeInsets.only(top: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              )
-            ],
+  // Fungsi yang sudah ada di code sebelumnya
+  Widget _buildAbsensiCard(String title, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: color,
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 3 di atas
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildAbsensiCard('Hadir', '8 Hari', Colors.green),
-                  _buildAbsensiCard('Alpa', '1 Hari', Colors.red),
-                  _buildAbsensiCard('Lembur', '6 kali', Colors.pink),
-                ],
-              ),
-              const SizedBox(height: 12),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-              // 2 di bawah
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildAbsensiCard('Izin', '8 Hari', Colors.blue),
-                  _buildAbsensiCard('Cuti', '1 Hari', Colors.orange),
-                ],
-              ),
-              const SizedBox(height: 12),
+  // Fungsi yang sudah ada di code sebelumny
+}
 
-              // 3 terakhir
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildAbsensiCard('Terlambat', '1 Hari', Colors.amber),
-                  _buildAbsensiCard(
-                      'Tidak Absen Pulang', '1 Hari', Colors.purpleAccent),
-                ],
-              ),
-            ],
+Widget _buildAbsensiCard(String title, String value, Color color) {
+  return Container(
+    width: 100, // bisa 110–130 tergantung selera/lebar layar
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.3),
+          blurRadius: 8,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          height: 4,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(8),
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 
-  Widget _buildAbsensiCard(String title, String value, Color color) {
-    return Flexible(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.50),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              value,
-              style: GoogleFonts.poppins(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              height: 4,
-              width: 60, // Panjang garis bawah
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ],
-        ),
+Widget _buildMenuItem(
+  IconData icon,
+  String title,
+  String subtitle,
+  VoidCallback onTap,
+) {
+  return Card(
+    color: Colors.white,
+    elevation: 2,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+    margin: const EdgeInsets.symmetric(vertical: 8),
+    child: ListTile(
+      leading: Icon(
+        icon,
+        color: Color.fromARGB(255, 127, 157, 195), // Warna logo di sini
       ),
-    );
-  }
-
-  Widget _buildMenuItem(
-      IconData icon, String title, String subtitle, VoidCallback onTap) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Icon(icon, size: 28, color: Colors.black),
-        title: Text(title,
-            style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold, color: Colors.black)),
-        subtitle:
-            Text(subtitle, style: GoogleFonts.poppins(color: Colors.black54)),
-        trailing:
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black),
-        onTap: onTap, // <- ini penting
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
-    );
-  }
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: onTap,
+    ),
+  );
 }
 
 Widget _buildKinerjaKaryawan() {
+  final user = FirebaseAuth.instance.currentUser;
+
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -269,7 +545,7 @@ Widget _buildKinerjaKaryawan() {
         style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: const Color.fromARGB(255, 255, 255, 255),
+          color: Colors.white,
         ),
       ),
       const SizedBox(height: 12),
@@ -288,10 +564,81 @@ Widget _buildKinerjaKaryawan() {
         ),
         child: Column(
           children: [
-            _buildKinerjaItem('Pengajuan Ditolak', '3 Izin, 1 Cuti'),
-            _buildKinerjaItem('Tugas Selesai', '12 Tugas'),
-            _buildKinerjaItem('Tugas Tidak Tepat Waktu', '12 Tugas'),
+            /// ———————— Cuti Disetujui ————————
+            FutureBuilder<QuerySnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('pengajuan')
+                  .where('userId', isEqualTo: user?.uid)
+                  .where('jenis', isEqualTo: 'cuti')
+                  .where('status', isEqualTo: 'Disetujui')
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return _buildKinerjaItem('Cuti Disetujui', 'Loading…');
+                } else if (snapshot.hasError) {
+                  return _buildKinerjaItem('Cuti Disetujui', 'Error');
+                } else {
+                  final totalCuti = snapshot.data!.docs.length;
+                  return _buildKinerjaItem('Cuti Disetujui', '$totalCuti Cuti');
+                }
+              },
+            ),
+
+            /// ———————— Pengajuan Ditolak (Izin & Cuti) ————————
+            FutureBuilder<QuerySnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('pengajuan')
+                  .where('userId', isEqualTo: user?.uid)
+                  .where('status', isEqualTo: 'Ditolak')
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return _buildKinerjaItem('Pengajuan Ditolak', 'Loading…');
+                } else if (snapshot.hasError) {
+                  return _buildKinerjaItem('Pengajuan Ditolak', 'Error');
+                } else {
+                  int izinCount = 0;
+                  int cutiCount = 0;
+                  for (var doc in snapshot.data!.docs) {
+                    final jenis = doc['jenis']?.toString().toLowerCase();
+                    if (jenis == 'izin') {
+                      izinCount++;
+                    } else if (jenis == 'cuti') {
+                      cutiCount++;
+                    }
+                  }
+                  return _buildKinerjaItem(
+                    'Pengajuan Ditolak',
+                    '$izinCount Izin, $cutiCount Cuti',
+                  );
+                }
+              },
+            ),
+
+            /// ———————— Dummy Tugas ————————
+            FutureBuilder<QuerySnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('tugas')
+                  .where('karyawanUid', isEqualTo: user?.uid)
+                  .where('status', isEqualTo: 'Selesai') // sesuaikan ejaannya
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return _buildKinerjaItem('Tugas Selesai', 'Loading…');
+                } else if (snapshot.hasError) {
+                  return _buildKinerjaItem('Tugas Selesai', 'Error');
+                } else {
+                  final totalTugas = snapshot.data!.docs.length;
+                  return _buildKinerjaItem(
+                      'Tugas Selesai', '$totalTugas Tugas');
+                }
+              },
+            ),
+            _buildKinerjaItem('Tugas Terlambat', '12 Tugas'),
+
             const Divider(height: 24),
+
+            /// ———————— Skor Kinerja ————————
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -320,23 +667,18 @@ Widget _buildKinerjaKaryawan() {
   );
 }
 
+/// Helper untuk men-generate satu baris info kinerja
 Widget _buildKinerjaItem(String title, String result) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 6),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
-        ),
-        Text(
-          result,
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w500,
-            color: Colors.blueGrey,
-          ),
-        ),
+        Text(title,
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87)),
+        Text(result,
+            style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w500, color: Colors.blueGrey)),
       ],
     ),
   );
@@ -359,6 +701,7 @@ Widget _buildProfileAkun() {
       var data = snapshot.data!.data() as Map<String, dynamic>;
       String username = data['username'] ?? 'Nama tidak tersedia';
       String role = data['role'] ?? '-';
+      String photo = data['foto'] ?? '-';
 
       return Container(
         padding: const EdgeInsets.all(16),
@@ -377,22 +720,9 @@ Widget _buildProfileAkun() {
           children: [
             CircleAvatar(
               radius: 32,
-              backgroundColor: Colors.blueAccent,
-              child: Text(
-                username.trim().isNotEmpty
-                    ? username
-                        .trim()
-                        .split(' ')
-                        .map((e) => e.isNotEmpty ? e[0] : '')
-                        .take(2)
-                        .join()
-                        .toUpperCase()
-                    : '?',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white, // Initials in white
-                ),
+              backgroundColor: Colors.grey[200],
+              backgroundImage: NetworkImage(
+                photo,
               ),
             ),
             SizedBox(width: 16), // Adds spacing between the avatar and text

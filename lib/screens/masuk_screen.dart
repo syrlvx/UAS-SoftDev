@@ -50,6 +50,10 @@ class _MasukScreenState extends State<MasukScreen> {
 
   Future<void> _getLocation() async {
     try {
+      setState(() {
+        _loading = true;
+      });
+
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         setState(() {
@@ -79,15 +83,24 @@ class _MasukScreenState extends State<MasukScreen> {
         return;
       }
 
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 5),
-      ).timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          throw TimeoutException('Mengambil lokasi terlalu lama');
-        },
-      );
+      Position? position;
+      try {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        ).timeout(
+          const Duration(seconds: 10),
+          onTimeout: () {
+            throw TimeoutException('Mengambil lokasi terlalu lama');
+          },
+        );
+      } catch (e) {
+        print('Error getting position: $e');
+        setState(() {
+          _location = 'Gagal mendapatkan posisi: ${e.toString()}';
+          _loading = false;
+        });
+        return;
+      }
 
       _currentPosition = position;
 
@@ -96,7 +109,7 @@ class _MasukScreenState extends State<MasukScreen> {
           position.latitude,
           position.longitude,
         ).timeout(
-          const Duration(seconds: 5),
+          const Duration(seconds: 10),
           onTimeout: () {
             throw TimeoutException('Mengambil alamat terlalu lama');
           },
@@ -104,93 +117,198 @@ class _MasukScreenState extends State<MasukScreen> {
 
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
+          String formattedLocation = '';
+
+          // Membuat format alamat yang lebih rapi
+          if (place.street?.isNotEmpty ?? false) {
+            formattedLocation += place.street!;
+          }
+          if (place.subLocality?.isNotEmpty ?? false) {
+            formattedLocation += formattedLocation.isNotEmpty ? ', ' : '';
+            formattedLocation += place.subLocality!;
+          }
+          if (place.locality?.isNotEmpty ?? false) {
+            formattedLocation += formattedLocation.isNotEmpty ? ', ' : '';
+            formattedLocation += place.locality!;
+          }
+
           setState(() {
-            _location =
-                '${place.street ?? ''}, ${place.subLocality ?? ''}, ${place.locality ?? ''}, ${place.administrativeArea ?? ''}';
+            _location = formattedLocation;
             _loading = false;
           });
         } else {
           setState(() {
-            _location = 'Lokasi: ${position.latitude}, ${position.longitude}';
+            _location = 'Lokasi tidak ditemukan';
             _loading = false;
           });
         }
       } catch (e) {
+        print('Error getting placemark: $e');
         setState(() {
-          _location = 'Lokasi: ${position.latitude}, ${position.longitude}';
+          _location = 'Gagal mendapatkan alamat';
           _loading = false;
         });
       }
     } catch (e) {
-      print('Error getting location: $e');
+      print('Error in _getLocation: $e');
       setState(() {
-        _location = 'Gagal mendapatkan lokasi';
+        _location = 'Gagal mendapatkan lokasi: ${e.toString()}';
         _loading = false;
       });
     }
   }
 
   Future<void> _cekStatusAbsen() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null || _currentDate == null) return;
-
-    final docRef = FirebaseFirestore.instance
-        .collection('user_data')
-        .doc(user.uid)
-        .collection(_currentDate!);
-
-    final masukDoc = await docRef.doc('masuk').get();
-    final keluarDoc = await docRef.doc('keluar').get();
-
-    setState(() {
-      if (masukDoc.exists) {
-        Timestamp ts = masukDoc['timestamp'];
-        _waktuMasuk = DateFormat('HH:mm').format(ts.toDate());
-        _sudahMasuk = true;
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user == null || _currentDate == null) {
+        setState(() {
+          _loading = false;
+        });
+        return;
       }
 
-      if (keluarDoc.exists) {
-        Timestamp ts = keluarDoc['timestamp'];
-        _waktuKeluar = DateFormat('HH:mm').format(ts.toDate());
-        _sudahKeluar = true;
+      final docRef = FirebaseFirestore.instance
+          .collection('absensi')
+          .where('user_id', isEqualTo: user.uid)
+          .where('tanggal', isEqualTo: _currentDate);
+
+      final querySnapshot = await docRef.get().catchError((error) {
+        print('Error querying Firestore: $error');
+        return null;
+      });
+
+      if (querySnapshot == null) {
+        setState(() {
+          _loading = false;
+        });
+        return;
       }
 
-      _loading = false;
-    });
+      if (querySnapshot.docs.isNotEmpty) {
+        final data = querySnapshot.docs.first.data();
+        setState(() {
+          if (data.containsKey('waktu_masuk') && data['waktu_masuk'] != null) {
+            _waktuMasuk = DateFormat('HH:mm')
+                .format((data['waktu_masuk'] as Timestamp).toDate());
+            _sudahMasuk = true;
+          }
+
+          if (data.containsKey('waktu_keluar') &&
+              data['waktu_keluar'] != null) {
+            _waktuKeluar = DateFormat('HH:mm')
+                .format((data['waktu_keluar'] as Timestamp).toDate());
+            _sudahKeluar = true;
+          }
+          _loading = false;
+        });
+      } else {
+        setState(() {
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      print('Error checking attendance status: $e');
+      setState(() {
+        _loading = false;
+      });
+    }
   }
 
   Future<void> _handleAbsen() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null || _currentDate == null || _location == null) return;
+    setState(() {
+      _loading = true;
+    });
 
-    final now = Timestamp.now();
-    final nowFormatted = DateFormat('HH:mm').format(DateTime.now());
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user == null || _currentDate == null) {
+        setState(() {
+          _loading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User atau tanggal tidak tersedia')),
+        );
+        return;
+      }
 
-    final docRef = FirebaseFirestore.instance
-        .collection('user_data')
-        .doc(user.uid)
-        .collection(_currentDate!);
+      if (_currentPosition == null) {
+        await _getLocation();
+        if (_currentPosition == null || _location == null) {
+          setState(() {
+            _loading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Lokasi tidak tersedia, coba lagi')),
+          );
+          return;
+        }
+      }
 
-    if (!_sudahMasuk) {
-      await docRef.doc('masuk').set({
-        'timestamp': now,
-        'location': _location,
-      });
+      final now = Timestamp.now();
+      final nowFormatted = DateFormat('HH:mm').format(DateTime.now());
+
+      // Query untuk mencari dokumen absensi hari ini
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('absensi')
+          .where('user_id', isEqualTo: user.uid)
+          .where('tanggal', isEqualTo: _currentDate)
+          .limit(1)
+          .get();
+
+      if (!_sudahMasuk) {
+        // Jika belum ada dokumen absensi hari ini, buat baru
+        if (querySnapshot.docs.isEmpty) {
+          Map<String, dynamic> absenData = {
+            'user_id': user.uid,
+            'tanggal': _currentDate,
+            'waktu_masuk': now,
+            'lokasi_masuk': _location,
+            'keterangan':
+                'Tepat waktu', // Bisa ditambahkan logika untuk menentukan status
+          };
+
+          await FirebaseFirestore.instance.collection('absensi').add(absenData);
+        } else {
+          // Jika sudah ada tapi belum ada waktu masuk (seharusnya tidak terjadi)
+          await querySnapshot.docs.first.reference.update({
+            'waktu_masuk': now,
+            'lokasi_masuk': _location,
+          });
+        }
+
+        setState(() {
+          _waktuMasuk = nowFormatted;
+          _waktuKeluar = null;
+          _sudahMasuk = true;
+          _loading = false;
+        });
+      } else {
+        // Update dokumen yang sudah ada dengan data keluar
+        if (querySnapshot.docs.isNotEmpty) {
+          Map<String, dynamic> updateData = {
+            'waktu_keluar': now,
+            'lokasi_keluar': _location,
+          };
+
+          await querySnapshot.docs.first.reference.update(updateData);
+        }
+
+        setState(() {
+          _waktuKeluar = nowFormatted;
+          _sudahMasuk = false;
+          _sudahKeluar = true;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      print('Error handling attendance: $e');
       setState(() {
-        _waktuMasuk = nowFormatted;
-        _waktuKeluar = null;
-        _sudahMasuk = true;
+        _loading = false;
       });
-    } else {
-      await docRef.doc('keluar').set({
-        'timestamp': now,
-        'location': _location,
-      });
-      setState(() {
-        _waktuKeluar = nowFormatted;
-        _sudahMasuk = false;
-        _sudahKeluar = true;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Terjadi kesalahan: ${e.toString()}')),
+      );
     }
   }
 

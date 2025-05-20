@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:purelux/screens/login_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
+import 'package:image_picker/image_picker.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -15,6 +17,7 @@ class _AccountScreenState extends State<AccountScreen> {
   String? username;
   String? email;
   String? phoneNumber;
+  String? photoUrl;
   bool isLoading = true;
 
   @override
@@ -35,12 +38,42 @@ class _AccountScreenState extends State<AccountScreen> {
             username = doc['username'];
             email = user.email;
             phoneNumber = doc.data()?['phone'] ?? '';
+            photoUrl = doc.data()?['foto'];
             isLoading = false;
           });
         }
       }
     } catch (e) {
       _showError(context, "Gagal mengambil data: $e");
+    }
+  }
+
+  Future<void> _pickAndUploadPhoto() async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(source: ImageSource.gallery);
+      if (picked == null) return;
+      final uid = auth.currentUser!.uid;
+      final fileBytes = await picked.readAsBytes();
+      final fileExt = picked.path.split('.').last;
+      final fileName = '$uid.$fileExt';
+      // Upload ke Supabase Storage bucket 'foto' dengan nama file = uid.ext
+      final sb = supabase.Supabase.instance.client;
+      await sb.storage.from('foto').uploadBinary(
+            fileName,
+            fileBytes,
+            fileOptions: const supabase.FileOptions(upsert: true),
+          );
+      final publicUrl = sb.storage.from('foto').getPublicUrl(fileName);
+      // Simpan link ke Firestore
+      await FirebaseFirestore.instance.collection('user').doc(uid).update({
+        'foto': publicUrl,
+      });
+      setState(() {
+        photoUrl = publicUrl;
+      });
+    } catch (e) {
+      _showError(context, "Gagal upload foto: $e");
     }
   }
 
@@ -76,14 +109,24 @@ class _AccountScreenState extends State<AccountScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.blue.shade700,
-                    child: Text(
-                      (username?.isNotEmpty == true)
-                          ? username![0].toUpperCase()
-                          : '?',
-                      style: const TextStyle(fontSize: 36, color: Colors.white),
+                  GestureDetector(
+                    onTap: _pickAndUploadPhoto,
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.blue.shade700,
+                      backgroundImage:
+                          (photoUrl != null && photoUrl!.isNotEmpty)
+                              ? NetworkImage(photoUrl!)
+                              : null,
+                      child: (photoUrl == null || photoUrl!.isEmpty)
+                          ? Text(
+                              (username?.isNotEmpty == true)
+                                  ? username![0].toUpperCase()
+                                  : '?',
+                              style: const TextStyle(
+                                  fontSize: 36, color: Colors.white),
+                            )
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 12),

@@ -7,6 +7,7 @@ import 'package:purelux/screens/riwayat_screen.dart';
 import 'package:purelux/screens/tugas_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -21,7 +22,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String? username;
   String? role;
+  String? photoUrl;
   bool isLoadingUser = true;
+  int hadirBulanIni = 0;
+  int izinBulanIni = 0;
 
   @override
   void initState() {
@@ -30,6 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
     _startTimer();
     _fetchUserData();
     _checkUnreadNotifications();
+    _countHadirThisMonth();
+    _countIzinThisMonth();
   }
 
   Future<void> _fetchUserData() async {
@@ -43,13 +49,16 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             username = doc['username'];
             role = doc['role'];
+            photoUrl = doc.data()?['foto'];
             isLoadingUser = false;
           });
         } else {
+          // ignore: avoid_print
           print("User document not found.");
         }
       }
     } catch (e) {
+      // ignore: avoid_print
       print("Error fetching user data: $e");
     }
   }
@@ -69,12 +78,78 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _countHadirThisMonth() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final now = DateTime.now();
+      final firstDay = DateTime(now.year, now.month, 1);
+      final lastDay = DateTime(now.year, now.month + 1, 0);
+
+      // Format tanggal untuk filter
+      final formattedFirstDay = DateFormat('yyyy-MM-dd').format(firstDay);
+      final formattedLastDay = DateFormat('yyyy-MM-dd').format(lastDay);
+
+      // Query collection absensi hanya dengan user_id
+      final snapshot = await FirebaseFirestore.instance
+          .collection('absensi')
+          .where('user_id', isEqualTo: user.uid)
+          .get();
+
+      // Filter dan hitung di client side
+      int hadirCount = 0;
+      for (var doc in snapshot.docs) {
+        final tanggal = doc['tanggal'] as String;
+
+        // Check if tanggal is within current month
+        if (tanggal.compareTo(formattedFirstDay) >= 0 &&
+            tanggal.compareTo(formattedLastDay) <= 0) {
+          // Hitung semua hari kehadiran
+          hadirCount++;
+        }
+      }
+
+      setState(() {
+        hadirBulanIni = hadirCount;
+      });
+    } catch (e) {
+      print('Error menghitung hadir bulan ini: $e');
+    }
+  }
+
+  Future<void> _countIzinThisMonth() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      final uid = user.uid;
+      final now = DateTime.now();
+      final firstDay = DateTime(now.year, now.month, 1);
+      final lastDay = DateTime(now.year, now.month + 1, 0);
+      final snapshot = await FirebaseFirestore.instance
+          .collection('pengajuan')
+          .where('userId', isEqualTo: uid)
+          .where('jenis', isEqualTo: 'izin')
+          .where('tanggal',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(firstDay))
+          .where('tanggal', isLessThanOrEqualTo: Timestamp.fromDate(lastDay))
+          .where('status', isEqualTo: 'Disetujui')
+          .get();
+      setState(() {
+        izinBulanIni = snapshot.docs.length;
+      });
+    } catch (e) {
+      print('Error menghitung izin bulan ini: $e');
+    }
+  }
+
   String _getCurrentTime() {
     final now = DateTime.now();
     return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
   }
 
   void _startTimer() {
+    // ignore: prefer_const_constructors
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
         _currentTime = _getCurrentTime();
@@ -90,17 +165,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final hari = DateFormat('EEEE', 'id_ID').format(now);
+    final tanggal = DateFormat('d MMMM yyyy', 'id_ID').format(now);
     return Scaffold(
       backgroundColor: Colors.white,
       body: isLoadingUser
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Stack(
               clipBehavior: Clip.none,
               children: [
                 // Background Gradient AppBar
                 Container(
                   height: 300,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
                         Color(0xFF001F3D), // Biru navy gelap
@@ -116,30 +194,38 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: SafeArea(
                     child: Padding(
-                      padding: EdgeInsets.only(
+                      padding: const EdgeInsets.only(
                           top: 0, bottom: 150, left: 16, right: 16),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.account_circle,
-                                size: 60, color: Colors.white),
+                            icon: photoUrl != null && photoUrl!.isNotEmpty
+                                ? CircleAvatar(
+                                    radius: 30,
+                                    backgroundImage: NetworkImage(photoUrl!),
+                                    backgroundColor: Colors.white,
+                                  )
+                                : const Icon(Icons.account_circle,
+                                    size: 60, color: Colors.white),
+                            iconSize: 60,
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => AccountScreen()),
+                                    builder: (context) =>
+                                        const AccountScreen()),
                               );
                             },
                           ),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 username ?? 'User',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 20,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -147,25 +233,25 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               Text(
                                 role ?? '',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.white70,
                                 ),
                               ),
                             ],
                           ),
-                          Spacer(),
+                          const Spacer(),
                           Stack(
                             children: [
                               IconButton(
-                                icon: Icon(Icons.notifications,
+                                icon: const Icon(Icons.notifications,
                                     color: Colors.white, size: 30),
                                 onPressed: () async {
                                   await Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                            NotificationScreen()),
+                                            const NotificationScreen()),
                                   );
                                   // Check for unread notifications after returning from notification screen
                                   _checkUnreadNotifications();
@@ -176,16 +262,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                   right: 8,
                                   top: 8,
                                   child: Container(
-                                    padding: EdgeInsets.all(2),
+                                    padding: const EdgeInsets.all(2),
                                     decoration: BoxDecoration(
                                       color: Colors.red,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    constraints: BoxConstraints(
+                                    constraints: const BoxConstraints(
                                       minWidth: 16,
                                       minHeight: 16,
                                     ),
-                                    child: Text(
+                                    child: const Text(
                                       '!',
                                       style: TextStyle(
                                         color: Colors.white,
@@ -210,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   left: 16,
                   right: 16,
                   child: Container(
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -219,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.grey.withOpacity(0.2), // Warna bayangan
                           blurRadius: 10, // Seberapa kabur bayangannya
                           spreadRadius: 2, // Seberapa besar area bayangannya
-                          offset: Offset(
+                          offset: const Offset(
                               0, 2), // Arah bayangan (x, y) → ini ke bawah
                         ),
                       ],
@@ -256,11 +342,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text('Selasa',
+                                Text(hari,
                                     style: TextStyle(
                                         color: Colors.black,
                                         fontWeight: FontWeight.bold)),
-                                Text('22 Februari 2022',
+                                Text(tanggal,
                                     style: TextStyle(color: Colors.black)),
                                 Text('Pulang',
                                     style: TextStyle(
@@ -270,10 +356,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
 
                         // Judul tengah
-                        Center(
+                        const Center(
                           child: Text(
                             'Rekap Absensi Bulan Ini',
                             style: TextStyle(
@@ -281,14 +367,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
 
                         // Statistik absensi
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            _buildStatBox('HADIR', '0 Hari', Colors.green),
-                            _buildStatBox('IZIN', '0 Hari',
+                            _buildStatBox(
+                                'HADIR', '$hadirBulanIni Hari', Colors.green),
+                            _buildStatBox('IZIN', '$izinBulanIni Hari',
                                 const Color.fromARGB(255, 243, 33, 33)),
                             _buildStatBox(
                                 'SISA CUTI', '12 Hari', Colors.orange),
@@ -301,13 +388,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 // Menu Grid bawah card
                 Padding(
-                  padding: EdgeInsets.only(top: 430),
+                  padding: const EdgeInsets.only(top: 430),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Pilih Fitur:',
                           style: TextStyle(
                             fontSize: 16,
@@ -315,10 +402,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Colors.black,
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         GridView.count(
                           shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           crossAxisCount: 3,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
@@ -338,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               () => Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (_) => TugasScreen()),
+                                    builder: (_) => const TugasScreen()),
                               ),
                             ),
                             _buildMenuItem(
@@ -347,7 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               () => Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (_) => RiwayatScreen()),
+                                    builder: (_) => const RiwayatScreen()),
                               ),
                             ),
                           ],
@@ -378,7 +465,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.black.withOpacity(0.2), // Warna bayangan
                 spreadRadius: 1, // Jarak bayangan dari widget
                 blurRadius: 5, // Mengaburkan bayangan
-                offset: Offset(0, -1), // Posisi bayangan (horizontal, vertikal)
+                offset: const Offset(
+                    0, -1), // Posisi bayangan (horizontal, vertikal)
               ),
             ],
           ),
@@ -388,12 +476,12 @@ class _HomeScreenState extends State<HomeScreen> {
               Icon(
                 icon,
                 size: 40,
-                color: Color.fromARGB(255, 127, 157, 195),
+                color: const Color.fromARGB(255, 127, 157, 195),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 label,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Color.fromARGB(255, 127, 157, 195),
@@ -411,10 +499,11 @@ Widget _buildStatBox(String title, String count, Color color) {
   return Column(
     children: [
       Text(title,
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-      SizedBox(height: 4),
+          style: const TextStyle(
+              color: Colors.black, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 4),
       Text(count, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
-      SizedBox(height: 4),
+      const SizedBox(height: 4),
       Container(height: 4, width: 40, color: color),
     ],
   );
