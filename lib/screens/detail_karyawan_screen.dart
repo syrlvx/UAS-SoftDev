@@ -122,7 +122,7 @@ class DetailKaryawanScreen extends StatelessWidget {
               child: Text('Penilaian Kinerja',
                   style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 18,
                       color: Colors.black)),
             ),
             const SizedBox(height: 8),
@@ -133,7 +133,7 @@ class DetailKaryawanScreen extends StatelessWidget {
                 children: [
                   Text("Skor Kinerja: $performanceScore/100",
                       style: GoogleFonts.poppins(
-                          fontSize: 14, color: Colors.black)),
+                          fontSize: 16, color: Colors.black)),
                   const SizedBox(height: 4),
                   LinearProgressIndicator(
                     value: performanceScore / 100,
@@ -149,13 +149,45 @@ class DetailKaryawanScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 35),
+
+            /// Grafik Absensi
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Grafik Absensi:',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
+            SizedBox(
+              height: 200,
+              child: PieChart(
+                PieChartData(
+                  sections: [
+                    PieChartSectionData(
+                        color: Colors.green, value: 8, title: '50%'),
+                    PieChartSectionData(
+                        color: Colors.orange, value: 2, title: '10%'),
+                    PieChartSectionData(
+                        color: Colors.red, value: 2, title: '1%'),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 30),
 
             /// Info
             _buildInfoCard(
                 color: Colors.green,
                 title: 'Absensi Hadir',
                 subtitle: '8 Hari'),
+
             _buildInfoCard(
                 color: Colors.orange, title: 'Izin & Cuti', subtitle: '2 Hari'),
             _buildInfoCard(
@@ -166,141 +198,22 @@ class DetailKaryawanScreen extends StatelessWidget {
                 subtitle: '5 Tugas'),
             _buildInfoCard(
                 color: Colors.grey,
-                title: 'Tugas Tidak Tepat Waktu',
+                title: 'Tugas Terlambat',
                 subtitle: '1 Tugas'),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 35),
 
-            /// Grafik Absensi
-            Text('Grafik Absensi:',
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Catatan: ',
                 style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold, fontSize: 16)),
-            SizedBox(
-              height: 200,
-              child: PieChart(
-                PieChartData(sections: [
-                  PieChartSectionData(
-                      color: Colors.green, value: 8, title: 'Hadir'),
-                  PieChartSectionData(
-                      color: Colors.orange, value: 2, title: 'Izin/Cuti'),
-                  PieChartSectionData(
-                      color: Colors.red, value: 2, title: 'Terlambat'),
-                ]),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// Grafik Performa Harian
-            Text('Grafik Performa Harian:',
-                style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold, fontSize: 16)),
-            SizedBox(
-              height: 200,
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: true),
-                  titlesData: FlTitlesData(
-                    leftTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: true)),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, _) {
-                          const days = [
-                            'Sen',
-                            'Sel',
-                            'Rab',
-                            'Kam',
-                            'Jum',
-                            'Sab',
-                            'Min'
-                          ];
-                          return Text(days[value.toInt() % 7],
-                              style: GoogleFonts.poppins(
-                                  fontSize: 10, color: Colors.black));
-                        },
-                      ),
-                    ),
-                  ),
-                  minX: 0,
-                  maxX: 6,
-                  minY: 0,
-                  maxY: 100,
-                  lineBarsData: [
-                    LineChartBarData(
-                      isCurved: true,
-                      spots: [
-                        FlSpot(0, 75),
-                        FlSpot(1, 80),
-                        FlSpot(2, 85),
-                        FlSpot(3, 90),
-                        FlSpot(4, 70),
-                        FlSpot(5, 60),
-                        FlSpot(6, 88),
-                      ],
-                      barWidth: 3,
-                      color: Colors.blueAccent,
-                      dotData: FlDotData(show: true),
-                    ),
-                  ],
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.black,
                 ),
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            /// Grafik Tugas Bulanan
-            Text('Tugas Diselesaikan per Bulan:',
-                style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold, fontSize: 16)),
-            SizedBox(
-              height: 200,
-              child: BarChart(
-                BarChartData(
-                  alignment: BarChartAlignment.spaceAround,
-                  maxY: 10,
-                  barGroups: [
-                    BarChartGroupData(x: 0, barRods: [
-                      BarChartRodData(toY: 6, color: Colors.green)
-                    ]),
-                    BarChartGroupData(x: 1, barRods: [
-                      BarChartRodData(toY: 7, color: Colors.orange)
-                    ]),
-                    BarChartGroupData(
-                        x: 2,
-                        barRods: [BarChartRodData(toY: 5, color: Colors.red)]),
-                    BarChartGroupData(
-                        x: 3,
-                        barRods: [BarChartRodData(toY: 8, color: Colors.blue)]),
-                  ],
-                  titlesData: FlTitlesData(
-                    leftTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: true)),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, _) {
-                          const labels = ['Jan', 'Feb', 'Mar', 'Apr'];
-                          return Text(labels[value.toInt()],
-                              style: GoogleFonts.poppins(
-                                  fontSize: 10, color: Colors.black));
-                        },
-                      ),
-                    ),
-                  ),
-                  gridData: FlGridData(show: true),
-                  borderData: FlBorderData(show: false),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// Catatan
-            Text('Catatan:',
-                style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 6),
             Text(notes,
                 style: GoogleFonts.poppins(fontSize: 14, color: Colors.black)),
@@ -310,8 +223,11 @@ class DetailKaryawanScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(
-      {required Color color, required String title, required String subtitle}) {
+  Widget _buildInfoCard({
+    required Color color,
+    required String title,
+    required String subtitle,
+  }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
@@ -327,9 +243,19 @@ class DetailKaryawanScreen extends StatelessWidget {
       ),
       child: ListTile(
         leading: CircleAvatar(backgroundColor: color, radius: 8),
-        title: Text(title,
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-        trailing: Text(subtitle, style: GoogleFonts.poppins(fontSize: 13)),
+        title: Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            fontSize: 16, // <-- Ubah di sini
+          ),
+        ),
+        trailing: Text(
+          subtitle,
+          style: GoogleFonts.poppins(
+            fontSize: 16, // <-- Ubah di sini juga
+          ),
+        ),
       ),
     );
   }
