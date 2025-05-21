@@ -97,17 +97,18 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
     selectedMonthYear = '$selectedMonth $selectedYear';
   }
 
-  // Fungsi untuk menampilkan dialog pemilihan bulan dan tahun
   Future<void> _showMonthYearPickerDialog() async {
     await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: Colors.white, // Warna latar dialog putih
           title: Text(
             'Pilih Bulan dan Tahun',
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.bold,
+              color: Colors.black, // Teks warna hitam
             ),
           ),
           content: Container(
@@ -119,42 +120,58 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(
                     labelText: 'Bulan',
+                    labelStyle: const TextStyle(color: Colors.black),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
+                  dropdownColor: Colors.white, // Dropdown list putih
                   value: selectedMonth,
                   items: months.map((String month) {
                     return DropdownMenuItem<String>(
                       value: month,
-                      child: Text(month),
+                      child: Text(
+                        month,
+                        style: const TextStyle(color: Colors.black),
+                      ),
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
                     if (newValue != null) {
-                      selectedMonth = newValue;
+                      setState(() {
+                        selectedMonth = newValue;
+                      });
                     }
                   },
                 ),
-                const SizedBox(height: 16),
+
+                const SizedBox(height: 20), // Jarak antar dropdown
+
                 // Pilih Tahun
                 DropdownButtonFormField<int>(
                   decoration: InputDecoration(
                     labelText: 'Tahun',
+                    labelStyle: const TextStyle(color: Colors.black),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
+                  dropdownColor: Colors.white, // Dropdown list putih
                   value: selectedYear,
                   items: years.map((int year) {
                     return DropdownMenuItem<int>(
                       value: year,
-                      child: Text(year.toString()),
+                      child: Text(
+                        year.toString(),
+                        style: const TextStyle(color: Colors.black),
+                      ),
                     );
                   }).toList(),
                   onChanged: (int? newValue) {
                     if (newValue != null) {
-                      selectedYear = newValue;
+                      setState(() {
+                        selectedYear = newValue;
+                      });
                     }
                   },
                 ),
@@ -175,7 +192,6 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
               onPressed: () {
                 setState(() {
                   selectedMonthYear = '$selectedMonth $selectedYear';
-                  // Update selectedDate dengan bulan dan tahun yang baru
                   int monthIndex = months.indexOf(selectedMonth) + 1;
                   selectedDate = DateTime(selectedYear, monthIndex);
                 });
@@ -331,7 +347,7 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
                           style: GoogleFonts.poppins(color: Colors.black),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(Icons.calendar_month,
+                        const Icon(Icons.keyboard_arrow_down,
                             color: Colors.black, size: 20),
                       ],
                     ),
@@ -343,7 +359,6 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
 
             Container(
               padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.only(top: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
@@ -355,65 +370,22 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            'Total Kehadiran : $hadirCount Hari',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Baris atas: Hadir - Terlambat - Alpha (dummy dulu)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                          child: _buildAbsensiCard(
-                              'Hadir', '$hadirCount Hari', Colors.green)),
-                      const SizedBox(width: 12),
-                      Expanded(
-                          child: _buildAbsensiCard(
-                              'Terlambat', '1 Hari', Colors.amber)), // dummy
-                      const SizedBox(width: 12),
-                      Expanded(
-                          child: _buildAbsensiCard(
-                              'Alpha', '8 Hari', Colors.redAccent)), // dummy
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Baris bawah: Izin - Cuti
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                          child: _buildAbsensiCard(
-                              'Izin', '$izin Hari', Colors.blue)),
-                      const SizedBox(width: 12),
-                      Expanded(
-                          child: _buildAbsensiCard(
-                              'Cuti', '$cuti Hari', Colors.orange)),
-                    ],
-                  ),
+                  _buildAbsensiCard('$hadirCount Hari', 'Hadir', Colors.green),
+                  _buildAbsensiCard('1 Hari', 'Terlambat', Colors.orange),
+                  _buildAbsensiCard('1 Hari', 'Alpha', Colors.orange),
+                  _buildAbsensiCard('$izin Hari', 'Izin', Colors.blue),
+                  _buildAbsensiCard('$cuti Hari', 'Cuti', Colors.deepOrange),
                 ],
               ),
             ),
+
             const SizedBox(height: 12),
           ],
         );
@@ -421,32 +393,46 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
     );
   }
 
-  // Fungsi yang sudah ada di code sebelumnya
-  Widget _buildAbsensiCard(String title, String value, Color color) {
+  Widget _buildAbsensiCard(String value, String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.5)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            title,
+            value,
             style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            value,
+            label,
             style: GoogleFonts.poppins(
               fontSize: 14,
-              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 4,
+            width: 40,
+            decoration: BoxDecoration(
               color: color,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
         ],
@@ -457,46 +443,47 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
   // Fungsi yang sudah ada di code sebelumny
 }
 
-Widget _buildAbsensiCard(String title, String value, Color color) {
+Widget _buildAbsensiCard(String label, String value, Color color) {
   return Container(
-    width: 100, // bisa 110–130 tergantung selera/lebar layar
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+    padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
-          color: Colors.grey.withOpacity(0.3),
-          blurRadius: 8,
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 10,
           offset: const Offset(0, 4),
         ),
       ],
     ),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           value,
           style: GoogleFonts.poppins(
-            fontSize: 15,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
             color: color,
           ),
         ),
         const SizedBox(height: 4),
         Text(
-          title,
+          label,
           style: GoogleFonts.poppins(
-            fontSize: 13,
+            fontSize: 14,
             color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Container(
           height: 4,
+          width: 40,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(2),
           ),
         ),
       ],
