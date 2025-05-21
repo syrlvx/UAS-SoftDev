@@ -210,11 +210,18 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Tambah Tugas Baru'),
+        backgroundColor: Colors.white, // warna latar putih
+        title: const Text(
+          'Tambah Tugas',
+          style: TextStyle(color: Colors.black, fontSize: 22), // teks hitam
+        ),
         content: TextField(
           controller: _newTaskController,
+          style: const TextStyle(
+              color: Colors.black, fontSize: 16), // input teks hitam
           decoration: const InputDecoration(
-            hintText: 'Masukkan nama tugas baru',
+            hintText: 'Masukkan tugas baru',
+            hintStyle: TextStyle(color: Colors.grey), // hint abu-abu
           ),
         ),
         actions: [
@@ -223,7 +230,10 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
               Navigator.pop(context);
               _newTaskController.clear();
             },
-            child: const Text('Batal'),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: Colors.black), // teks tombol hitam
+            ),
           ),
           TextButton(
             onPressed: () async {
@@ -234,11 +244,10 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                     'createdAt': FieldValue.serverTimestamp(),
                   });
 
-                  await fetchTasks(); // Refresh the task list
+                  await fetchTasks();
                   Navigator.pop(context);
                   _newTaskController.clear();
                 } catch (e) {
-                  // ignore: avoid_print
                   print('Error adding task: $e');
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Gagal menambahkan tugas')),
@@ -246,7 +255,13 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                 }
               }
             },
-            child: const Text('Tambah'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF001F3D), // warna navy
+            ),
+            child: const Text(
+              'Tambah',
+              style: TextStyle(color: Colors.white), // teks putih
+            ),
           ),
         ],
       ),
@@ -280,32 +295,70 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
   }
 
   void _showRemoveTaskDialog() {
+    String? selectedTask;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Hapus Tugas'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: allTasks.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(allTasks[index]),
-                onTap: () {
-                  _removeTask(allTasks[index]);
-                  Navigator.pop(context);
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: Colors.white, // <-- Ubah warna modal jadi putih
+            title: const Text(
+              'Hapus Tugas',
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 22), // teks juga diwarnai agar kontras
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: allTasks.length,
+                itemBuilder: (context, index) {
+                  final task = allTasks[index];
+                  return RadioListTile<String>(
+                    title: Text(
+                      task,
+                      style: const TextStyle(
+                          color: Colors.black, fontSize: 16), // teks hitam
+                    ),
+                    value: task,
+                    groupValue: selectedTask,
+                    activeColor: Colors.red,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedTask = value;
+                      });
+                    },
+                  );
                 },
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-        ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal',
+                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0))),
+              ),
+              ElevatedButton(
+                onPressed: selectedTask != null
+                    ? () {
+                        _removeTask(selectedTask!);
+                        Navigator.pop(context);
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      selectedTask != null ? Colors.red : Colors.grey.shade300,
+                  foregroundColor: selectedTask != null
+                      ? Colors.white
+                      : Colors.grey, // teks putih kalau aktif
+                ),
+                child: const Text('Hapus'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -411,13 +464,13 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                                     }
                                   });
                                 },
-                                selectedColor: Colors.blue,
+                                selectedColor: Color(0xFF001F3D),
                                 checkmarkColor: Colors.white,
-                                backgroundColor: Colors.blue[50],
+                                backgroundColor: Colors.white,
                                 labelStyle: TextStyle(
                                     color: isSelected
                                         ? Colors.white
-                                        : Colors.blue),
+                                        : Color(0xFF001F3D)),
                               );
                             }).toList(),
                           ),
@@ -445,12 +498,14 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                                     selectedKaryawan = selected ? nama : null;
                                   });
                                 },
-                                selectedColor: Colors.blue,
-                                backgroundColor: Colors.blue[50],
+                                selectedColor: Color(0xFF001F3D),
+                                checkmarkColor: Colors.white,
+                                backgroundColor:
+                                    const Color.fromARGB(255, 255, 255, 255),
                                 labelStyle: TextStyle(
                                   color: selectedKaryawan == nama
                                       ? Colors.white
-                                      : Colors.blue,
+                                      : Color(0xFF001F3D),
                                 ),
                               );
                             }).toList(),
@@ -575,8 +630,33 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
       context: context,
       initialDate: selectedDate,
       firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      lastDate: DateTime(2100),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Color(0xFF001F3D), // header & tombol OK
+              onPrimary: Colors.white, // teks header
+              onSurface: Colors.black, // warna tanggal aktif
+              background: Colors.white, // background modal
+            ),
+            dialogBackgroundColor: Colors.white,
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Color(0xFF001F3D), // tombol CANCEL dan OK
+              ),
+            ),
+            textTheme: const TextTheme(
+              bodyMedium: TextStyle(color: Colors.black), // teks tanggal biasa
+              bodyLarge: TextStyle(color: Colors.black), // teks tanggal besar
+              bodySmall: TextStyle(color: Colors.black), // teks tanggal kecil
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
+
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
@@ -588,6 +668,53 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: startTime,
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Color(0xFF001F3D), // warna header dan tombol OK
+              onPrimary: Colors.white, // warna teks header
+              onSurface: Colors.black, // warna teks waktu
+              background: Colors.white, // warna background modal
+            ),
+            dialogBackgroundColor: const Color.fromARGB(255, 0, 0, 0),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor:
+                    Color(0xFF001F3D), // warna tombol CANCEL dan OK
+              ),
+            ),
+            timePickerTheme: TimePickerThemeData(
+              hourMinuteColor: MaterialStateColor.resolveWith(
+                  (states) => states.contains(MaterialState.selected)
+                      ? Color(0xFF001F3D) // navy saat dipilih
+                      : Colors.transparent), // tidak dipilih: transparan
+              hourMinuteTextColor: MaterialStateColor.resolveWith((states) =>
+                  states.contains(MaterialState.selected)
+                      ? Colors.white
+                      : Colors.black),
+
+              dayPeriodColor: MaterialStateColor.resolveWith(
+                  (states) => states.contains(MaterialState.selected)
+                      ? Color(0xFF001F3D) // navy saat dipilih
+                      : Colors.white), // default putih
+              dayPeriodTextColor: MaterialStateColor.resolveWith((states) =>
+                  states.contains(MaterialState.selected)
+                      ? Colors.white
+                      : Colors.black),
+              dayPeriodShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: BorderSide(color: Color(0xFF001F3D)), // outline navy
+              ),
+
+              dialHandColor: Color(0xFF001F3D),
+              dialBackgroundColor: Colors.white,
+              entryModeIconColor: Color(0xFF001F3D),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != startTime) {
       setState(() {
@@ -600,6 +727,53 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: endTime,
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Color(0xFF001F3D), // warna header dan tombol OK
+              onPrimary: Colors.white, // warna teks header
+              onSurface: Colors.black, // warna teks waktu
+              background: Colors.white, // warna background modal
+            ),
+            dialogBackgroundColor: const Color.fromARGB(255, 0, 0, 0),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor:
+                    Color(0xFF001F3D), // warna tombol CANCEL dan OK
+              ),
+            ),
+            timePickerTheme: TimePickerThemeData(
+              hourMinuteColor: MaterialStateColor.resolveWith(
+                  (states) => states.contains(MaterialState.selected)
+                      ? Color(0xFF001F3D) // navy saat dipilih
+                      : Colors.transparent), // tidak dipilih: transparan
+              hourMinuteTextColor: MaterialStateColor.resolveWith((states) =>
+                  states.contains(MaterialState.selected)
+                      ? Colors.white
+                      : Colors.black),
+
+              dayPeriodColor: MaterialStateColor.resolveWith(
+                  (states) => states.contains(MaterialState.selected)
+                      ? Color(0xFF001F3D) // navy saat dipilih
+                      : Colors.white), // default putih
+              dayPeriodTextColor: MaterialStateColor.resolveWith((states) =>
+                  states.contains(MaterialState.selected)
+                      ? Colors.white
+                      : Colors.black),
+              dayPeriodShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: BorderSide(color: Color(0xFF001F3D)), // outline navy
+              ),
+
+              dialHandColor: Color(0xFF001F3D),
+              dialBackgroundColor: Colors.white,
+              entryModeIconColor: Color(0xFF001F3D),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != endTime) {
       setState(() {

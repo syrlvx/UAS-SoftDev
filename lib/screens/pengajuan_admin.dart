@@ -180,22 +180,35 @@ class _PengajuanListState extends State<PengajuanList> {
                 showDialog(
                   context: context,
                   builder: (_) => AlertDialog(
-                    title: Text(data['nama'] ?? ''),
+                    backgroundColor: Colors.white,
+                    title: Text(
+                      data['nama'] ?? '',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Color.fromARGB(255, 0, 0, 0),
+                      ),
+                    ),
                     content: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                            "Tanggal: ${(data['tanggal'] as Timestamp).toDate().toString().split(' ')[0]}"),
+                          "Tanggal: ${(data['tanggal'] as Timestamp).toDate().toString().split(' ')[0]}",
+                          style: TextStyle(color: Colors.black),
+                        ),
                         SizedBox(height: 8),
                         if (widget.jenis == 'cuti') ...[
-                          Text("Link File: ${data['linkFile'] ?? '-'}"),
+                          Text("Link File: ${data['linkFile'] ?? '-'}",
+                              style: TextStyle(color: Colors.black)),
                           SizedBox(height: 8),
                         ] else ...[
-                          Text("Keterangan: ${data['keterangan'] ?? '-'}"),
+                          Text("Keterangan: ${data['keterangan'] ?? '-'}",
+                              style: TextStyle(color: Colors.black)),
                           SizedBox(height: 8),
                         ],
-                        Text("Status: $status"),
+                        Text("Status: $status",
+                            style: TextStyle(color: Colors.black)),
                       ],
                     ),
                     actions: [

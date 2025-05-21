@@ -221,7 +221,7 @@ class _DataKaryawanScreenState extends State<DataKaryawanScreen> {
                   _buildRekapAbsensi(),
                   _buildKinerjaKaryawan(),
                   const SizedBox(height: 20),
-                  _buildMenuItem(Icons.arrow_drop_down, 'Rekap Absensi',
+                  _buildMenuItem(Icons.calendar_today, 'Rekap Absensi',
                       'Detail rekapitulasi absensi', () {
                     Navigator.push(
                       context,
@@ -536,134 +536,139 @@ Widget _buildMenuItem(
 Widget _buildKinerjaKaryawan() {
   final user = FirebaseAuth.instance.currentUser;
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(height: 20),
-      Text(
-        'Kinerja Karyawan',
-        style: GoogleFonts.poppins(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-      const SizedBox(height: 12),
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            /// ———————— Cuti Disetujui ————————
-            FutureBuilder<QuerySnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection('pengajuan')
-                  .where('userId', isEqualTo: user?.uid)
-                  .where('jenis', isEqualTo: 'cuti')
-                  .where('status', isEqualTo: 'Disetujui')
-                  .get(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return _buildKinerjaItem('Cuti Disetujui', 'Loading…');
-                } else if (snapshot.hasError) {
-                  return _buildKinerjaItem('Cuti Disetujui', 'Error');
-                } else {
-                  final totalCuti = snapshot.data!.docs.length;
-                  return _buildKinerjaItem('Cuti Disetujui', '$totalCuti Cuti');
-                }
-              },
-            ),
+  return FutureBuilder(
+    future: Future.wait([
+      FirebaseFirestore.instance
+          .collection('tugas')
+          .where('karyawanUid', isEqualTo: user?.uid)
+          .get(),
+      FirebaseFirestore.instance
+          .collection('pengajuan')
+          .where('userId', isEqualTo: user?.uid)
+          .get(),
+    ]),
+    builder: (context, AsyncSnapshot<List<QuerySnapshot>> snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (snapshot.hasError) {
+        return const Center(child: Text('Terjadi kesalahan'));
+      }
 
-            /// ———————— Pengajuan Ditolak (Izin & Cuti) ————————
-            FutureBuilder<QuerySnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection('pengajuan')
-                  .where('userId', isEqualTo: user?.uid)
-                  .where('status', isEqualTo: 'Ditolak')
-                  .get(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return _buildKinerjaItem('Pengajuan Ditolak', 'Loading…');
-                } else if (snapshot.hasError) {
-                  return _buildKinerjaItem('Pengajuan Ditolak', 'Error');
-                } else {
-                  int izinCount = 0;
-                  int cutiCount = 0;
-                  for (var doc in snapshot.data!.docs) {
-                    final jenis = doc['jenis']?.toString().toLowerCase();
-                    if (jenis == 'izin') {
-                      izinCount++;
-                    } else if (jenis == 'cuti') {
-                      cutiCount++;
-                    }
-                  }
-                  return _buildKinerjaItem(
-                    'Pengajuan Ditolak',
-                    '$izinCount Izin, $cutiCount Cuti',
-                  );
-                }
-              },
+      final tugasDocs = snapshot.data![0].docs;
+      final pengajuanDocs = snapshot.data![1].docs;
+
+      int tugasSelesai = 0;
+      int tugasTerlambat = 0;
+
+      for (var doc in tugasDocs) {
+        final status = doc['status']?.toString().toLowerCase();
+        if (status == 'selesai') {
+          tugasSelesai++;
+        } else if (status == 'terlambat') {
+          tugasTerlambat++;
+        }
+      }
+
+      int totalTugas = tugasSelesai + tugasTerlambat;
+
+      int cutiDisetujui = 0;
+      int pengajuanDitolak = 0;
+      int izinDitolak = 0;
+      int cutiDitolak = 0;
+
+      for (var doc in pengajuanDocs) {
+        final status = doc['status']?.toString().toLowerCase();
+        final jenis = doc['jenis']?.toString().toLowerCase();
+        if (status == 'disetujui' && jenis == 'cuti') {
+          cutiDisetujui++;
+        }
+        if (status == 'ditolak') {
+          pengajuanDitolak++;
+          if (jenis == 'izin') izinDitolak++;
+          if (jenis == 'cuti') cutiDitolak++;
+        }
+      }
+
+      // ————— Perhitungan Skor —————
+      const maxCutiNormal = 2;
+      const maxDitolakNormal = 2;
+
+      double skorTugasSelesai =
+          totalTugas > 0 ? (tugasSelesai / totalTugas) * 40 : 0;
+      double skorTugasTerlambat =
+          totalTugas > 0 ? (1 - (tugasTerlambat / totalTugas)) * 20 : 20;
+      double skorCuti = (1 - (cutiDisetujui / maxCutiNormal)).clamp(0, 1) * 20;
+      double skorDitolak =
+          (1 - (pengajuanDitolak / maxDitolakNormal)).clamp(0, 1) * 20;
+
+      double totalSkor =
+          skorTugasSelesai + skorTugasTerlambat + skorCuti + skorDitolak;
+      int finalSkor = totalSkor.round();
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20),
+          Text(
+            'Kinerja Karyawan',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
-
-            /// ———————— Dummy Tugas ————————
-            FutureBuilder<QuerySnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection('tugas')
-                  .where('karyawanUid', isEqualTo: user?.uid)
-                  .where('status', isEqualTo: 'Selesai') // sesuaikan ejaannya
-                  .get(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return _buildKinerjaItem('Tugas Selesai', 'Loading…');
-                } else if (snapshot.hasError) {
-                  return _buildKinerjaItem('Tugas Selesai', 'Error');
-                } else {
-                  final totalTugas = snapshot.data!.docs.length;
-                  return _buildKinerjaItem(
-                      'Tugas Selesai', '$totalTugas Tugas');
-                }
-              },
-            ),
-            _buildKinerjaItem('Tugas Terlambat', '12 Tugas'),
-
-            const Divider(height: 24),
-
-            /// ———————— Skor Kinerja ————————
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Skor Kinerja Bulanan',
-                    style: GoogleFonts.poppins(
-                        fontSize: 14, fontWeight: FontWeight.w500)),
-                Text('85/100',
-                    style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green[700])),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
               ],
             ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: 0.85,
-              backgroundColor: Colors.grey[300],
-              color: Colors.green,
-              minHeight: 8,
-              borderRadius: BorderRadius.circular(4),
+            child: Column(
+              children: [
+                _buildKinerjaItem('Cuti Disetujui', '$cutiDisetujui Cuti'),
+                _buildKinerjaItem('Pengajuan Ditolak',
+                    '$izinDitolak Izin, $cutiDitolak Cuti'),
+                _buildKinerjaItem('Tugas Selesai', '$tugasSelesai Tugas'),
+                _buildKinerjaItem('Tugas Terlambat', '$tugasTerlambat Tugas'),
+
+                const Divider(height: 24),
+
+                /// ————— Skor Kinerja —————
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Skor Kinerja Bulanan',
+                        style: GoogleFonts.poppins(
+                            fontSize: 14, fontWeight: FontWeight.w500)),
+                    Text('$finalSkor/100',
+                        style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green[700])),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: finalSkor / 100,
+                  backgroundColor: Colors.grey[300],
+                  color: Colors.green,
+                  minHeight: 8,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ],
+          ),
+        ],
+      );
+    },
   );
 }
 

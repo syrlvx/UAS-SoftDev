@@ -1,7 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:purelux/screens/edit_karyawan.dart';
 
 class DetailKaryawanScreen extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -13,7 +14,8 @@ class DetailKaryawanScreen extends StatelessWidget {
     String email = data['email'] ?? '-';
     String position = data['position'] ?? '-';
     String initials = name.isNotEmpty ? name[0] : '?';
-    int performanceScore = 85;
+    int performanceScore = data['score'] ?? 85;
+    String notes = data['notes'] ?? 'Tidak ada catatan.';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -29,8 +31,7 @@ class DetailKaryawanScreen extends StatelessWidget {
           ),
           child: AppBar(
             title: Text("Detail Karyawan", style: GoogleFonts.poppins()),
-            backgroundColor:
-                Colors.transparent, // penting agar gradasinya muncul
+            backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
             elevation: 0,
             actions: [
@@ -38,20 +39,21 @@ class DetailKaryawanScreen extends StatelessWidget {
                 icon: const Icon(Icons.more_vert),
                 onSelected: (value) {
                   if (value == 'edit') {
-                    // TODO: Tambahkan navigasi ke screen edit
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EditKaryawanScreen(data: data),
+                      ),
+                    );
                   } else if (value == 'delete') {
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
                         backgroundColor: Colors.white,
-                        title: Text(
-                          "Hapus Karyawan?",
-                          style: GoogleFonts.poppins(
-                            color: Colors.black,
-                            fontWeight: FontWeight
-                                .bold, // atau FontWeight.w600 untuk semi-bold
-                          ),
-                        ),
+                        title: Text("Hapus Karyawan?",
+                            style: GoogleFonts.poppins(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold)),
                         content: Text(
                           "Apakah kamu yakin ingin menghapus ${data['name']}?",
                           style: GoogleFonts.poppins(color: Colors.black),
@@ -86,8 +88,6 @@ class DetailKaryawanScreen extends StatelessWidget {
           ),
         ),
       ),
-      // body menyusul di bawah ini
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -96,30 +96,27 @@ class DetailKaryawanScreen extends StatelessWidget {
             CircleAvatar(
               radius: 40,
               backgroundColor: Colors.blueAccent,
-              child: Text(
-                initials,
-                style: GoogleFonts.poppins(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: const Color.fromARGB(255, 255, 255, 255)),
-              ),
+              child: Text(initials,
+                  style: GoogleFonts.poppins(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white)),
             ),
             const SizedBox(height: 12),
             Text(name,
                 style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
-                    color: Colors.black),
-                textAlign: TextAlign.center),
+                    color: Colors.black)),
             Text(email,
                 style:
-                    GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
-                textAlign: TextAlign.center),
+                    GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700])),
             Text(position,
                 style:
-                    GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
-                textAlign: TextAlign.center),
+                    GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700])),
             const SizedBox(height: 20),
+
+            /// Penilaian Kinerja
             Align(
               alignment: Alignment.centerLeft,
               child: Text('Penilaian Kinerja',
@@ -153,15 +150,8 @@ class DetailKaryawanScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text('Rekap Kinerja:',
-                  style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black)),
-            ),
-            const SizedBox(height: 10),
+
+            /// Info
             _buildInfoCard(
                 color: Colors.green,
                 title: 'Absensi Hadir',
@@ -178,15 +168,13 @@ class DetailKaryawanScreen extends StatelessWidget {
                 color: Colors.grey,
                 title: 'Tugas Tidak Tepat Waktu',
                 subtitle: '1 Tugas'),
+
             const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text('Grafik Absensi:',
-                  style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black)),
-            ),
+
+            /// Grafik Absensi
+            Text('Grafik Absensi:',
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold, fontSize: 16)),
             SizedBox(
               height: 200,
               child: PieChart(
@@ -200,15 +188,13 @@ class DetailKaryawanScreen extends StatelessWidget {
                 ]),
               ),
             ),
+
             const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text('Grafik Performa Harian:',
-                  style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black)),
-            ),
+
+            /// Grafik Performa Harian
+            Text('Grafik Performa Harian:',
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold, fontSize: 16)),
             SizedBox(
               height: 200,
               child: LineChart(
@@ -220,7 +206,7 @@ class DetailKaryawanScreen extends StatelessWidget {
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        getTitlesWidget: (value, meta) {
+                        getTitlesWidget: (value, _) {
                           const days = [
                             'Sen',
                             'Sel',
@@ -261,15 +247,13 @@ class DetailKaryawanScreen extends StatelessWidget {
                 ),
               ),
             ),
+
             const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text('Tugas Diselesaikan per Bulan:',
-                  style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black)),
-            ),
+
+            /// Grafik Tugas Bulanan
+            Text('Tugas Diselesaikan per Bulan:',
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold, fontSize: 16)),
             SizedBox(
               height: 200,
               child: BarChart(
@@ -296,7 +280,7 @@ class DetailKaryawanScreen extends StatelessWidget {
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        getTitlesWidget: (value, meta) {
+                        getTitlesWidget: (value, _) {
                           const labels = ['Jan', 'Feb', 'Mar', 'Apr'];
                           return Text(labels[value.toInt()],
                               style: GoogleFonts.poppins(
@@ -310,18 +294,15 @@ class DetailKaryawanScreen extends StatelessWidget {
                 ),
               ),
             ),
+
             const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text('Catatan:',
-                  style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black)),
-            ),
+
+            /// Catatan
+            Text('Catatan:',
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 6),
-            Text(
-                'Perlu meningkatkan ketepatan waktu dalam menyelesaikan tugas.',
+            Text(notes,
                 style: GoogleFonts.poppins(fontSize: 14, color: Colors.black)),
           ],
         ),
@@ -329,11 +310,8 @@ class DetailKaryawanScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard({
-    required Color color,
-    required String title,
-    required String subtitle,
-  }) {
+  Widget _buildInfoCard(
+      {required Color color, required String title, required String subtitle}) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
@@ -360,7 +338,7 @@ class DetailKaryawanScreen extends StatelessWidget {
     try {
       await FirebaseFirestore.instance.collection('karyawan').doc(id).delete();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Karyawan berhasil dihapus')),
+        const SnackBar(content: Text('Karyawan berhasil dihapus')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
