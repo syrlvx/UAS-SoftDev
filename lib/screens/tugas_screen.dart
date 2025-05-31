@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:purelux/widgets/bottom_nav_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -85,13 +86,14 @@ class _TugasScreenState extends State<TugasScreen> {
                           },
                         ),
                       ),
-                      const Center(
+                      Center(
                         child: Text(
                           "My Task",
-                          style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                          style: GoogleFonts.poppins(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
@@ -104,19 +106,23 @@ class _TugasScreenState extends State<TugasScreen> {
                 child: Row(
                   children: [
                     if (_isToday(dateList[selectedDateIndex]))
-                      const Text("Today,",
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white)),
+                      Text(
+                        "Today,",
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
                     const SizedBox(width: 8),
                     Text(
                       DateFormat('d MMM yyyy')
                           .format(dateList[selectedDateIndex]),
-                      style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white),
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
@@ -147,12 +153,21 @@ class _TugasScreenState extends State<TugasScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(_getFormattedDate(dateList[index]),
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
-                              Text(_getDayName(dateList[index]),
-                                  style: const TextStyle(color: Colors.white)),
+                              Text(
+                                _getFormattedDate(dateList[index]),
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontSize: 16, // ukuran font 14
+                                ),
+                              ),
+                              Text(
+                                _getDayName(dateList[index]),
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontSize: 16, // ukuran font 14
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -217,7 +232,7 @@ class _TugasScreenState extends State<TugasScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 "Tidak ada tugas untuk tanggal ini",
-                                style: TextStyle(
+                                style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   color: Colors.grey[600],
                                 ),
@@ -227,8 +242,24 @@ class _TugasScreenState extends State<TugasScreen> {
                         );
                       }
 
+                      // Sort documents by status
+                      var sortedDocs = snapshot.data!.docs.toList()
+                        ..sort((a, b) {
+                          final aData = a.data() as Map<String, dynamic>;
+                          final bData = b.data() as Map<String, dynamic>;
+                          final aStatus = aData['status'] ?? '';
+                          final bStatus = bData['status'] ?? '';
+
+                          // Put non-completed tasks first
+                          if (aStatus != 'Selesai' && bStatus == 'Selesai')
+                            return -1;
+                          if (aStatus == 'Selesai' && bStatus != 'Selesai')
+                            return 1;
+                          return 0;
+                        });
+
                       return ListView(
-                        children: snapshot.data!.docs.map((doc) {
+                        children: sortedDocs.map((doc) {
                           final data = doc.data() as Map<String, dynamic>;
                           List<String> jenisTugasList =
                               List<String>.from(data['jenisTugas'] ?? []);
@@ -327,7 +358,6 @@ class TaskCard extends StatelessWidget {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-                // ignore: deprecated_member_use
                 color: Colors.black.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, -10))
@@ -347,17 +377,20 @@ class TaskCard extends StatelessWidget {
                       child: Icon(statusIcon, size: 20, color: Colors.white),
                     ),
                     const SizedBox(height: 4),
-                    Text(statusLabel,
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: statusColor,
-                            fontWeight: FontWeight.bold)),
+                    Text(
+                      statusLabel,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     if (isLate)
                       Padding(
                         padding: const EdgeInsets.only(top: 4.0),
                         child: Text(
                           'Terlambat',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             color: Colors.red,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -372,11 +405,14 @@ class TaskCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(employeeName,
-                        style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black)),
+                    Text(
+                      employeeName,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,8 +427,10 @@ class TaskCard extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   jenisTugas,
-                                  style: const TextStyle(
-                                      fontSize: 14, color: Colors.black87),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: Colors.black87,
+                                  ),
                                 ),
                               ),
                             ],
@@ -406,9 +444,13 @@ class TaskCard extends StatelessWidget {
                         const Icon(Icons.access_time,
                             size: 14, color: Colors.black45),
                         const SizedBox(width: 4),
-                        Text(deadlineTime,
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.black54)),
+                        Text(
+                          deadlineTime,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -418,9 +460,13 @@ class TaskCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(deadline,
-                      style:
-                          const TextStyle(fontSize: 13, color: Colors.black54)),
+                  Text(
+                    deadline,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: Colors.black54,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   if (status == 'Selesai') ...[
                     CircleAvatar(
@@ -429,17 +475,20 @@ class TaskCard extends StatelessWidget {
                       child: Icon(statusIcon, size: 16, color: Colors.white),
                     ),
                     const SizedBox(height: 4),
-                    Text(statusLabel,
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: statusColor,
-                            fontWeight: FontWeight.bold)),
+                    Text(
+                      statusLabel,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     if (isLateForSelesai)
                       Padding(
                         padding: const EdgeInsets.only(top: 4.0),
                         child: Text(
                           'Terlambat',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             color: Colors.red,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -461,14 +510,18 @@ class TaskCard extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
-                        textStyle: const TextStyle(fontSize: 12),
+                        textStyle: GoogleFonts.poppins(
+                          fontSize: 12,
+                        ),
                         backgroundColor: Colors.green,
                       ),
-                      child: const Text(
+                      child: Text(
                         'Selesaikan',
-                        style: TextStyle(color: Colors.white),
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
+                    )
                   ],
                 ],
               ),

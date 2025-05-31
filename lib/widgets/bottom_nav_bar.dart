@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:purelux/screens/data_karyawan.dart';
 import 'package:purelux/screens/home_screen.dart';
 import 'package:purelux/screens/masuk_screen.dart';
@@ -86,16 +87,16 @@ class _BottomNavBarState extends State<BottomNavBar> {
                       Icons.access_time_filled,
                       color:
                           Color.fromARGB(255, 127, 157, 195), // Ikon tetap biru
-                      size: 30,
+                      size: 26,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     "Absensi",
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       color: _currentIndex == 1
                           ? const Color.fromARGB(255, 127, 157, 195)
-                          : Colors.grey, // Teks jadi biru saat dipencet
+                          : Colors.grey,
                       fontWeight: FontWeight.w500,
                       fontSize: 12,
                     ),
@@ -127,7 +128,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: _currentIndex == index
                   ? const Color.fromARGB(255, 127, 157, 195)
                   : Colors.grey,

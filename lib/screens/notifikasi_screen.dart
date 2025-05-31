@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:purelux/screens/arsip_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({Key? key}) : super(key: key);
@@ -161,22 +161,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
               Navigator.pop(context);
             },
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.archive, color: Colors.white),
-              tooltip: 'Lihat Arsip',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ArchivedNotificationsScreen(
-                      archivedNotifications: archivedNotifications,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
           flexibleSpace: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -206,35 +190,99 @@ class _NotificationScreenState extends State<NotificationScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                PopupMenuButton<String>(
-                  icon: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.sort, size: 20, color: Colors.blueGrey),
-                      const SizedBox(width: 4),
-                      Text(
-                        sortAscending ? 'Terlama' : 'Terbaru',
-                        style: const TextStyle(
-                          color: Colors.blueGrey,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
+                Positioned(
+                  left: 16,
+                  top: 1,
+                  child: PopupMenuButton<String>(
+                    icon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.sort,
+                          color: Color.fromARGB(255, 127, 157, 195),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          sortAscending ? 'Terlama' : 'Terbaru',
+                          style: GoogleFonts.poppins(
+                            color: const Color.fromARGB(255, 127, 157, 195),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    offset: const Offset(0, 30),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    color: Colors.white,
+                    elevation: 4,
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'Terbaru',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.arrow_upward,
+                              color: !sortAscending
+                                  ? const Color.fromARGB(255, 127, 157, 195)
+                                  : Colors.grey,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Terbaru',
+                              style: GoogleFonts.poppins(
+                                color: !sortAscending
+                                    ? const Color.fromARGB(255, 127, 157, 195)
+                                    : Colors.grey,
+                                fontWeight: !sortAscending
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'Terlama',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.arrow_downward,
+                              color: sortAscending
+                                  ? const Color.fromARGB(255, 127, 157, 195)
+                                  : Colors.grey,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Terlama',
+                              style: GoogleFonts.poppins(
+                                color: sortAscending
+                                    ? const Color.fromARGB(255, 127, 157, 195)
+                                    : Colors.grey,
+                                fontWeight: sortAscending
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
+                    onSelected: (value) {
+                      if (mounted) {
+                        setState(() {
+                          sortAscending = (value == 'Terlama');
+                        });
+                      }
+                    },
                   ),
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                        value: 'Terbaru', child: Text('Terbaru')),
-                    const PopupMenuItem(
-                        value: 'Terlama', child: Text('Terlama')),
-                  ],
-                  onSelected: (value) {
-                    setState(() {
-                      sortAscending = (value == 'Terlama');
-                    });
-                  },
                 ),
-                const SizedBox(width: 160),
+                const SizedBox(width: 130),
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -265,8 +313,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           height: 35,
                           child: Text(
                             value,
-                            style: const TextStyle(
-                              color: Color.fromARGB(255, 127, 157, 195),
+                            style: GoogleFonts.poppins(
+                              color: const Color.fromARGB(255, 127, 157, 195),
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
@@ -281,8 +329,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             Flexible(
                               child: Text(
                                 selectedFilter,
-                                style: const TextStyle(
-                                  color: Color.fromARGB(255, 127, 157, 195),
+                                style: GoogleFonts.poppins(
+                                  color:
+                                      const Color.fromARGB(255, 127, 157, 195),
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -313,7 +362,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     child: Text(
                       entry.key,
-                      style: const TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.black,
@@ -324,21 +373,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     int index = notifications.indexOf(notif);
                     return Dismissible(
                       key: Key(notif['id']),
-                      direction: DismissDirection.horizontal,
-                      onDismissed: (direction) {
-                        if (direction == DismissDirection.endToStart) {
-                          removeNotification(index);
-                        } else {
-                          archiveNotification(index);
-                        }
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (_) {
+                        removeNotification(index);
                       },
                       background: Container(
-                        color: Colors.orangeAccent,
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: 20),
-                        child: const Icon(Icons.archive, color: Colors.white),
-                      ),
-                      secondaryBackground: Container(
                         color: Colors.redAccent,
                         alignment: Alignment.centerRight,
                         padding: const EdgeInsets.only(right: 20),
@@ -363,18 +402,23 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           ),
                           title: Text(
                             notif['title'],
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontWeight: notif['read']
                                   ? FontWeight.normal
                                   : FontWeight.bold,
                             ),
                           ),
-                          subtitle: Text(notif['body']),
+                          subtitle: Text(
+                            notif['body'],
+                            style: GoogleFonts.poppins(),
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(notif['time'],
-                                  style: const TextStyle(fontSize: 12)),
+                              Text(
+                                notif['time'],
+                                style: GoogleFonts.poppins(fontSize: 12),
+                              ),
                             ],
                           ),
                           onTap: () async {

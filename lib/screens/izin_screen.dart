@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class IzinScreen extends StatefulWidget {
   const IzinScreen({super.key});
@@ -137,9 +138,12 @@ class _IzinScreenState extends State<IzinScreen> {
           SnackBar(
             content: Row(
               children: const [
-                Icon(Icons.check_circle, color: Colors.white),
+                Icon(Icons.check_circle, color: Colors.white, size: 20),
                 SizedBox(width: 10),
-                Text('Pengajuan izin berhasil dikirim'),
+                Text(
+                  'Pengajuan izin berhasil dikirim',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ],
             ),
             backgroundColor: Colors.green,
@@ -228,7 +232,7 @@ class _IzinScreenState extends State<IzinScreen> {
                     end: Alignment.bottomCenter,
                   ).createShader(bounds),
                   child: Text(
-                    "Form Izin",
+                    'Form Izin', // <-- ini bagian judul appbar, pakai string langsung
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -244,8 +248,7 @@ class _IzinScreenState extends State<IzinScreen> {
         ),
         centerTitle: true,
         actions: [
-          // Menambahkan widget kosong dengan lebar yang sama dengan leading
-          SizedBox(width: 65),
+          SizedBox(width: 65), // buat balance sama leading
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(35),
@@ -303,7 +306,7 @@ class _IzinScreenState extends State<IzinScreen> {
                 children: [
                   Text(
                     "Data Pengajuan",
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF001F3D),
@@ -313,41 +316,40 @@ class _IzinScreenState extends State<IzinScreen> {
                   TextFormField(
                     controller: _namaController,
                     enabled: false,
-                    style: const TextStyle(
+                    style: GoogleFonts.poppins(
                       color: Colors.black87,
                       fontWeight: FontWeight.w500,
                       fontSize: 20,
-                      // Ukuran font input
                     ),
                     decoration: InputDecoration(
                       labelText: 'Nama',
-                      labelStyle: const TextStyle(
+                      labelStyle: GoogleFonts.poppins(
                         color: Color(0xFF001F3D),
-                        fontSize: 21, // Ukuran font label
+                        fontSize: 21,
                       ),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.person,
                         color: Color(0xFF001F3D),
-                        size: 24, // Ukuran ikon kalau mau dikecilkan juga
+                        size: 24,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(color: Color(0xFF001F3D)),
+                        borderSide: BorderSide(color: Color(0xFF001F3D)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(color: Color(0xFF001F3D)),
+                        borderSide: BorderSide(color: Color(0xFF001F3D)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(
-                            color: Color(0xFF001F3D), width: 2),
+                        borderSide:
+                            BorderSide(color: Color(0xFF001F3D), width: 2),
                       ),
                       filled: true,
                       fillColor: Colors.grey[100],
-                      hintStyle: TextStyle(
+                      hintStyle: GoogleFonts.poppins(
                         color: Colors.grey.shade400,
-                        fontSize: 18, // Ukuran font hint
+                        fontSize: 18,
                       ),
                     ),
                   ),
@@ -370,7 +372,7 @@ class _IzinScreenState extends State<IzinScreen> {
                           SizedBox(width: 10),
                           Text(
                             "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 16,
                               color: Color(0xFF001F3D),
                             ),
@@ -384,40 +386,39 @@ class _IzinScreenState extends State<IzinScreen> {
                     controller: _keteranganController,
                     obscureText: false,
                     maxLines: 4,
-                    style: const TextStyle(
+                    style: GoogleFonts.poppins(
                       color: Colors.black87,
-                      fontSize: 16, // Ukuran font untuk input
+                      fontSize: 16,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Keterangan',
-                      labelStyle: const TextStyle(
+                      labelStyle: GoogleFonts.poppins(
                         color: Color(0xFF001F3D),
-                        fontSize: 17, // Ukuran font untuk label
+                        fontSize: 17,
                       ),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.description,
                         color: Color(0xFF001F3D),
-                        size:
-                            24, // Ukuran ikon (bisa diubah jika ingin lebih besar/kecil)
+                        size: 24,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(color: Color(0xFF001F3D)),
+                        borderSide: BorderSide(color: Color(0xFF001F3D)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(color: Color(0xFF001F3D)),
+                        borderSide: BorderSide(color: Color(0xFF001F3D)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(
-                            color: Color(0xFF001F3D), width: 2),
+                        borderSide:
+                            BorderSide(color: Color(0xFF001F3D), width: 2),
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      hintStyle: TextStyle(
+                      hintStyle: GoogleFonts.poppins(
                         color: Colors.grey.shade400,
-                        fontSize: 16, // Ukuran font untuk hint
+                        fontSize: 16,
                       ),
                     ),
                     validator: (value) {
@@ -443,12 +444,12 @@ class _IzinScreenState extends State<IzinScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
+                            colors: [
+                              Color(0xFF001F3D),
+                              Color(0xFFFFFFFF),
+                            ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [
-                              Color(0xFF001F3D), // Biru navy gelap
-                              Color(0xFFFFFFFF), // Putih
-                            ],
                           ),
                           borderRadius: BorderRadius.circular(15),
                         ),
@@ -463,7 +464,7 @@ class _IzinScreenState extends State<IzinScreen> {
                                   SizedBox(width: 10),
                                   Text(
                                     'kirim pengajuan',
-                                    style: TextStyle(
+                                    style: GoogleFonts.poppins(
                                       color: Colors.white,
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,

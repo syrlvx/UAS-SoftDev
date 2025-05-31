@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:purelux/screens/login_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import 'package:image_picker/image_picker.dart';
@@ -123,8 +124,11 @@ class _AccountScreenState extends State<AccountScreen> {
                               (username?.isNotEmpty == true)
                                   ? username![0].toUpperCase()
                                   : '?',
-                              style: const TextStyle(
-                                  fontSize: 36, color: Colors.white),
+                              style: GoogleFonts.poppins(
+                                fontSize: 36,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
                             )
                           : null,
                     ),
@@ -132,24 +136,31 @@ class _AccountScreenState extends State<AccountScreen> {
                   const SizedBox(height: 12),
                   Text(
                     username ?? 'User',
-                    style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold),
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   Text(
                     email ?? 'user@example.com',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   if (phoneNumber != null && phoneNumber!.isNotEmpty)
                     Text(
                       phoneNumber!,
-                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
                       textAlign: TextAlign.center,
                     ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 25),
                   Card(
                     color: Colors.white,
                     elevation: 2,
@@ -178,26 +189,44 @@ class _AccountScreenState extends State<AccountScreen> {
                           ],
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(5.0),
                           child: Column(
                             children: [
                               ListTile(
                                 leading: const Icon(Icons.person_outline),
-                                title: const Text("Ubah Username"),
+                                title: Text(
+                                  "Ubah Username",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    color: const Color(0xFF001F3D),
+                                  ), // Ukuran font lebih kecil
+                                ),
                                 trailing: const Icon(Icons.edit),
                                 onTap: () => _editUsernameDialog(context),
                               ),
                               const Divider(height: 1),
                               ListTile(
                                 leading: const Icon(Icons.lock_outline),
-                                title: const Text("Ubah Password"),
+                                title: Text(
+                                  "Ubah Password",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    color: const Color(0xFF001F3D),
+                                  ),
+                                ),
                                 trailing: const Icon(Icons.edit),
                                 onTap: () => _editPasswordDialog(context),
                               ),
                               const Divider(height: 1),
                               ListTile(
                                 leading: const Icon(Icons.phone_android),
-                                title: const Text("Ubah No Telepon"),
+                                title: Text(
+                                  "Ubah No Telepon",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    color: const Color(0xFF001F3D),
+                                  ),
+                                ),
                                 trailing: const Icon(Icons.edit),
                                 onTap: () => _editPhoneDialog(context),
                               ),
@@ -211,8 +240,10 @@ class _AccountScreenState extends State<AccountScreen> {
                   ElevatedButton.icon(
                     onPressed: () => _showLogoutDialog(context),
                     icon: const Icon(Icons.logout, color: Colors.white),
-                    label: const Text("Logout",
-                        style: TextStyle(color: Colors.white)),
+                    label: Text(
+                      "Logout",
+                      style: GoogleFonts.poppins(color: Colors.white),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
                       foregroundColor:
@@ -223,10 +254,14 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                   ),
                   const SizedBox(height: 120),
-                  const Text("Versi 1.0.0",
-                      style: TextStyle(color: Colors.grey)),
-                  const Text("© 2025 PureLux",
-                      style: TextStyle(color: Colors.grey)),
+                  Text(
+                    "Versi 1.0.0",
+                    style: GoogleFonts.poppins(color: Colors.grey),
+                  ),
+                  Text(
+                    "© 2025 PureLux",
+                    style: GoogleFonts.poppins(color: Colors.grey),
+                  ),
                 ],
               ),
             ),
@@ -239,25 +274,37 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Colors.white,
-        title: const Text(
+        title: Text(
           "Ubah Username",
-          style: TextStyle(color: Colors.black),
+          style: GoogleFonts.poppins(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            prefixIcon: Icon(Icons.person_outline, color: Color(0xFF001F3D)),
+          decoration: InputDecoration(
+            prefixIcon:
+                const Icon(Icons.person_outline, color: Color(0xFF001F3D)),
             hintText: "Masukkan username baru",
-            hintStyle: TextStyle(color: Color(0xFF001F3D)),
-            border: OutlineInputBorder(),
+            hintStyle: GoogleFonts.poppins(color: const Color(0xFF001F3D)),
+            border: const OutlineInputBorder(),
           ),
-          style: const TextStyle(color: Color(0xFF001F3D)),
+          style:
+              GoogleFonts.poppins(color: const Color(0xFF001F3D), fontSize: 16),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child:
-                const Text("Batal", style: TextStyle(color: Color(0xFF001F3D))),
+            child: Text(
+              "Batal",
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF001F3D),
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -273,9 +320,16 @@ class _AccountScreenState extends State<AccountScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF001F3D),
+              backgroundColor: const Color(0xFF001F3D),
             ),
-            child: const Text("Simpan", style: TextStyle(color: Colors.white)),
+            child: Text(
+              "Simpan",
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
           ),
         ],
       ),
@@ -289,40 +343,53 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Colors.white,
-        title: const Text("Ubah Password",
-            style: TextStyle(color: Color(0xFF001F3D))),
+        title: Text(
+          "Ubah Password",
+          style: GoogleFonts.poppins(
+            color: const Color(0xFF001F3D), // Navy
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: oldPassController,
               obscureText: true,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.lock_outline, color: Colors.black),
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.lock_outline, color: Colors.black),
                 labelText: "Password Lama",
-                labelStyle: TextStyle(color: Colors.black54),
-                border: OutlineInputBorder(),
+                labelStyle: GoogleFonts.poppins(color: Colors.black54),
+                border: const OutlineInputBorder(),
               ),
-              style: const TextStyle(color: Colors.black),
+              style: GoogleFonts.poppins(color: Colors.black),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: newPassController,
               obscureText: true,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.lock_open, color: Colors.black),
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.lock_open, color: Colors.black),
                 labelText: "Password Baru",
-                labelStyle: TextStyle(color: Colors.black54),
-                border: OutlineInputBorder(),
+                labelStyle: GoogleFonts.poppins(color: Colors.black54),
+                border: const OutlineInputBorder(),
               ),
-              style: const TextStyle(color: Colors.black),
+              style: GoogleFonts.poppins(color: Colors.black),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Batal", style: TextStyle(color: Colors.black)),
+            child: Text(
+              "Batal",
+              style: GoogleFonts.poppins(
+                color: Colors.black,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -343,7 +410,14 @@ class _AccountScreenState extends State<AccountScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
             ),
-            child: const Text("Simpan", style: TextStyle(color: Colors.white)),
+            child: Text(
+              "Simpan",
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
           ),
         ],
       ),
@@ -356,25 +430,40 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Colors.white,
-        title: const Text(
+        title: Text(
           "Ubah Nomor Telepon",
-          style: TextStyle(color: Colors.black),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+            fontSize: 18,
+          ),
         ),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.phone,
-          decoration: const InputDecoration(
-            prefixIcon: Icon(Icons.phone_android, color: Colors.black),
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.phone_android, color: Colors.black),
             hintText: "Masukkan nomor telepon",
-            hintStyle: TextStyle(color: Colors.black54),
-            border: OutlineInputBorder(),
+            hintStyle: GoogleFonts.poppins(
+              color: Colors.black54,
+            ),
+            border: const OutlineInputBorder(),
           ),
-          style: const TextStyle(color: Colors.black),
+          style: GoogleFonts.poppins(
+            color: Colors.black,
+            fontSize: 16,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Batal", style: TextStyle(color: Colors.black)),
+            child: Text(
+              "Batal",
+              style: GoogleFonts.poppins(
+                color: Colors.black,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -392,7 +481,13 @@ class _AccountScreenState extends State<AccountScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
             ),
-            child: const Text("Simpan", style: TextStyle(color: Colors.white)),
+            child: Text(
+              "Simpan",
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -401,56 +496,90 @@ class _AccountScreenState extends State<AccountScreen> {
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-              backgroundColor: Colors.white,
-              title: const Text(
-                "Konfirmasi",
-                style: TextStyle(color: Color(0xFF001F3D)), // Navy
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(
+          "Konfirmasi",
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF001F3D), // Navy
+            fontSize: 18,
+          ),
+        ),
+        content: Text(
+          "Anda yakin ingin logout?",
+          style: GoogleFonts.poppins(
+            color: const Color(0xFF001F3D), // Navy
+            fontSize: 16,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "Batal",
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF001F3D), // Navy
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
               ),
-              content: const Text(
-                "Anda yakin ingin logout?",
-                style: TextStyle(color: Color(0xFF001F3D)), // Navy
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF001F3D), // Navy
+            ),
+            onPressed: () async {
+              await auth.signOut();
+              Navigator.pop(context);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => LoginScreen()),
+              );
+            },
+            child: Text(
+              "Logout",
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    "Batal",
-                    style: TextStyle(color: Color(0xFF001F3D)), // Navy
-                  ),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF001F3D), // Navy
-                  ),
-                  onPressed: () async {
-                    await auth.signOut();
-                    Navigator.pop(context);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
-                    );
-                  },
-                  child: const Text(
-                    "Logout",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ));
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showError(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Terjadi Kesalahan"),
-        content: Text(message),
+        backgroundColor: Colors.white,
+        title: Text(
+          "Terjadi Kesalahan",
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: Colors.black,
+          ),
+        ),
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            color: Colors.black,
+          ),
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Tutup"))
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "Tutup",
+              style: GoogleFonts.poppins(color: Colors.black),
+            ),
+          ),
         ],
       ),
     );

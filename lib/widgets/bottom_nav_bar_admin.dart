@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:purelux/screens/home_admin.dart';
 import 'package:purelux/screens/data_admin.dart';
 import 'package:purelux/screens/pengajuan_admin.dart';
@@ -48,9 +49,17 @@ class _BottomNavBarAdminState extends State<BottomNavBarAdmin> {
                 selectedItemColor: const Color.fromARGB(255, 127, 157, 195),
                 unselectedItemColor: Colors.grey,
                 type: BottomNavigationBarType.fixed,
-                selectedFontSize: 14,
-                unselectedFontSize: 12,
-                iconSize: 28,
+                selectedFontSize: 12,
+                unselectedFontSize: 10,
+                iconSize: 24,
+                selectedLabelStyle: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                unselectedLabelStyle: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w400,
+                ),
                 onTap: (index) {
                   setState(() {
                     _currentIndex = index;

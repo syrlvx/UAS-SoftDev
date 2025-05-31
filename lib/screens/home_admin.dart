@@ -9,11 +9,15 @@ class HomeAdminScreen extends StatefulWidget {
   _HomeAdminScreenState createState() => _HomeAdminScreenState();
 }
 
-class _HomeAdminScreenState extends State<HomeAdminScreen> {
+class _HomeAdminScreenState extends State<HomeAdminScreen>
+    with SingleTickerProviderStateMixin {
   bool isLoggedIn = false;
   String? username;
   String? role;
   bool isLoadingUser = true;
+  late final TabController _tabController =
+      TabController(length: 3, vsync: this);
+  int _currentTabIndex = 0;
 
   // Dummy data untuk absensi
   final List<Map<String, dynamic>> absensiData = [
@@ -62,6 +66,17 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
   void initState() {
     super.initState();
     _fetchUserData();
+    _tabController.addListener(() {
+      setState(() {
+        _currentTabIndex = _tabController.index;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchUserData() async {
@@ -125,113 +140,120 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(200),
-          child: Container(
-            height: 200,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF001F3D), Color(0xFFFFFFFF)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(200),
+        child: Container(
+          height: 200,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF001F3D), Color(0xFFFFFFFF)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    top: 20, bottom: 20, left: 16, right: 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.account_circle,
-                          size: 60, color: Colors.white),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const AccountScreen()),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          username ?? 'User',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                  top: 20, bottom: 20, left: 16, right: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.account_circle,
+                        size: 50, color: Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const AccountScreen()),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        username ?? 'User',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
-                        Text(
-                          role ?? '',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.white70,
-                          ),
+                      ),
+                      Text(
+                        role ?? '',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.white70,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
         ),
-        body: Column(
-          children: [
-            Container(
-              color: Colors.white,
-              child: const TabBar(
-                indicatorColor: Colors.blue,
-                labelColor: Colors.black,
-                unselectedLabelColor: Colors.grey,
-                tabs: [
-                  Tab(text: 'Absensi'),
-                  Tab(text: 'Izin & Cuti'),
-                  Tab(text: 'Lembur'),
-                ],
-              ),
+      ),
+      body: Column(
+        children: [
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.blue,
+              labelColor: Colors.black,
+              unselectedLabelColor: Colors.grey,
+              tabs: [
+                Tab(text: 'Absensi'),
+                Tab(text: 'Izin & Cuti'),
+                Tab(text: 'Alpha'),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  PopupMenuButton<String>(
-                    icon: const Row(
-                      children: [
-                        Icon(Icons.sort, color: Colors.blue),
-                        SizedBox(width: 4),
-                        Text('Sort', style: TextStyle(color: Colors.blue)),
-                      ],
-                    ),
-                    onSelected: (value) {
-                      setState(() {
-                        sortAscending = (value == 'Terlama ke Terbaru');
-                      });
-                    },
-                    itemBuilder: (BuildContext context) => [
-                      const PopupMenuItem<String>(
-                          value: 'Terbaru ke Terlama',
-                          child: Text('Terbaru ke Terlama')),
-                      const PopupMenuItem<String>(
-                          value: 'Terlama ke Terbaru',
-                          child: Text('Terlama ke Terbaru')),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                PopupMenuButton<String>(
+                  icon: const Row(
+                    children: [
+                      Icon(Icons.sort, color: Colors.blue),
+                      SizedBox(width: 4),
+                      Text(
+                        'Sort',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 16,
+                        ),
+                      ),
                     ],
                   ),
-                  const Spacer(),
+                  onSelected: (value) {
+                    setState(() {
+                      sortAscending = (value == 'Terlama ke Terbaru');
+                    });
+                  },
+                  itemBuilder: (BuildContext context) => [
+                    const PopupMenuItem<String>(
+                        value: 'Terbaru ke Terlama',
+                        child: Text('Terbaru ke Terlama')),
+                    const PopupMenuItem<String>(
+                        value: 'Terlama ke Terbaru',
+                        child: Text('Terlama ke Terbaru')),
+                  ],
+                ),
+                const Spacer(),
+                // Only show filter dropdown if not in Terlambat tab
+                if (_currentTabIndex != 2)
                   Container(
                     width: 120,
                     decoration: BoxDecoration(
@@ -267,17 +289,12 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                         });
                       },
                       itemBuilder: (BuildContext context) {
-                        // Get current tab index
-                        final currentTab =
-                            DefaultTabController.of(context).index;
-
-                        if (currentTab == 0) {
+                        if (_currentTabIndex == 0) {
                           // Tab Absensi
                           return [
                             'Semua',
                             'Hadir',
                             'Tidak Hadir',
-                            'Terlambat',
                           ].map<PopupMenuItem<String>>((String value) {
                             return PopupMenuItem<String>(
                               value: value,
@@ -290,7 +307,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                               ),
                             );
                           }).toList();
-                        } else if (currentTab == 1) {
+                        } else if (_currentTabIndex == 1) {
                           // Tab Izin & Cuti
                           return [
                             'Semua',
@@ -312,62 +329,53 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                             );
                           }).toList();
                         } else {
-                          // Tab Lembur
-                          return [
-                            'Semua',
-                            'Disetujui',
-                            'Pending',
-                            'Ditolak',
-                          ].map<PopupMenuItem<String>>((String value) {
-                            return PopupMenuItem<String>(
-                              value: value,
-                              child: Text(
-                                value,
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            );
-                          }).toList();
+                          return const <PopupMenuItem<String>>[];
                         }
                       },
                     ),
                   ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Container(
+              color: Colors.white,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildRiwayatTab('Absensi'),
+                  _buildRiwayatTab('Izin & Cuti'),
+                  _buildRiwayatTab('Terlambat'),
                 ],
               ),
             ),
-            Expanded(
-              child: Container(
-                color: Colors.white,
-                child: TabBarView(
-                  children: [
-                    _buildRiwayatTab('Absensi'),
-                    _buildRiwayatTab('Izin & Cuti'),
-                    _buildRiwayatTab('Lembur'),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildRiwayatTab(String jenis) {
-    if (jenis == 'Absensi') {
+    if (jenis == 'Absensi' || jenis == 'Terlambat') {
       final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final now = DateTime.now();
+      final checkTime =
+          DateTime(now.year, now.month, now.day, 8, 15); // 08:15 AM
 
-      return FutureBuilder<QuerySnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('absensi')
-            .where('tanggal', isEqualTo: today)
-            .get(),
+      return FutureBuilder<List<QuerySnapshot<Map<String, dynamic>>>>(
+        // Fetch all users and today's absensi records
+        future: Future.wait([
+          FirebaseFirestore.instance.collection('user').get(),
+          FirebaseFirestore.instance
+              .collection('absensi')
+              .where('tanggal', isEqualTo: today)
+              .get(),
+        ]),
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
+          if (snapshot.hasError || !snapshot.hasData) {
             return Center(
-              child: Text('Error: ${snapshot.error}'),
+              child: Text(
+                  'Error loading absensi data: ${snapshot.error ?? "No data"}'),
             );
           }
 
@@ -377,30 +385,107 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
             );
           }
 
-          var docs = snapshot.data?.docs ?? [];
+          final usersDocs = snapshot.data![0].docs; // All users
+          final absensiDocsToday =
+              snapshot.data![1].docs; // Today's absensi records
 
-          // Filter berdasarkan status yang dipilih
-          if (selectedStatus != 'Semua') {
-            docs = docs.where((doc) {
-              final data = doc.data() as Map<String, dynamic>;
-              return data['status'] == selectedStatus;
-            }).toList();
+          // Map absensi records by user_id for easy lookup
+          Map<String, Map<String, dynamic>> absensiMap = {};
+          for (var doc in absensiDocsToday) {
+            final data = doc.data() as Map<String, dynamic>;
+            absensiMap[data['user_id']] = data;
           }
 
-          // Sort berdasarkan waktu masuk
-          docs.sort((a, b) {
-            final aData = a.data() as Map<String, dynamic>;
-            final bData = b.data() as Map<String, dynamic>;
-            final aTime = (aData['waktu_masuk'] as Timestamp?)?.toDate() ??
-                DateTime(1900);
-            final bTime = (bData['waktu_masuk'] as Timestamp?)?.toDate() ??
-                DateTime(1900);
+          // Build a list of attendance records for each user today
+          List<Map<String, dynamic>> dailyAttendanceList = [];
+
+          for (var userDoc in usersDocs) {
+            final userData = userDoc.data() as Map<String, dynamic>;
+            final userId = userDoc.id;
+            final username = userData['username'] ?? 'Unknown User';
+
+            Map<String, dynamic> attendanceEntry = {
+              'user_id': userId,
+              'username': username,
+              'tanggal': today,
+              'jam_masuk': null,
+              'jam_keluar': null,
+              'status':
+                  'Belum Absen', // Default status: belum absen (jika tidak ada record)
+            };
+
+            // Check if user has an absensi record for today
+            if (absensiMap.containsKey(userId)) {
+              final absensiData = absensiMap[userId]!;
+              attendanceEntry['jam_masuk'] =
+                  absensiData['waktu_masuk']; // Timestamp or null
+              attendanceEntry['jam_keluar'] =
+                  absensiData['waktu_keluar']; // Timestamp or null
+
+              if (absensiData['waktu_masuk'] is Timestamp) {
+                final DateTime entryTime =
+                    (absensiData['waktu_masuk'] as Timestamp).toDate();
+                // Check if entry time is after 8:15 AM
+                if (entryTime.isAfter(checkTime)) {
+                  attendanceEntry['status'] =
+                      'Terlambat'; // Terlambat karena check-in lewat jam 8.15
+                } else {
+                  attendanceEntry['status'] =
+                      'Hadir'; // Hadir, check-in tepat waktu atau lebih awal
+                }
+              } else {
+                // Jika waktu_masuk ada record tapi null/bukan Timestamp
+                attendanceEntry['status'] =
+                    'Tidak Hadir'; // Record ada tapi waktu_masuk tidak valid/null (Masuk tab Terlambat)
+              }
+            } else {
+              // No absensi record for today, status tetap 'Belum Absen' (Masuk tab Terlambat)
+            }
+
+            dailyAttendanceList.add(attendanceEntry);
+          }
+
+          // --- Filter list berdasarkan waktu saat ini (untuk kasus Belum Absen sebelum 8:15)
+          List<Map<String, dynamic>> displayList =
+              dailyAttendanceList.where((item) {
+            // Jika status Belum Absen DAN jam masih sebelum 8:15, jangan tampilkan
+            if (item['status'] == 'Belum Absen' && now.isBefore(checkTime)) {
+              return false;
+            }
+            return true; // Tampilkan semua status lain, atau Belum Absen setelah 8:15
+          }).toList();
+
+          // Filter berdasarkan status yang dipilih DAN jenis tab
+          List<Map<String, dynamic>> filteredList = displayList.where((item) {
+            // Filter berdasarkan status yang dipilih dari PopupMenuButton
+            bool statusMatch =
+                (selectedStatus == 'Semua' || item['status'] == selectedStatus);
+
+            // Filter berdasarkan jenis tab
+            if (jenis == 'Absensi') {
+              // Tab Absensi menampilkan Hadir dan Terlambat check-in
+              return statusMatch &&
+                  (item['status'] == 'Hadir' || item['status'] == 'Terlambat');
+            } else if (jenis == 'Terlambat') {
+              // Tab Terlambat menampilkan Tidak Hadir dan Belum Absen
+              return statusMatch &&
+                  (item['status'] == 'Tidak Hadir' ||
+                      item['status'] == 'Belum Absen');
+            }
+            // Jika jenis tab tidak dikenali, tampilkan semua (atau logika default lainnya)
+            return statusMatch; // Default fallback
+          }).toList();
+
+          // Sort berdasarkan nama pengguna
+          filteredList.sort((a, b) {
+            final aUsername = a['username'] as String;
+            final bUsername = b['username'] as String;
             return sortAscending
-                ? aTime.compareTo(bTime)
-                : bTime.compareTo(aTime);
+                ? aUsername.compareTo(bUsername)
+                : bUsername.compareTo(aUsername);
           });
 
-          if (docs.isEmpty) {
+          if (filteredList.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -423,11 +508,12 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
             );
           }
 
+          // Display the daily attendance list
           return Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(6.0),
             child: Column(
               children: [
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
                 Container(
                   padding: const EdgeInsets.all(16),
                   color: const Color.fromARGB(255, 227, 241, 253),
@@ -455,200 +541,177 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Flexible(
+                Expanded(
                   child: ListView.builder(
-                    itemCount: docs.length,
+                    itemCount: filteredList.length,
                     itemBuilder: (context, index) {
-                      final doc = docs[index];
-                      final data = doc.data() as Map<String, dynamic>;
+                      final item = filteredList[index];
 
-                      // Get user data
-                      return FutureBuilder<DocumentSnapshot>(
-                        future: FirebaseFirestore.instance
-                            .collection('user')
-                            .doc(data['user_id'])
-                            .get(),
-                        builder: (context, userSnapshot) {
-                          if (userSnapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Card(
-                              child: ListTile(
-                                title:
-                                    Center(child: CircularProgressIndicator()),
-                              ),
-                            );
-                          }
+                      // Format waktu
+                      final waktuMasukTimestamp =
+                          item['jam_masuk'] as Timestamp?;
+                      final waktuMasuk = waktuMasukTimestamp != null
+                          ? DateFormat('HH:mm:ss')
+                              .format(waktuMasukTimestamp.toDate())
+                          : '-';
 
-                          final userData = userSnapshot.data?.data()
-                              as Map<String, dynamic>?;
-                          final username =
-                              userData?['username'] ?? 'Unknown User';
+                      final waktuKeluarTimestamp =
+                          item['jam_keluar'] as Timestamp?;
+                      final waktuKeluar = waktuKeluarTimestamp != null
+                          ? DateFormat('HH:mm:ss')
+                              .format(waktuKeluarTimestamp.toDate())
+                          : '-';
 
-                          // Format waktu
-                          final waktuMasuk = data['waktu_masuk'] != null
-                              ? DateFormat('HH:mm:ss').format(
-                                  (data['waktu_masuk'] as Timestamp).toDate())
-                              : '-';
-                          final waktuKeluar = data['waktu_keluar'] != null
-                              ? DateFormat('HH:mm:ss').format(
-                                  (data['waktu_keluar'] as Timestamp).toDate())
-                              : '-';
-
-                          // Tentukan status dan warna
-                          String status = 'Hadir';
-                          Color statusColor =
+                      // Tentukan status dan warna
+                      String status = item['status'];
+                      Color statusColor;
+                      switch (status) {
+                        case 'Hadir':
+                          statusColor =
                               const Color.fromARGB(255, 127, 157, 195);
+                          break;
+                        case 'Tidak Hadir': // Warna merah untuk tidak hadir
+                          statusColor = Colors.red;
+                          break;
+                        case 'Terlambat': // Warna oranye untuk terlambat check-in
+                          statusColor = Colors.orange;
+                          break;
+                        case 'Belum Absen': // Warna abu-abu untuk belum absen
+                          statusColor = Colors.grey;
+                          break;
+                        default:
+                          statusColor =
+                              Colors.grey; // Default or unknown status
+                      }
 
-                          if (waktuMasuk == '-') {
-                            status = 'Tidak Hadir';
-                            statusColor = Colors.red;
-                          } else {
-                            // Check if late (after 08:00)
-                            final masuk =
-                                (data['waktu_masuk'] as Timestamp).toDate();
-                            final jamDelapan = DateTime(
-                              masuk.year,
-                              masuk.month,
-                              masuk.day,
-                              8,
-                              0,
-                            );
-                            if (masuk.isAfter(jamDelapan)) {
-                              status = 'Terlambat';
-                              statusColor = Colors.orange;
-                            }
-                          }
-
-                          return Card(
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            elevation: 3,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        elevation: 3,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: statusColor,
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
                                 color: statusColor,
-                              ),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    color: statusColor,
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Absensi - $status',
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Text(
-                                          username,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Absensi - ${item['status']}',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    color: Colors.white,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        // KIRI
-                                        Expanded(
-                                          child: Row(
+                                    Text(
+                                      item['username'],
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.all(8.0),
+                                color: Colors.white,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // KIRI
+                                    Expanded(
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Icon(
+                                            Icons.access_time,
+                                            color: Colors.green,
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              const Icon(
-                                                Icons.access_time,
-                                                color: Colors.green,
-                                                size: 18,
+                                              const Text(
+                                                'Waktu Mulai',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.green,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
-                                              const SizedBox(width: 5),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  const Text(
-                                                    'Waktu Mulai',
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.green,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 3),
-                                                  Text(
-                                                    waktuMasuk,
-                                                    style: const TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.black54,
-                                                    ),
-                                                  ),
-                                                ],
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                waktuMasuk,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.black54,
+                                                ),
                                               ),
                                             ],
                                           ),
-                                        ),
+                                        ],
+                                      ),
+                                    ),
 
-                                        const SizedBox(width: 10),
+                                    const SizedBox(width: 10),
 
-                                        // KANAN
-                                        Expanded(
-                                          child: Row(
+                                    // KANAN
+                                    Expanded(
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Icon(
+                                            Icons.access_time,
+                                            color:
+                                                Color.fromARGB(255, 255, 0, 0),
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              const Icon(
-                                                Icons.access_time,
-                                                color: Colors.green,
-                                                size: 18,
+                                              const Text(
+                                                'Waktu Selesai',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Color.fromARGB(
+                                                      255, 255, 0, 0),
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
-                                              const SizedBox(width: 5),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  const Text(
-                                                    'Waktu Selesai',
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.green,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 3),
-                                                  Text(
-                                                    waktuKeluar,
-                                                    style: const TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.black54,
-                                                    ),
-                                                  ),
-                                                ],
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                waktuKeluar,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.black54,
+                                                ),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            ],
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -802,9 +865,12 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
           );
         },
       );
+    } else if (jenis == 'Lembur') {
+      return const Center(
+        child: Text('Fitur Lembur Segera Hadir'),
+      );
     }
 
-    // Placeholder for other tabs
     return const Center(
       child: Text('Coming Soon'),
     );
@@ -837,37 +903,51 @@ class IzinItem extends StatelessWidget {
             child: Text(
               date,
               style: const TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.black),
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
           ),
         Card(
-          margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-          child: ListTile(
-            leading: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.description, color: color),
-                Text(
-                  type,
-                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
+            color: Colors.white, // Card putih
+            margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+            child: ListTile(
+              leading: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.description, color: color),
+                  Text(
+                    type,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              title: Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.black, // Warna teks hitam
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
-            ),
-            title: Text(
-              title,
-              style: TextStyle(color: color, fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 6),
-                Text('Nama        : $username'),
-                Text('Waktu        : $waktu'),
-                Text('Status Izin  : $status'),
-              ],
-            ),
-          ),
-        ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 6),
+                  Text('Nama        : $username',
+                      style: const TextStyle(color: Colors.black)),
+                  const SizedBox(height: 2),
+                  Text('Waktu       : $waktu',
+                      style: const TextStyle(color: Colors.black)),
+                  const SizedBox(height: 2),
+                  Text('Status Izin : $status',
+                      style: const TextStyle(color: Colors.black)),
+                ],
+              ),
+            )),
       ],
     );
   }

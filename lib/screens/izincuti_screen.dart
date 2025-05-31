@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:purelux/screens/izin_screen.dart';
 import 'package:purelux/screens/cuti_screen.dart';
 import 'package:purelux/widgets/bottom_nav_bar.dart'; // Import HomeScreen jika ada
@@ -186,7 +187,7 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
             child: Row(
               children: [
                 Container(
-                  padding: EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -197,23 +198,23 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
                   ),
                   child: Icon(icon, color: Colors.white, size: 24),
                 ),
-                SizedBox(width: 15),
+                const SizedBox(width: 15),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF001F3D),
+                          color: const Color(0xFF001F3D),
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.grey[600],
                         ),
@@ -221,7 +222,7 @@ class _PengajuanScreenState extends State<PengajuanScreen> {
                     ],
                   ),
                 ),
-                Icon(
+                const Icon(
                   Icons.arrow_forward_ios,
                   color: Color(0xFF1E3A8A),
                   size: 16,

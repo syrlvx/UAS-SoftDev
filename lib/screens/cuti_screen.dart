@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CutiScreen extends StatefulWidget {
   const CutiScreen({super.key});
@@ -126,9 +127,12 @@ class _CutiScreenState extends State<CutiScreen> {
           SnackBar(
             content: const Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white),
+                Icon(Icons.check_circle, color: Colors.white, size: 20),
                 SizedBox(width: 10),
-                Text('Pengajuan cuti berhasil dikirim'),
+                Text(
+                  'Pengajuan cuti berhasil dikirim',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ],
             ),
             backgroundColor: Colors.green,
@@ -282,9 +286,9 @@ class _CutiScreenState extends State<CutiScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Data Pengajuan",
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF001F3D),
@@ -302,14 +306,14 @@ class _CutiScreenState extends State<CutiScreen> {
                     ),
                     decoration: InputDecoration(
                       labelText: 'Nama',
-                      labelStyle: const TextStyle(
+                      labelStyle: GoogleFonts.poppins(
                         color: Color(0xFF001F3D),
-                        fontSize: 21, // Ukuran font label
+                        fontSize: 21,
                       ),
                       prefixIcon: const Icon(
                         Icons.person,
                         color: Color(0xFF001F3D),
-                        size: 24, // Ukuran ikon kalau mau dikecilkan juga
+                        size: 24,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
@@ -326,9 +330,9 @@ class _CutiScreenState extends State<CutiScreen> {
                       ),
                       filled: true,
                       fillColor: Colors.grey[100],
-                      hintStyle: TextStyle(
+                      hintStyle: GoogleFonts.poppins(
                         color: Colors.grey.shade400,
-                        fontSize: 18, // Ukuran font hint
+                        fontSize: 18,
                       ),
                     ),
                   ),
@@ -352,7 +356,7 @@ class _CutiScreenState extends State<CutiScreen> {
                           const SizedBox(width: 10),
                           Text(
                             "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
-                            style: const TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 16,
                               color: Color(0xFF001F3D),
                             ),
@@ -364,16 +368,15 @@ class _CutiScreenState extends State<CutiScreen> {
                   SizedBox(height: 20),
                   TextFormField(
                     controller: _linkFileController,
-                    style: TextStyle(
-                      // <- font dalam text field
+                    style: GoogleFonts.poppins(
                       color: Colors.black87,
-                      fontSize: 16, // ubah ukuran font isian di sini
+                      fontSize: 16,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Link File Bukti Cuti',
-                      labelStyle: TextStyle(
+                      labelStyle: GoogleFonts.poppins(
                         color: Color(0xFF001F3D),
-                        fontSize: 16, // font label
+                        fontSize: 16,
                       ),
                       prefixIcon:
                           Icon(Icons.link, color: Color(0xFF001F3D), size: 22),
@@ -392,13 +395,14 @@ class _CutiScreenState extends State<CutiScreen> {
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      hintStyle: TextStyle(
+                      hintStyle: GoogleFonts.poppins(
                         color: Colors.grey.shade300,
                         fontSize: 16,
                       ),
                       helperText: 'Masukkan link Google Drive',
-                      helperStyle:
-                          TextStyle(fontSize: 12), // <- font helperText
+                      helperStyle: GoogleFonts.poppins(
+                        fontSize: 12,
+                      ),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -426,13 +430,13 @@ class _CutiScreenState extends State<CutiScreen> {
                       ),
                       child: Container(
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF001F3D),
+                              Color(0xFFFFFFFF),
+                            ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [
-                              Color(0xFF001F3D), // Biru navy gelap
-                              Color(0xFFFFFFFF), // Putih
-                            ],
                           ),
                           borderRadius: BorderRadius.circular(15),
                         ),
@@ -447,7 +451,7 @@ class _CutiScreenState extends State<CutiScreen> {
                                   SizedBox(width: 10),
                                   Text(
                                     'kirim pengajuan',
-                                    style: TextStyle(
+                                    style: GoogleFonts.poppins(
                                       color: Colors.white,
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,

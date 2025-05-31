@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:purelux/firebase_options.dart';
 import 'package:purelux/widgets/bottom_nav_bar.dart';
@@ -32,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
         options: DefaultFirebaseOptions.currentPlatform,
       );
     } catch (e) {
+      if (!mounted) return;
       // ignore: avoid_print
       print('Error initializing Firebase: $e');
     }
@@ -40,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -51,19 +54,21 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
+      if (!mounted) return;
       final uid = userCredential.user!.uid;
       // ignore: avoid_print
       print('UID: $uid');
 
       // Simpan OneSignal playerId ke Firestore
       String? playerId = OneSignal.User.pushSubscription.id;
-      if (playerId != null) {
+      if (playerId != null && mounted) {
         await FirebaseFirestore.instance
             .collection('user')
             .doc(uid)
             .update({'onesignalPlayerId': playerId});
       }
 
+      if (!mounted) return;
       final userDoc =
           await FirebaseFirestore.instance.collection('user').doc(uid).get();
 
@@ -74,6 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final role = userDoc['role'];
 
+      if (!mounted) return;
       if (role == 'admin') {
         Navigator.pushReplacement(
           context,
@@ -89,6 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
             code: 'invalid-role', message: 'Unknown role: $role');
       }
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
       String errorMessage;
       if (e.code == 'user-not-found') {
         errorMessage = 'No user found for that email.';
@@ -98,23 +105,105 @@ class _LoginScreenState extends State<LoginScreen> {
         errorMessage = e.message ?? 'An error occurred during login.';
       }
 
+      if (e.code == 'user-not-found') {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            title: const Text(
+              'Login Failed',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: const Text(
+              'Akun tidak tersedia',
+              style: TextStyle(
+                color: Colors.black,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text(
+                  'Close',
+                  style: TextStyle(
+                    color: Color(0xFF001F3D), // biru navy
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            title: const Text(
+              'Login Failed',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: const Text(
+              'Akun tidak tersedia',
+              style: TextStyle(
+                color: Colors.black,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text(
+                  'Close',
+                  style: TextStyle(
+                    color: Color(0xFF001F3D), // biru navy
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Login Failed'),
-          content: Text(errorMessage),
+          title: const Text(
+            'Login Failed',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            'Akun Tidak Tersedia',
+            // Jangan const karena ada interpolasi variabel
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
+              child: const Text(
+                'Close',
+                style: TextStyle(
+                  color: Color(0xFF001F3D), // Warna biru navy
+                ),
+              ),
             ),
           ],
         ),
       );
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -128,15 +217,15 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Background putih
+      backgroundColor: Colors.white,
       appBar: AppBar(
         toolbarHeight: 120,
         automaticallyImplyLeading: false,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(colors: [
-              Color(0xFF001F3D), // Biru navy gelap
-              Color(0xFFFFFFFF), // Putih
+              Color(0xFF001F3D),
+              Color(0xFFFFFFFF),
             ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
           ),
         ),
@@ -145,8 +234,8 @@ class _LoginScreenState extends State<LoginScreen> {
           'Login',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 26, // lebih besar
-            fontWeight: FontWeight.bold, // lebih tebal
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
@@ -159,13 +248,20 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 50),
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
-                  labelStyle: TextStyle(color: Colors.black),
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email, color: Colors.black),
+                  labelStyle: GoogleFonts.poppins(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.email, color: Colors.black),
                 ),
-                style: const TextStyle(color: Colors.black),
+                style: GoogleFonts.poppins(
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w400,
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Email is required';
@@ -182,13 +278,20 @@ class _LoginScreenState extends State<LoginScreen> {
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Password',
-                  labelStyle: TextStyle(color: Colors.black),
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock, color: Colors.black),
+                  labelStyle: GoogleFonts.poppins(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500, // bisa kamu sesuaikan
+                  ),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock, color: Colors.black),
                 ),
-                style: const TextStyle(color: Colors.black),
+                style: GoogleFonts.poppins(
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w400,
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Password is required';
@@ -203,7 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [
-                            Color(0xFF001F3D), // Biru navy gelap
+                            Color(0xFF001F3D),
                             Color(0xFFFFFFFF),
                           ],
                           begin: Alignment.topCenter,
@@ -214,22 +317,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: ElevatedButton(
                         onPressed: _login,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Colors.transparent, // Membuat tombol transparan
+                          backgroundColor: Colors.transparent,
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           minimumSize: const Size(double.infinity, 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
-                          side:
-                              BorderSide.none, // Menghilangkan border jika ada
+                          side: BorderSide.none,
                         ),
-                        child: const Text(
+                        child: Text(
                           'Login',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white, // Teks tombol berwarna putih
+                            color: Colors.white,
                           ),
                         ),
                       ),

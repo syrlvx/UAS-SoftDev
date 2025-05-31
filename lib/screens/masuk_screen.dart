@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -221,6 +222,21 @@ class _MasukScreenState extends State<MasukScreen> {
     });
 
     try {
+      // Check if current time is after 5 PM
+      final now = DateTime.now();
+      if (now.hour >= 17) {
+        setState(() {
+          _loading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Absensi tidak dapat dilakukan setelah jam 5 sore'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
       User? user = FirebaseAuth.instance.currentUser;
       if (user == null || _currentDate == null) {
         setState(() {
@@ -245,7 +261,6 @@ class _MasukScreenState extends State<MasukScreen> {
         }
       }
 
-      final now = Timestamp.now();
       final nowFormatted = DateFormat('HH:mm').format(DateTime.now());
 
       // Query untuk mencari dokumen absensi hari ini
@@ -262,7 +277,7 @@ class _MasukScreenState extends State<MasukScreen> {
           Map<String, dynamic> absenData = {
             'user_id': user.uid,
             'tanggal': _currentDate,
-            'waktu_masuk': now,
+            'waktu_masuk': Timestamp.fromDate(DateTime.now()),
             'lokasi_masuk': _location,
             'keterangan':
                 'Tepat waktu', // Bisa ditambahkan logika untuk menentukan status
@@ -272,7 +287,7 @@ class _MasukScreenState extends State<MasukScreen> {
         } else {
           // Jika sudah ada tapi belum ada waktu masuk (seharusnya tidak terjadi)
           await querySnapshot.docs.first.reference.update({
-            'waktu_masuk': now,
+            'waktu_masuk': Timestamp.fromDate(DateTime.now()),
             'lokasi_masuk': _location,
           });
         }
@@ -287,7 +302,7 @@ class _MasukScreenState extends State<MasukScreen> {
         // Update dokumen yang sudah ada dengan data keluar
         if (querySnapshot.docs.isNotEmpty) {
           Map<String, dynamic> updateData = {
-            'waktu_keluar': now,
+            'waktu_keluar': Timestamp.fromDate(DateTime.now()),
             'lokasi_keluar': _location,
           };
 
@@ -312,8 +327,22 @@ class _MasukScreenState extends State<MasukScreen> {
     }
   }
 
+  bool _isWithinWorkingHours() {
+    final now = DateTime.now();
+    return now.hour >= 8 && now.hour < 17;
+  }
+
+  Color _getButtonColor() {
+    if (!_isWithinWorkingHours()) {
+      return Colors.grey;
+    }
+    return Colors.green;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool isButtonEnabled = _isWithinWorkingHours() && !_sudahKeluar;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: _loading
@@ -379,13 +408,18 @@ class _MasukScreenState extends State<MasukScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.calendar_today, color: Colors.grey),
+                            Icon(Icons.calendar_today,
+                                color: const Color.fromARGB(255, 228, 3, 3)),
                             SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 'Tanggal: ${DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(DateTime.now())}',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.black),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: Colors.black,
+                                  fontStyle: FontStyle
+                                      .normal, // atau italic kalau mau miring
+                                ),
                               ),
                             ),
                           ],
@@ -393,13 +427,16 @@ class _MasukScreenState extends State<MasukScreen> {
                         Divider(thickness: 1, color: Colors.grey[300]),
                         Row(
                           children: [
-                            Icon(Icons.location_on, color: Colors.grey),
+                            Icon(Icons.location_on,
+                                color: const Color.fromARGB(255, 48, 133, 25)),
                             SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 'Lokasi: ${_location ?? "-"}',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.black),
+                                style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                    fontStyle: FontStyle.normal),
                               ),
                             ),
                           ],
@@ -416,8 +453,11 @@ class _MasukScreenState extends State<MasukScreen> {
                                     SizedBox(width: 10),
                                     Text(
                                       'Jam Masuk: $_waktuMasuk',
-                                      style: TextStyle(
-                                          fontSize: 16, color: Colors.black),
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        color: Colors.black,
+                                        fontStyle: FontStyle.normal,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -428,8 +468,11 @@ class _MasukScreenState extends State<MasukScreen> {
                                     SizedBox(width: 10),
                                     Text(
                                       'Jam Keluar: $_waktuKeluar',
-                                      style: TextStyle(
-                                          fontSize: 16, color: Colors.black),
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        color: Colors.black,
+                                        fontStyle: FontStyle.normal,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -443,43 +486,57 @@ class _MasukScreenState extends State<MasukScreen> {
                                 onPressed: () {
                                   // Navigasi ke riwayat aktivitas
                                 },
-                                icon: Icon(Icons.history),
-                                label: Text('Aktivitas'),
+                                icon: const Icon(Icons.history),
+                                label: Text(
+                                  'Aktivitas',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  ),
+                                ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.black,
-                                  side: BorderSide(color: Colors.grey),
-                                  padding: EdgeInsets.symmetric(vertical: 14),
+                                  side: BorderSide.none,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
                                 ),
                               ),
                             ),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: _sudahKeluar
-                                    ? null
-                                    : () async {
+                                onPressed: isButtonEnabled
+                                    ? () async {
                                         if (_currentPosition != null) {
                                           await _handleAbsen();
                                           await _cekStatusAbsen();
                                         } else {
                                           ScaffoldMessenger.of(context)
-                                              .showSnackBar(SnackBar(
-                                            content:
-                                                Text('Lokasi belum tersedia'),
-                                          ));
+                                              .showSnackBar(
+                                            const SnackBar(
+                                                content: Text(
+                                                    'Lokasi belum tersedia')),
+                                          );
                                         }
-                                      },
+                                      }
+                                    : null,
                                 icon: Icon(
                                   _sudahMasuk ? Icons.logout : Icons.login,
                                   color: Colors.white,
                                 ),
                                 label: Text(
                                   _sudahMasuk ? 'Keluar' : 'Masuk',
-                                  style: TextStyle(color: Colors.white),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                  ),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  padding: EdgeInsets.symmetric(vertical: 14),
+                                  backgroundColor: _getButtonColor(),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  disabledBackgroundColor: Colors.grey,
+                                  disabledForegroundColor: Colors.white70,
                                 ),
                               ),
                             ),

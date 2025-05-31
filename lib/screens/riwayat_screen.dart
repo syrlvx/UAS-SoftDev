@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:purelux/widgets/bottom_nav_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -77,7 +78,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
           Map<String, dynamic> formattedData = {
             'tanggal': data['tanggal'],
             'jenis': 'Absensi',
-            'status': 'Hadir', // Default status
+            'status': 'Hadir', // Default status, akan diubah jika terlambat
             'jam_masuk': data['waktu_masuk'] != null
                 ? DateFormat('HH:mm:ss')
                     .format((data['waktu_masuk'] as Timestamp).toDate())
@@ -88,6 +89,21 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                 : '17:00:00',
             'keterangan': data['keterangan'] ?? '',
           };
+
+          // Cek jika terlambat (waktu_masuk > 08:15)
+          if (data['waktu_masuk'] is Timestamp) {
+            final DateTime entryTime =
+                (data['waktu_masuk'] as Timestamp).toDate();
+            // Check if entry time is after 8:15 AM (8 hours and 15 minutes)
+            if (entryTime.hour > 8 ||
+                (entryTime.hour == 8 && entryTime.minute > 15)) {
+              formattedData['status'] = 'Terlambat';
+            }
+          } else if (data['waktu_masuk'] != null) {
+            // Handle cases where waktu_masuk might not be a Timestamp, but is not null
+            // Depending on your data, you might need different handling here.
+            // For now, we'll just assume it's not late if it's not a Timestamp.
+          }
 
           allData.add(formattedData);
         }
@@ -135,69 +151,60 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Container(
+        appBar: AppBar(
+          title: const Text(
+            'Riwayat',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const BottomNavBar()),
+              );
+            },
+          ),
+          flexibleSpace: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
                   Color(0xFF001F3D), // Biru navy gelap
-                  Color(0xFFFFFFFF)
+                  Color(0xFFFFFFFF),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
             ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Positioned(
-                      left: 0,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new,
-                            color: Colors.white),
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const BottomNavBar()),
-                          );
-                        },
-                      ),
-                    ),
-                    const Center(
-                      child: Text(
-                        'Riwayat',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
+          toolbarHeight: 60, // untuk tinggi AppBar
         ),
         body: Column(
           children: [
             Container(
               color: Colors.white,
-              child: const TabBar(
-                indicatorColor: Color.fromARGB(255, 127, 157, 195),
-                labelColor: Color.fromARGB(255, 127, 157, 195),
+              child: TabBar(
+                indicatorColor: const Color.fromARGB(255, 127, 157, 195),
+                labelColor: const Color.fromARGB(255, 127, 157, 195),
                 unselectedLabelColor: Colors.grey,
-                tabs: [
+                labelStyle: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+                unselectedLabelStyle: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                ),
+                tabs: const [
                   Tab(text: 'Absensi'),
                   Tab(text: 'Izin & Cuti'),
-                  Tab(text: 'Lembur'),
                 ],
               ),
             ),
@@ -206,6 +213,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                 color: Colors.white,
                 child: Stack(
                   children: [
+                    // KIRI: Sort
                     Positioned(
                       left: 16,
                       top: 1,
@@ -221,8 +229,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                             const SizedBox(width: 4),
                             Text(
                               sortAscending ? 'Terlama' : 'Terbaru',
-                              style: const TextStyle(
-                                color: Color.fromARGB(255, 127, 157, 195),
+                              style: GoogleFonts.poppins(
+                                color: const Color.fromARGB(255, 127, 157, 195),
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -250,7 +258,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                 const SizedBox(width: 8),
                                 Text(
                                   'Terbaru',
-                                  style: TextStyle(
+                                  style: GoogleFonts.poppins(
                                     color: !sortAscending
                                         ? const Color.fromARGB(
                                             255, 127, 157, 195)
@@ -277,7 +285,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                 const SizedBox(width: 8),
                                 Text(
                                   'Terlama',
-                                  style: TextStyle(
+                                  style: GoogleFonts.poppins(
                                     color: sortAscending
                                         ? const Color.fromARGB(
                                             255, 127, 157, 195)
@@ -300,6 +308,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                         },
                       ),
                     ),
+
+                    // KANAN: Filter
                     Positioned(
                       right: 16,
                       top: 7,
@@ -328,9 +338,9 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                   Flexible(
                                     child: Text(
                                       selectedStatus,
-                                      style: const TextStyle(
-                                        color:
-                                            Color.fromARGB(255, 127, 157, 195),
+                                      style: GoogleFonts.poppins(
+                                        color: const Color.fromARGB(
+                                            255, 127, 157, 195),
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -346,25 +356,20 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                               ),
                             ),
                             itemBuilder: (BuildContext context) {
-                              // Get current tab index
                               final currentTab =
                                   DefaultTabController.of(context).index;
 
                               if (currentTab == 0) {
-                                // Tab Absensi
-                                return [
-                                  'Semua',
-                                  'Hadir',
-                                  'Tidak Hadir',
-                                ].map((String value) {
+                                return ['Semua', 'Hadir', 'Tidak Hadir']
+                                    .map((value) {
                                   return PopupMenuItem<String>(
                                     value: value,
                                     height: 35,
                                     child: Text(
                                       value,
-                                      style: const TextStyle(
-                                        color:
-                                            Color.fromARGB(255, 127, 157, 195),
+                                      style: GoogleFonts.poppins(
+                                        color: const Color.fromARGB(
+                                            255, 127, 157, 195),
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -372,7 +377,6 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                   );
                                 }).toList();
                               } else if (currentTab == 1) {
-                                // Tab Izin & Cuti
                                 return [
                                   'Semua',
                                   'Izin',
@@ -380,15 +384,15 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                   'Disetujui',
                                   'Pending',
                                   'Ditolak',
-                                ].map((String value) {
+                                ].map((value) {
                                   return PopupMenuItem<String>(
                                     value: value,
                                     height: 35,
                                     child: Text(
                                       value,
-                                      style: const TextStyle(
-                                        color:
-                                            Color.fromARGB(255, 127, 157, 195),
+                                      style: GoogleFonts.poppins(
+                                        color: const Color.fromARGB(
+                                            255, 127, 157, 195),
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -396,21 +400,20 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                   );
                                 }).toList();
                               } else {
-                                // Tab Lembur
                                 return [
                                   'Semua',
                                   'Disetujui',
                                   'Pending',
-                                  'Ditolak',
-                                ].map((String value) {
+                                  'Ditolak'
+                                ].map((value) {
                                   return PopupMenuItem<String>(
                                     value: value,
                                     height: 35,
                                     child: Text(
                                       value,
-                                      style: const TextStyle(
-                                        color:
-                                            Color.fromARGB(255, 127, 157, 195),
+                                      style: GoogleFonts.poppins(
+                                        color: const Color.fromARGB(
+                                            255, 127, 157, 195),
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -430,6 +433,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                         ),
                       ),
                     ),
+
+                    // TAMPILAN
                     Positioned(
                       left: 0,
                       right: 0,
@@ -443,7 +448,6 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                 children: [
                                   _buildRiwayatTab('Absensi'),
                                   _buildRiwayatTab('Izin & Cuti'),
-                                  _buildRiwayatTab('Lembur'),
                                 ],
                               ),
                       ),
@@ -524,7 +528,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'Tidak ada data $jenis',
-                    style: const TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 18,
                       color: Colors.grey,
                     ),
@@ -534,25 +538,76 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             );
           }
 
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final doc = docs[index];
-              final data = doc.data() as Map<String, dynamic>;
-              final tanggal = (data['tanggal'] as Timestamp).toDate();
-              final formattedDate =
-                  DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(tanggal);
-              final formattedWaktu = DateFormat('dd/MM/yyyy').format(tanggal);
+          // Group documents by date
+          Map<String, List<QueryDocumentSnapshot>> groupedDocs = {};
+          for (var doc in docs) {
+            final data = doc.data() as Map<String, dynamic>;
+            final tanggal = (data['tanggal'] as Timestamp).toDate();
+            final formattedDate =
+                DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(tanggal);
 
-              return IzinItem(
-                date: formattedDate,
-                title: data['keterangan'] ??
-                    data['linkFile'] ??
-                    'Tidak ada keterangan',
-                color: data['jenis'] == 'cuti' ? Colors.purple : Colors.green,
-                type: data['jenis'] == 'cuti' ? 'CUTI' : 'IZIN',
-                waktu: formattedWaktu,
-                status: data['status'] ?? 'Pending',
+            if (!groupedDocs.containsKey(formattedDate)) {
+              groupedDocs[formattedDate] = [];
+            }
+            groupedDocs[formattedDate]!.add(doc);
+          }
+
+          // Convert grouped docs to list of entries
+          List<MapEntry<String, List<QueryDocumentSnapshot>>> sortedEntries =
+              groupedDocs.entries.toList();
+
+          // Sort entries by date
+          sortedEntries.sort((a, b) {
+            final aDate =
+                DateFormat('EEEE, dd MMMM yyyy', 'id_ID').parse(a.key);
+            final bDate =
+                DateFormat('EEEE, dd MMMM yyyy', 'id_ID').parse(b.key);
+            return sortAscending
+                ? aDate.compareTo(bDate)
+                : bDate.compareTo(aDate);
+          });
+
+          return ListView.builder(
+            itemCount: sortedEntries.length,
+            itemBuilder: (context, index) {
+              final entry = sortedEntries[index];
+              final date = entry.key;
+              final docsForDate = entry.value;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0, top: 10.0),
+                    child: Text(
+                      date,
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  ...docsForDate.map((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final tanggal = (data['tanggal'] as Timestamp).toDate();
+                    final formattedWaktu =
+                        DateFormat('dd/MM/yyyy').format(tanggal);
+
+                    return IzinItem(
+                      date:
+                          '', // Empty date since we're showing it in the group header
+                      title: data['keterangan'] ??
+                          data['linkFile'] ??
+                          'Tidak ada keterangan',
+                      color: data['jenis'] == 'cuti'
+                          ? Colors.purple
+                          : Colors.green,
+                      type: data['jenis'] == 'cuti' ? 'CUTI' : 'IZIN',
+                      waktu: formattedWaktu,
+                      status: data['status'] ?? 'Pending',
+                    );
+                  }).toList(),
+                ],
               );
             },
           );
@@ -587,7 +642,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             const SizedBox(height: 16),
             Text(
               'Tidak ada data $jenis',
-              style: const TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 18,
                 color: Colors.grey,
               ),
@@ -601,32 +656,6 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: const Color.fromARGB(255, 227, 241, 253),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Detail Riwayat $jenis',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 16, 126, 173),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Informasi lebih lanjut tentang riwayat $jenis, termasuk status dan tanggal terkait.',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black54,
-                  ),
-                ),
-              ],
-            ),
-          ),
           const SizedBox(height: 10),
           Flexible(
             child: ListView.builder(
@@ -678,7 +707,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
                             '${item['jenis']} - ${item['status']}',
-                            style: const TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 18,
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -708,15 +737,15 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                       children: [
                                         Text(
                                           tanggal,
-                                          style: const TextStyle(
-                                            fontSize: 14,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13,
                                             color: Colors.black54,
                                           ),
                                         ),
                                         const SizedBox(height: 3),
-                                        const Text(
+                                        Text(
                                           'Waktu Mulai',
-                                          style: TextStyle(
+                                          style: GoogleFonts.poppins(
                                             fontSize: 12,
                                             color: Colors.green,
                                             fontWeight: FontWeight.w500,
@@ -725,8 +754,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                         const SizedBox(height: 3),
                                         Text(
                                           waktuMulai.substring(0, 8),
-                                          style: const TextStyle(
-                                            fontSize: 14,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13,
                                             color: Colors.black54,
                                           ),
                                         ),
@@ -745,7 +774,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                   children: [
                                     const Icon(
                                       Icons.access_time,
-                                      color: Colors.green,
+                                      color: Color.fromARGB(255, 255, 0, 0),
                                       size: 18,
                                     ),
                                     const SizedBox(width: 5),
@@ -755,25 +784,26 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                       children: [
                                         Text(
                                           tanggal,
-                                          style: const TextStyle(
-                                            fontSize: 14,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13,
                                             color: Colors.black54,
                                           ),
                                         ),
                                         const SizedBox(height: 3),
-                                        const Text(
+                                        Text(
                                           'Waktu Selesai',
-                                          style: TextStyle(
+                                          style: GoogleFonts.poppins(
                                             fontSize: 12,
-                                            color: Colors.green,
+                                            color:
+                                                Color.fromARGB(255, 255, 0, 0),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                         const SizedBox(height: 3),
                                         Text(
                                           waktuSelesai.substring(0, 8),
-                                          style: const TextStyle(
-                                            fontSize: 14,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13,
                                             color: Colors.black54,
                                           ),
                                         ),
@@ -807,7 +837,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   color: Colors.black54,
                 ),
@@ -815,7 +845,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               const SizedBox(height: 3),
               Text(
                 value,
-                style: const TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: Colors.black87,
                 ),
@@ -852,12 +882,16 @@ class IzinItem extends StatelessWidget {
             padding: const EdgeInsets.only(left: 16.0, top: 10.0),
             child: Text(
               date,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.black),
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
           ),
         Card(
+          color: Colors.white,
           margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+          elevation: 2,
           child: ListTile(
             leading: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -865,20 +899,40 @@ class IzinItem extends StatelessWidget {
                 Icon(Icons.description, color: color),
                 Text(
                   type,
-                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.poppins(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ],
             ),
             title: Text(
               title,
-              style: TextStyle(color: color, fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 6),
-                Text('Waktu        : $waktu'),
-                Text('Status Izin  : $status'),
+                Text(
+                  'Waktu         : $waktu',
+                  style: GoogleFonts.poppins(
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  'Status Izin  : $status',
+                  style: GoogleFonts.poppins(
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
+                )
               ],
             ),
           ),

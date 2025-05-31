@@ -195,20 +195,26 @@ class _PengajuanListState extends State<PengajuanList> {
                       children: [
                         Text(
                           "Tanggal: ${(data['tanggal'] as Timestamp).toDate().toString().split(' ')[0]}",
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(color: Colors.black, fontSize: 16),
                         ),
                         SizedBox(height: 8),
                         if (widget.jenis == 'cuti') ...[
-                          Text("Link File: ${data['linkFile'] ?? '-'}",
-                              style: TextStyle(color: Colors.black)),
+                          Text(
+                            "Link File: ${data['linkFile'] ?? '-'}",
+                            style: TextStyle(color: Colors.black, fontSize: 16),
+                          ),
                           SizedBox(height: 8),
                         ] else ...[
-                          Text("Keterangan: ${data['keterangan'] ?? '-'}",
-                              style: TextStyle(color: Colors.black)),
+                          Text(
+                            "Keterangan: ${data['keterangan'] ?? '-'}",
+                            style: TextStyle(color: Colors.black, fontSize: 16),
+                          ),
                           SizedBox(height: 8),
                         ],
-                        Text("Status: $status",
-                            style: TextStyle(color: Colors.black)),
+                        Text(
+                          "Status: $status",
+                          style: TextStyle(color: Colors.black, fontSize: 16),
+                        ),
                       ],
                     ),
                     actions: [
@@ -269,7 +275,8 @@ class _PengajuanListState extends State<PengajuanList> {
                                       ? (data['nama'] as String)[0]
                                           .toUpperCase()
                                       : '?',
-                                  style: TextStyle(color: Colors.white),
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 20),
                                 )
                               : null,
                         );
@@ -293,11 +300,19 @@ class _PengajuanListState extends State<PengajuanList> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (widget.jenis == 'cuti')
-                        Text("Link File: ${data['linkFile'] ?? '-'}")
+                        Text(
+                          "Link File: ${data['linkFile'] ?? '-'}",
+                          style: const TextStyle(fontSize: 16),
+                        )
                       else
-                        Text("Keterangan: ${data['keterangan'] ?? '-'}"),
+                        Text(
+                          "Keterangan: ${data['keterangan'] ?? '-'}",
+                          style: const TextStyle(fontSize: 16),
+                        ),
                       Text(
-                          "Tanggal: ${(data['tanggal'] as Timestamp).toDate().toString().split(' ')[0]}"),
+                        "Tanggal: ${(data['tanggal'] as Timestamp).toDate().toString().split(' ')[0]}",
+                        style: const TextStyle(fontSize: 16),
+                      ),
                     ],
                   ),
                   trailing: Container(

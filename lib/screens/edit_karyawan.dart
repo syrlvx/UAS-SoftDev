@@ -18,32 +18,41 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
 
   String? selectedPosition;
 
-  final List<String> posisiOptions = ['Karyawan', 'Admin'];
+  final List<String> posisiOptions = ['karyawan', 'admin'];
 
   @override
   void initState() {
     super.initState();
-    nameController = TextEditingController(text: widget.data['name'] ?? '');
+    nameController = TextEditingController(text: widget.data['username'] ?? '');
     emailController = TextEditingController(text: widget.data['email'] ?? '');
     performanceScoreController =
-        TextEditingController(text: '${widget.data['skorKinerja'] ?? 0}');
-    notesController = TextEditingController(text: widget.data['catatan'] ?? '');
+        TextEditingController(text: '${widget.data['score'] ?? 0}');
+    notesController = TextEditingController(text: widget.data['notes'] ?? '');
 
-    // Set posisi dropdown value awal
-    selectedPosition = widget.data['posisi'] ?? posisiOptions[0];
+    // Set initial position value, defaulting to 'karyawan' if not found
+    selectedPosition = widget.data['role']?.toLowerCase() ?? 'karyawan';
   }
 
   Future<void> updateKaryawan() async {
     try {
+      // Validate score
+      int score = int.tryParse(performanceScoreController.text) ?? 0;
+      if (score < 0 || score > 100) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Skor kinerja harus antara 0-100')),
+        );
+        return;
+      }
+
       await FirebaseFirestore.instance
-          .collection('karyawan')
+          .collection('user')
           .doc(widget.data['id'])
           .update({
-        'name': nameController.text.trim(),
+        'username': nameController.text.trim(),
         'email': emailController.text.trim(),
-        'posisi': selectedPosition,
-        'skorKinerja': int.tryParse(performanceScoreController.text) ?? 0,
-        'catatan': notesController.text.trim(),
+        'role': selectedPosition,
+        'score': score,
+        'notes': notesController.text.trim(),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,15 +72,37 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: navyColor,
-        title: Text(
-          'Edit Karyawan',
-          style: GoogleFonts.poppins(color: Colors.white),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70), // Tinggi 70
+        child: AppBar(
+          automaticallyImplyLeading: true,
+          elevation: 0,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF001F3D), Color.fromARGB(255, 255, 255, 255)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+          title: Padding(
+            padding: const EdgeInsets.only(top: 10), // supaya teks agak turun
+            child: Text(
+              'Edit Karyawan',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          iconTheme: const IconThemeData(color: Colors.white),
+          centerTitle: true,
+          backgroundColor: Colors.transparent, // Biar gradasinya terlihat
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
@@ -82,7 +113,7 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
                 keyboardType: TextInputType.emailAddress),
             _buildDropdownPosition(),
             _buildTextField(
-                label: 'Skor Kinerja',
+                label: 'Skor Kinerja (0-100)',
                 controller: performanceScoreController,
                 keyboardType: TextInputType.number),
             _buildTextField(
@@ -119,23 +150,23 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Judul/Label dengan font size 22
           Text(
             label,
-            style: TextStyle(
-              fontSize: 22,
+            style: GoogleFonts.poppins(
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
           ),
           const SizedBox(height: 8),
-          // TextField dengan font size 16
           TextField(
             controller: controller,
             keyboardType: keyboardType,
             maxLines: maxLines,
-            style: const TextStyle(
-                fontSize: 16, color: Colors.black), // Ukuran teks input
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.black,
+            ),
             decoration: InputDecoration(
               contentPadding: const EdgeInsets.symmetric(
                 vertical: 12,
@@ -144,6 +175,8 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+              filled: true,
+              fillColor: Colors.grey[50],
             ),
           ),
         ],
@@ -157,10 +190,10 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Posisi',
-            style: TextStyle(
-              fontSize: 22,
+            style: GoogleFonts.poppins(
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
@@ -169,7 +202,7 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
           Container(
             width: double.infinity,
             child: DropdownButtonFormField<String>(
-              isExpanded: true, // Pastikan item teks gak kepotong
+              isExpanded: true,
               value: selectedPosition,
               onChanged: (value) {
                 setState(() {
@@ -180,14 +213,17 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
                 return DropdownMenuItem<String>(
                   value: item,
                   child: Text(
-                    item,
-                    style: const TextStyle(color: Colors.black),
+                    item.toUpperCase(), // Display in uppercase for better appearance
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.black,
+                    ),
                   ),
                 );
               }).toList(),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: Colors.grey[50],
                 contentPadding: const EdgeInsets.symmetric(
                   vertical: 12,
                   horizontal: 16,
@@ -197,9 +233,10 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
                 ),
               ),
               dropdownColor: Colors.white,
-              style: const TextStyle(fontSize: 16, color: Colors.black),
-              menuMaxHeight:
-                  200, // Batas tinggi dropdown agar tidak terlalu panjang
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.black,
+              ),
             ),
           ),
         ],

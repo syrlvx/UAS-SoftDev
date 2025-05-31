@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:purelux/firebase_options.dart'; // Pastikan ini sesuai dengan path file yang dihasilkan
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:purelux/screens/login_screen.dart';
 import 'package:purelux/screens/splash_screen.dart';
 import 'package:purelux/widgets/bottom_nav_bar.dart';
 import 'package:purelux/widgets/bottom_nav_bar_admin.dart';
@@ -88,7 +89,7 @@ class MyApp extends StatelessWidget {
       ],
 
       // Home screen tergantung status login
-      home: AuthWrapper(),
+      home: const SplashScreen(),
     );
   }
 }
@@ -136,7 +137,7 @@ class AuthWrapper extends StatelessWidget {
             },
           );
         } else {
-          return SplashScreen();
+          return LoginScreen();
         }
       },
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:purelux/widgets/bottom_nav_bar_admin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart'; // Tambahkan package ini untuk generate uid
@@ -211,17 +212,26 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white, // warna latar putih
-        title: const Text(
+        title: Text(
           'Tambah Tugas',
-          style: TextStyle(color: Colors.black, fontSize: 22), // teks hitam
+          style: GoogleFonts.poppins(
+            color: Colors.black,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         content: TextField(
           controller: _newTaskController,
-          style: const TextStyle(
-              color: Colors.black, fontSize: 16), // input teks hitam
-          decoration: const InputDecoration(
+          style: GoogleFonts.poppins(
+            color: Colors.black,
+            fontSize: 16,
+          ),
+          decoration: InputDecoration(
             hintText: 'Masukkan tugas baru',
-            hintStyle: TextStyle(color: Colors.grey), // hint abu-abu
+            hintStyle: GoogleFonts.poppins(
+              color: Colors.grey,
+              fontSize: 16,
+            ),
           ),
         ),
         actions: [
@@ -230,9 +240,12 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
               Navigator.pop(context);
               _newTaskController.clear();
             },
-            child: const Text(
+            child: Text(
               'Batal',
-              style: TextStyle(color: Colors.black), // teks tombol hitam
+              style: GoogleFonts.poppins(
+                color: Colors.black,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           TextButton(
@@ -249,18 +262,24 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                   _newTaskController.clear();
                 } catch (e) {
                   print('Error adding task: $e');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Gagal menambahkan tugas')),
-                  );
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                      'Gagal menambahkan tugas',
+                      style: GoogleFonts.poppins(),
+                    ),
+                  ));
                 }
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF001F3D), // warna navy
             ),
-            child: const Text(
+            child: Text(
               'Tambah',
-              style: TextStyle(color: Colors.white), // teks putih
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -302,12 +321,14 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            backgroundColor: Colors.white, // <-- Ubah warna modal jadi putih
-            title: const Text(
+            backgroundColor: Colors.white,
+            title: Text(
               'Hapus Tugas',
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 22), // teks juga diwarnai agar kontras
+              style: GoogleFonts.poppins(
+                color: Colors.black,
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             content: SizedBox(
               width: double.maxFinite,
@@ -319,8 +340,10 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                   return RadioListTile<String>(
                     title: Text(
                       task,
-                      style: const TextStyle(
-                          color: Colors.black, fontSize: 16), // teks hitam
+                      style: GoogleFonts.poppins(
+                        color: Colors.black,
+                        fontSize: 16,
+                      ),
                     ),
                     value: task,
                     groupValue: selectedTask,
@@ -337,8 +360,13 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Batal',
-                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0))),
+                child: Text(
+                  'Batal',
+                  style: GoogleFonts.poppins(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
               ElevatedButton(
                 onPressed: selectedTask != null
@@ -350,11 +378,15 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       selectedTask != null ? Colors.red : Colors.grey.shade300,
-                  foregroundColor: selectedTask != null
-                      ? Colors.white
-                      : Colors.grey, // teks putih kalau aktif
+                  foregroundColor:
+                      selectedTask != null ? Colors.white : Colors.grey,
                 ),
-                child: const Text('Hapus'),
+                child: Text(
+                  'Hapus',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ],
           );
@@ -411,11 +443,11 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Center(
+                    Center(
                       child: Text(
                         "Tugas Baru",
-                        style: TextStyle(
-                          color: Color(0xFF001F3D),
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFF001F3D),
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
@@ -425,9 +457,12 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           "Pilih Tugas :",
-                          style: TextStyle(color: Color(0xFF001F3D)),
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF001F3D),
+                          ),
                         ),
                         Row(
                           children: [
@@ -453,7 +488,14 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                             children: allTasks.map((task) {
                               final isSelected = selectedTasks.contains(task);
                               return FilterChip(
-                                label: Text(task),
+                                label: Text(
+                                  task,
+                                  style: GoogleFonts.poppins(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF001F3D),
+                                  ),
+                                ),
                                 selected: isSelected,
                                 onSelected: (selected) {
                                   setState(() {
@@ -464,23 +506,21 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                                     }
                                   });
                                 },
-                                selectedColor: Color(0xFF001F3D),
+                                selectedColor: const Color(0xFF001F3D),
                                 checkmarkColor: Colors.white,
                                 backgroundColor: Colors.white,
-                                labelStyle: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Color(0xFF001F3D)),
                               );
                             }).toList(),
                           ),
                     const SizedBox(height: 20),
-                    const Align(
+                    Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Pilih Karyawan :",
-                        style: TextStyle(
-                          color: Color(0xFF001F3D),
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF001F3D),
                         ),
                       ),
                     ),
@@ -491,22 +531,23 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                             spacing: 10,
                             children: karyawanList.map((nama) {
                               return ChoiceChip(
-                                label: Text(nama),
+                                label: Text(
+                                  nama,
+                                  style: GoogleFonts.poppins(
+                                    color: selectedKaryawan == nama
+                                        ? Colors.white
+                                        : const Color(0xFF001F3D),
+                                  ),
+                                ),
                                 selected: selectedKaryawan == nama,
                                 onSelected: (bool selected) {
                                   setState(() {
                                     selectedKaryawan = selected ? nama : null;
                                   });
                                 },
-                                selectedColor: Color(0xFF001F3D),
+                                selectedColor: const Color(0xFF001F3D),
                                 checkmarkColor: Colors.white,
-                                backgroundColor:
-                                    const Color.fromARGB(255, 255, 255, 255),
-                                labelStyle: TextStyle(
-                                  color: selectedKaryawan == nama
-                                      ? Colors.white
-                                      : Color(0xFF001F3D),
-                                ),
+                                backgroundColor: Colors.white,
                               );
                             }).toList(),
                           ),
@@ -517,6 +558,8 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                       child: InputDecorator(
                         decoration: InputDecoration(
                           labelText: "Tanggal",
+                          labelStyle: GoogleFonts.poppins(
+                              color: Colors.grey[700], fontSize: 18),
                           prefixIcon: const Icon(Icons.calendar_today),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -524,8 +567,8 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                         ),
                         child: Text(
                           "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}",
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
                             color: Colors.black,
                           ),
                         ),
@@ -540,6 +583,10 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                             child: InputDecorator(
                               decoration: InputDecoration(
                                 labelText: "Mulai",
+                                labelStyle: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  color: Colors.grey[700],
+                                ),
                                 prefixIcon: const Icon(Icons.access_time),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -547,8 +594,8 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                               ),
                               child: Text(
                                 startTime.format(context),
-                                style: const TextStyle(
-                                  fontSize: 16,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
                                   color: Colors.black,
                                 ),
                               ),
@@ -562,6 +609,8 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                             child: InputDecorator(
                               decoration: InputDecoration(
                                 labelText: "Selesai",
+                                labelStyle: GoogleFonts.poppins(
+                                    color: Colors.grey[700], fontSize: 18),
                                 prefixIcon: const Icon(Icons.access_time),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -569,9 +618,9 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                               ),
                               child: Text(
                                 endTime.format(context),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Color.fromARGB(255, 0, 0, 0),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
@@ -579,7 +628,7 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 30),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -594,24 +643,27 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
                         child: Ink(
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF001F3D), Color(0xFF001F3D)],
+                              colors: [
+                                Color(0xFF001F3D),
+                                Color(0xFFFFFFFF),
+                              ],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                             ),
                             borderRadius: BorderRadius.circular(35),
                           ),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 20),
-                            alignment: Alignment.center,
-                            child: isLoading
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white)
-                                : const Text(
-                                    "Buat Tugas",
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 16),
-                                  ),
-                          ),
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              alignment: Alignment.center,
+                              child: isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white)
+                                  : Text("Buat Tugas",
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                      ))),
                         ),
                       ),
                     ),
@@ -669,50 +721,51 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
       context: context,
       initialTime: startTime,
       builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Color(0xFF001F3D), // warna header dan tombol OK
-              onPrimary: Colors.white, // warna teks header
-              onSurface: Colors.black, // warna teks waktu
-              background: Colors.white, // warna background modal
-            ),
-            dialogBackgroundColor: const Color.fromARGB(255, 0, 0, 0),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor:
-                    Color(0xFF001F3D), // warna tombol CANCEL dan OK
+        return MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(alwaysUse24HourFormat: false), // PAKSA format 12 jam
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.light(
+                primary: Color(0xFF001F3D),
+                onPrimary: Colors.white,
+                onSurface: Colors.black,
+                background: Colors.white,
+              ),
+              dialogBackgroundColor: Colors.white,
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(
+                  foregroundColor: Color(0xFF001F3D),
+                ),
+              ),
+              timePickerTheme: TimePickerThemeData(
+                hourMinuteColor: MaterialStateColor.resolveWith((states) =>
+                    states.contains(MaterialState.selected)
+                        ? Color(0xFF001F3D)
+                        : Colors.transparent),
+                hourMinuteTextColor: MaterialStateColor.resolveWith((states) =>
+                    states.contains(MaterialState.selected)
+                        ? Colors.white
+                        : Colors.black),
+                dayPeriodColor: MaterialStateColor.resolveWith((states) =>
+                    states.contains(MaterialState.selected)
+                        ? Color(0xFF001F3D)
+                        : Colors.white),
+                dayPeriodTextColor: MaterialStateColor.resolveWith((states) =>
+                    states.contains(MaterialState.selected)
+                        ? Colors.white
+                        : Colors.black),
+                dayPeriodShape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(color: Color(0xFF001F3D)),
+                ),
+                dialHandColor: Color(0xFF001F3D),
+                dialBackgroundColor: Colors.white,
+                entryModeIconColor: Color(0xFF001F3D),
               ),
             ),
-            timePickerTheme: TimePickerThemeData(
-              hourMinuteColor: MaterialStateColor.resolveWith(
-                  (states) => states.contains(MaterialState.selected)
-                      ? Color(0xFF001F3D) // navy saat dipilih
-                      : Colors.transparent), // tidak dipilih: transparan
-              hourMinuteTextColor: MaterialStateColor.resolveWith((states) =>
-                  states.contains(MaterialState.selected)
-                      ? Colors.white
-                      : Colors.black),
-
-              dayPeriodColor: MaterialStateColor.resolveWith(
-                  (states) => states.contains(MaterialState.selected)
-                      ? Color(0xFF001F3D) // navy saat dipilih
-                      : Colors.white), // default putih
-              dayPeriodTextColor: MaterialStateColor.resolveWith((states) =>
-                  states.contains(MaterialState.selected)
-                      ? Colors.white
-                      : Colors.black),
-              dayPeriodShape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: Color(0xFF001F3D)), // outline navy
-              ),
-
-              dialHandColor: Color(0xFF001F3D),
-              dialBackgroundColor: Colors.white,
-              entryModeIconColor: Color(0xFF001F3D),
-            ),
+            child: child!,
           ),
-          child: child!,
         );
       },
     );
@@ -728,50 +781,51 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
       context: context,
       initialTime: endTime,
       builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Color(0xFF001F3D), // warna header dan tombol OK
-              onPrimary: Colors.white, // warna teks header
-              onSurface: Colors.black, // warna teks waktu
-              background: Colors.white, // warna background modal
-            ),
-            dialogBackgroundColor: const Color.fromARGB(255, 0, 0, 0),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor:
-                    Color(0xFF001F3D), // warna tombol CANCEL dan OK
+        return MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(alwaysUse24HourFormat: false), // PAKSA format 12 jam
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.light(
+                primary: Color(0xFF001F3D),
+                onPrimary: Colors.white,
+                onSurface: Colors.black,
+                background: Colors.white,
+              ),
+              dialogBackgroundColor: Colors.white,
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(
+                  foregroundColor: Color(0xFF001F3D),
+                ),
+              ),
+              timePickerTheme: TimePickerThemeData(
+                hourMinuteColor: MaterialStateColor.resolveWith((states) =>
+                    states.contains(MaterialState.selected)
+                        ? Color(0xFF001F3D)
+                        : Colors.transparent),
+                hourMinuteTextColor: MaterialStateColor.resolveWith((states) =>
+                    states.contains(MaterialState.selected)
+                        ? Colors.white
+                        : Colors.black),
+                dayPeriodColor: MaterialStateColor.resolveWith((states) =>
+                    states.contains(MaterialState.selected)
+                        ? Color(0xFF001F3D)
+                        : Colors.white),
+                dayPeriodTextColor: MaterialStateColor.resolveWith((states) =>
+                    states.contains(MaterialState.selected)
+                        ? Colors.white
+                        : Colors.black),
+                dayPeriodShape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(color: Color(0xFF001F3D)),
+                ),
+                dialHandColor: Color(0xFF001F3D),
+                dialBackgroundColor: Colors.white,
+                entryModeIconColor: Color(0xFF001F3D),
               ),
             ),
-            timePickerTheme: TimePickerThemeData(
-              hourMinuteColor: MaterialStateColor.resolveWith(
-                  (states) => states.contains(MaterialState.selected)
-                      ? Color(0xFF001F3D) // navy saat dipilih
-                      : Colors.transparent), // tidak dipilih: transparan
-              hourMinuteTextColor: MaterialStateColor.resolveWith((states) =>
-                  states.contains(MaterialState.selected)
-                      ? Colors.white
-                      : Colors.black),
-
-              dayPeriodColor: MaterialStateColor.resolveWith(
-                  (states) => states.contains(MaterialState.selected)
-                      ? Color(0xFF001F3D) // navy saat dipilih
-                      : Colors.white), // default putih
-              dayPeriodTextColor: MaterialStateColor.resolveWith((states) =>
-                  states.contains(MaterialState.selected)
-                      ? Colors.white
-                      : Colors.black),
-              dayPeriodShape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: Color(0xFF001F3D)), // outline navy
-              ),
-
-              dialHandColor: Color(0xFF001F3D),
-              dialBackgroundColor: Colors.white,
-              entryModeIconColor: Color(0xFF001F3D),
-            ),
+            child: child!,
           ),
-          child: child!,
         );
       },
     );

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:purelux/screens/akun_screen.dart';
 import 'package:purelux/screens/izincuti_screen.dart';
 import 'package:purelux/screens/notifikasi_screen.dart';
@@ -10,7 +11,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _HomeScreenState createState() => _HomeScreenState();
 }
 
@@ -114,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
         hadirBulanIni = hadirCount;
       });
     } catch (e) {
+      // ignore: avoid_print
       print('Error menghitung hadir bulan ini: $e');
     }
   }
@@ -139,6 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
         izinBulanIni = snapshot.docs.length;
       });
     } catch (e) {
+      // ignore: avoid_print
       print('Error menghitung izin bulan ini: $e');
     }
   }
@@ -207,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     backgroundColor: Colors.white,
                                   )
                                 : const Icon(Icons.account_circle,
-                                    size: 60, color: Colors.white),
+                                    size: 50, color: Colors.white),
                             iconSize: 60,
                             onPressed: () {
                               Navigator.push(
@@ -225,17 +231,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Text(
                                 username ?? 'User',
-                                style: const TextStyle(
-                                  fontSize: 20,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
                                 role ?? '',
-                                style: const TextStyle(
-                                  fontSize: 18,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
                                   color: Colors.white70,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
@@ -319,22 +326,37 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.access_time, color: Colors.grey),
-                                SizedBox(width: 8),
+                                const Icon(Icons.access_time,
+                                    color: Colors.grey),
+                                const SizedBox(width: 8),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Reguler',
-                                        style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold)),
-                                    Text('08:00 - 17:00',
-                                        style: TextStyle(color: Colors.black)),
-                                    Text('Masuk',
-                                        style: TextStyle(
-                                          color: Color.fromARGB(
-                                              255, 127, 157, 195),
-                                        )),
+                                    Text(
+                                      'Reguler',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      '08:00 - 17:00',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      'Masuk',
+                                      style: GoogleFonts.poppins(
+                                        color: const Color.fromARGB(
+                                            255, 127, 157, 195),
+                                        fontSize: 16,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
@@ -342,29 +364,46 @@ class _HomeScreenState extends State<HomeScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text(hari,
-                                    style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold)),
-                                Text(tanggal,
-                                    style: TextStyle(color: Colors.black)),
-                                Text('Pulang',
-                                    style: TextStyle(
-                                      color: Color.fromARGB(255, 127, 157, 195),
-                                    )),
+                                Text(
+                                  hari,
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  tanggal,
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  'Pulang',
+                                  style: GoogleFonts.poppins(
+                                    color: const Color.fromARGB(
+                                        255, 127, 157, 195),
+                                    fontSize: 16,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
 
-                        // Judul tengah
-                        const Center(
+// Judul tengah
+                        Center(
                           child: Text(
                             'Rekap Absensi Bulan Ini',
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold),
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -388,21 +427,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 // Menu Grid bawah card
                 Padding(
-                  padding: const EdgeInsets.only(top: 430),
+                  padding: const EdgeInsets.only(top: 400),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Pilih Fitur:',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
                         ),
-                        const SizedBox(height: 10),
                         GridView.count(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
@@ -481,8 +519,8 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 10),
               Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Color.fromARGB(255, 127, 157, 195),
                 ),
@@ -498,11 +536,23 @@ class _HomeScreenState extends State<HomeScreen> {
 Widget _buildStatBox(String title, String count, Color color) {
   return Column(
     children: [
-      Text(title,
-          style: const TextStyle(
-              color: Colors.black, fontWeight: FontWeight.bold)),
+      Text(
+        title,
+        style: GoogleFonts.poppins(
+          fontSize: 16, // Ukuran font untuk title
+          color: Colors.black,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
       const SizedBox(height: 4),
-      Text(count, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+      Text(
+        count,
+        style: GoogleFonts.poppins(
+          fontSize: 16, // Ukuran font untuk count
+          color: color,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
       const SizedBox(height: 4),
       Container(height: 4, width: 40, color: color),
     ],
