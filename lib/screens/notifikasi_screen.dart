@@ -80,6 +80,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   void removeNotification(int index) async {
     final notif = notifications[index];
+    final notifData = {
+      'id': notif['id'],
+      'title': notif['title'],
+      'message': notif['body'],
+      'createdAt': notif['datetime'] is DateTime
+          ? Timestamp.fromDate(notif['datetime'])
+          : Timestamp.fromDate(DateTime.now()),
+      'category': notif['category'],
+      'read': notif['read'],
+      'userId': FirebaseAuth.instance.currentUser?.uid,
+      'archived': false,
+    };
+
     await FirebaseFirestore.instance
         .collection('notifications')
         .doc(notif['id'])
@@ -91,11 +104,26 @@ class _NotificationScreenState extends State<NotificationScreen> {
         action: SnackBarAction(
           label: "Undo",
           onPressed: () async {
-            await FirebaseFirestore.instance
-                .collection('notifications')
-                .doc(notif['id'])
-                .set(notif);
-            await _loadNotifications();
+            try {
+              await FirebaseFirestore.instance
+                  .collection('notifications')
+                  .doc(notif['id'])
+                  .set(notifData);
+              await _loadNotifications();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text("Notifikasi berhasil dikembalikan")),
+                );
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text("Gagal mengembalikan notifikasi")),
+                );
+              }
+            }
           },
         ),
       ),
@@ -172,15 +200,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: markAllAsRead,
-        icon: const Icon(Icons.done_all, color: Colors.white),
-        label: const Text(
-          "Tandai semua dibaca",
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: const Color(0xFF001F3D), // warna navy
-      ),
       body: RefreshIndicator(
         onRefresh: _loadNotifications,
         child: ListView(
@@ -190,99 +209,97 @@ class _NotificationScreenState extends State<NotificationScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Positioned(
-                  left: 16,
-                  top: 1,
-                  child: PopupMenuButton<String>(
-                    icon: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.sort,
-                          color: Color.fromARGB(255, 127, 157, 195),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          sortAscending ? 'Terlama' : 'Terbaru',
-                          style: GoogleFonts.poppins(
-                            color: const Color.fromARGB(255, 127, 157, 195),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    offset: const Offset(0, 30),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    color: Colors.white,
-                    elevation: 4,
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'Terbaru',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.arrow_upward,
-                              color: !sortAscending
-                                  ? const Color.fromARGB(255, 127, 157, 195)
-                                  : Colors.grey,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Terbaru',
-                              style: GoogleFonts.poppins(
-                                color: !sortAscending
-                                    ? const Color.fromARGB(255, 127, 157, 195)
-                                    : Colors.grey,
-                                fontWeight: !sortAscending
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                          ],
-                        ),
+                // KIRI: Sort
+                PopupMenuButton<String>(
+                  icon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.sort,
+                        color: Color.fromARGB(255, 127, 157, 195),
+                        size: 20,
                       ),
-                      PopupMenuItem(
-                        value: 'Terlama',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.arrow_downward,
-                              color: sortAscending
-                                  ? const Color.fromARGB(255, 127, 157, 195)
-                                  : Colors.grey,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Terlama',
-                              style: GoogleFonts.poppins(
-                                color: sortAscending
-                                    ? const Color.fromARGB(255, 127, 157, 195)
-                                    : Colors.grey,
-                                fontWeight: sortAscending
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                          ],
+                      const SizedBox(width: 4),
+                      Text(
+                        sortAscending ? 'Terlama' : 'Terbaru',
+                        style: GoogleFonts.poppins(
+                          color: const Color.fromARGB(255, 127, 157, 195),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
-                    onSelected: (value) {
-                      if (mounted) {
-                        setState(() {
-                          sortAscending = (value == 'Terlama');
-                        });
-                      }
-                    },
                   ),
+                  offset: const Offset(0, 30),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  color: Colors.white,
+                  elevation: 4,
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'Terbaru',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.arrow_upward,
+                            color: !sortAscending
+                                ? const Color.fromARGB(255, 127, 157, 195)
+                                : Colors.grey,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Terbaru',
+                            style: GoogleFonts.poppins(
+                              color: !sortAscending
+                                  ? const Color.fromARGB(255, 127, 157, 195)
+                                  : Colors.grey,
+                              fontWeight: !sortAscending
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'Terlama',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.arrow_downward,
+                            color: sortAscending
+                                ? const Color.fromARGB(255, 127, 157, 195)
+                                : Colors.grey,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Terlama',
+                            style: GoogleFonts.poppins(
+                              color: sortAscending
+                                  ? const Color.fromARGB(255, 127, 157, 195)
+                                  : Colors.grey,
+                              fontWeight: sortAscending
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onSelected: (value) {
+                    if (mounted) {
+                      setState(() {
+                        sortAscending = (value == 'Terlama');
+                      });
+                    }
+                  },
                 ),
                 const SizedBox(width: 130),
+                // KANAN: Filter
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -304,7 +321,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       },
                       itemBuilder: (BuildContext context) => [
                         'Semua',
-                        'Belum dibaca',
                         'Pengajuan',
                         'Tugas',
                       ].map((String value) {
@@ -403,14 +419,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           title: Text(
                             notif['title'],
                             style: GoogleFonts.poppins(
-                              fontWeight: notif['read']
-                                  ? FontWeight.normal
-                                  : FontWeight.bold,
-                            ),
+                                fontSize: 20, fontWeight: FontWeight.w700),
                           ),
                           subtitle: Text(
                             notif['body'],
-                            style: GoogleFonts.poppins(),
+                            style: GoogleFonts.poppins(fontSize: 16),
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,

@@ -37,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _currentTime = _getCurrentTime();
     _startTimer();
     _fetchUserData();
-    _checkUnreadNotifications();
     _countHadirThisMonth();
     _countIzinThisMonth();
   }
@@ -77,9 +76,11 @@ class _HomeScreenState extends State<HomeScreen> {
         .where('read', isEqualTo: false)
         .get();
 
-    setState(() {
-      hasUnreadNotifications = snapshot.docs.isNotEmpty;
-    });
+    if (mounted) {
+      setState(() {
+        hasUnreadNotifications = snapshot.docs.isNotEmpty;
+      });
+    }
   }
 
   Future<void> _countHadirThisMonth() async {
@@ -250,45 +251,85 @@ class _HomeScreenState extends State<HomeScreen> {
                           const Spacer(),
                           Stack(
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.notifications,
-                                    color: Colors.white, size: 30),
-                                onPressed: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const NotificationScreen()),
+                              StreamBuilder<QuerySnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('notifications')
+                                    .where('userId',
+                                        isEqualTo: FirebaseAuth
+                                            .instance.currentUser?.uid)
+                                    .where('read', isEqualTo: false)
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  bool hasUnread = snapshot.hasData &&
+                                      snapshot.data!.docs.isNotEmpty;
+                                  return Stack(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.notifications,
+                                            color: Colors.white, size: 30),
+                                        onPressed: () async {
+                                          // Mark all notifications as read
+                                          final user =
+                                              FirebaseAuth.instance.currentUser;
+                                          if (user != null) {
+                                            final batch = FirebaseFirestore
+                                                .instance
+                                                .batch();
+                                            final unreadNotifications =
+                                                await FirebaseFirestore.instance
+                                                    .collection('notifications')
+                                                    .where('userId',
+                                                        isEqualTo: user.uid)
+                                                    .where('read',
+                                                        isEqualTo: false)
+                                                    .get();
+
+                                            for (var doc
+                                                in unreadNotifications.docs) {
+                                              batch.update(doc.reference,
+                                                  {'read': true});
+                                            }
+                                            await batch.commit();
+                                          }
+
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const NotificationScreen()),
+                                          );
+                                        },
+                                      ),
+                                      if (hasUnread)
+                                        Positioned(
+                                          right: 8,
+                                          top: 8,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(2),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            constraints: const BoxConstraints(
+                                              minWidth: 16,
+                                              minHeight: 16,
+                                            ),
+                                            child: const Text(
+                                              '!',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   );
-                                  // Check for unread notifications after returning from notification screen
-                                  _checkUnreadNotifications();
                                 },
                               ),
-                              if (hasUnreadNotifications)
-                                Positioned(
-                                  right: 8,
-                                  top: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    constraints: const BoxConstraints(
-                                      minWidth: 16,
-                                      minHeight: 16,
-                                    ),
-                                    child: const Text(
-                                      '!',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
                             ],
                           ),
                         ],

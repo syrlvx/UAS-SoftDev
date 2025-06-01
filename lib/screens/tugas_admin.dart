@@ -144,13 +144,14 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
-                                  fontSize: 16, // ukuran font 14
+                                  fontSize: 15, // ukuran font 14
                                 ),
                               ),
-                              Text(
-                                _getDayName(dateList[index]),
-                                style: GoogleFonts.poppins(color: Colors.white),
-                              ),
+                              Text(_getDayName(dateList[index]),
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  )),
                             ],
                           ),
                         ),

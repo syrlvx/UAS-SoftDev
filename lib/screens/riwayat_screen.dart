@@ -522,14 +522,14 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                 children: [
                   const Icon(
                     Icons.history,
-                    size: 64,
+                    size: 56,
                     color: Colors.grey,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Tidak ada data $jenis',
                     style: GoogleFonts.poppins(
-                      fontSize: 18,
+                      fontSize: 16,
                       color: Colors.grey,
                     ),
                   ),
@@ -636,14 +636,14 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
           children: [
             const Icon(
               Icons.history,
-              size: 64,
+              size: 56,
               color: Colors.grey,
             ),
             const SizedBox(height: 16),
             Text(
               'Tidak ada data $jenis',
               style: GoogleFonts.poppins(
-                fontSize: 18,
+                fontSize: 16,
                 color: Colors.grey,
               ),
             ),
@@ -720,7 +720,6 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              // KIRI
                               Expanded(
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -738,7 +737,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                         Text(
                                           tanggal,
                                           style: GoogleFonts.poppins(
-                                            fontSize: 13,
+                                            fontSize: 12,
                                             color: Colors.black54,
                                           ),
                                         ),
@@ -785,7 +784,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                         Text(
                                           tanggal,
                                           style: GoogleFonts.poppins(
-                                            fontSize: 13,
+                                            fontSize: 12,
                                             color: Colors.black54,
                                           ),
                                         ),

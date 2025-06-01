@@ -22,6 +22,13 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
   bool isLoading = true;
   int performanceScore = 85;
 
+  // Add missing date list variables
+  List<DateTime> hadirDates = [];
+  List<DateTime> izinCutiDates = [];
+  List<DateTime> terlambatDates = [];
+  List<DateTime> completedTasksDates = [];
+  List<DateTime> lateTasksDates = [];
+
   @override
   void initState() {
     super.initState();
@@ -85,6 +92,7 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
 
         // Count approved izin/cuti within current month
         int tempIzinCutiCount = 0;
+        List<DateTime> tempIzinCutiDates = [];
         for (var doc in pengajuanSnapshot.docs) {
           final data = doc.data() as Map<String, dynamic>;
           if (data['tanggal'] != null) {
@@ -98,6 +106,7 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
                 formattedTanggal.compareTo(formattedLastDay) <= 0 &&
                 (data['jenis'] == 'izin' || data['jenis'] == 'cuti')) {
               tempIzinCutiCount++;
+              tempIzinCutiDates.add(tanggal);
               print('Counted izin/cuti! Current count: $tempIzinCutiCount');
             }
           }
@@ -114,6 +123,8 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
         // Count attendance and late attendance within current month
         int tempHadirCount = 0;
         int tempTerlambatCount = 0;
+        List<DateTime> tempHadirDates = [];
+        List<DateTime> tempTerlambatDates = [];
         for (var doc in absensiSnapshot.docs) {
           final data = doc.data() as Map<String, dynamic>;
           final tanggal = data['tanggal'] as String;
@@ -126,11 +137,13 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
           if (tanggal.compareTo(formattedFirstDay) >= 0 &&
               tanggal.compareTo(formattedLastDay) <= 0) {
             tempHadirCount++;
+            tempHadirDates.add(waktuMasukDate);
 
             // Check if late (after 8:15 AM)
             if (waktuMasukDate.hour > 8 ||
                 (waktuMasukDate.hour == 8 && waktuMasukDate.minute > 15)) {
               tempTerlambatCount++;
+              tempTerlambatDates.add(waktuMasukDate);
               print(
                   'Counted late attendance! Current count: $tempTerlambatCount');
             }
@@ -144,6 +157,9 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
             hadirCount = tempHadirCount;
             izinCutiCount = tempIzinCutiCount;
             terlambatCount = tempTerlambatCount;
+            hadirDates = tempHadirDates;
+            izinCutiDates = tempIzinCutiDates;
+            terlambatDates = tempTerlambatDates;
             isLoading = false;
           });
         }
@@ -175,9 +191,19 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
             .where('status', isEqualTo: 'Selesai')
             .get();
 
+        List<DateTime> tempCompletedTasksDates = [];
+        for (var doc in tugasSnapshot.docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          if (data['tanggal'] != null) {
+            tempCompletedTasksDates
+                .add((data['tanggal'] as Timestamp).toDate());
+          }
+        }
+
         if (mounted) {
           setState(() {
             completedTasksCount = tugasSnapshot.docs.length;
+            completedTasksDates = tempCompletedTasksDates;
           });
         }
       }
@@ -205,6 +231,7 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
             .get();
 
         int tempLateCount = 0;
+        List<DateTime> tempLateTasksDates = [];
         for (var doc in tugasSnapshot.docs) {
           final data = doc.data() as Map<String, dynamic>;
           final status = data['status'] as String? ?? 'belum_dikerjakan';
@@ -216,12 +243,16 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
             // Check if the task was submitted late
             if (data['isLate'] == true) {
               tempLateCount++;
+              if (data['tanggal'] != null) {
+                tempLateTasksDates.add((data['tanggal'] as Timestamp).toDate());
+              }
             }
           } else {
             // For incomplete tasks, check if deadline has passed
             final waktuSelesai = data['waktuSelesai'] as Timestamp;
             if (waktuSelesai.toDate().isBefore(now)) {
               tempLateCount++;
+              tempLateTasksDates.add(waktuSelesai.toDate());
             }
           }
         }
@@ -229,6 +260,7 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
         if (mounted) {
           setState(() {
             lateTasksCount = tempLateCount;
+            lateTasksDates = tempLateTasksDates;
           });
         }
       }
@@ -487,13 +519,16 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
 
                   const SizedBox(height: 30),
 
-                  /// Info
                   _buildInfoCard(
                     color: Colors.green,
                     title: 'Hadir',
                     subtitle: '$hadirCount Hari',
                     onTap: () => _showDateDetails(
-                        context, 'Detail Hari Hadir', hadirDates),
+                      context,
+                      'Detail Hadir',
+                      hadirDates,
+                      Colors.green,
+                    ),
                   ),
 
                   _buildInfoCard(
@@ -501,28 +536,47 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
                     title: 'Izin & Cuti',
                     subtitle: '$izinCutiCount Hari',
                     onTap: () => _showDateDetails(
-                        context, 'Detail Izin & Cuti', izinCutiDates),
+                      context,
+                      'Detail Izin & Cuti',
+                      izinCutiDates,
+                      Colors.orange,
+                    ),
                   ),
+
                   _buildInfoCard(
                     color: Colors.red,
                     title: 'Terlambat',
                     subtitle: '$terlambatCount Hari',
                     onTap: () => _showDateDetails(
-                        context, 'Detail Terlambat', terlambatDates),
+                      context,
+                      'Detail Terlambat',
+                      terlambatDates,
+                      Colors.red,
+                    ),
                   ),
+
                   _buildInfoCard(
                     color: Colors.blue,
                     title: 'Tugas Selesai',
                     subtitle: '$completedTasksCount Tugas',
                     onTap: () => _showDateDetails(
-                        context, 'Tugas Selesai', completedTasksDates),
+                      context,
+                      'Tugas Selesai',
+                      completedTasksDates,
+                      Colors.blue,
+                    ),
                   ),
+
                   _buildInfoCard(
                     color: const Color.fromARGB(255, 235, 38, 169),
                     title: 'Tugas Terlambat',
                     subtitle: '$lateTasksCount Tugas',
                     onTap: () => _showDateDetails(
-                        context, 'Tugas Terlambat', lateTasksDates),
+                      context,
+                      'Tugas Terlambat',
+                      lateTasksDates,
+                      const Color.fromARGB(255, 235, 38, 169),
+                    ),
                   ),
 
                   const SizedBox(height: 35),
@@ -591,32 +645,64 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
     );
   }
 
-  void _showDateDetails(
-      BuildContext context, String title, List<DateTime> dates) {
-    showDialog(
+  void _showDateDetails(BuildContext context, String title,
+      List<DateTime> dates, Color titleColor) {
+    showModalBottomSheet(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title,
-            style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: dates.map((date) {
-              return Text(
-                DateFormat('EEEE, d MMM yyyy').format(date),
-                style: GoogleFonts.poppins(),
-              );
-            }).toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('Tutup', style: GoogleFonts.poppins()),
-          ),
-        ],
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      builder: (context) {
+        return FractionallySizedBox(
+          heightFactor: 0.5,
+          child: Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 50,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '$title',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: titleColor, // Ini yang berubah
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: dates.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        leading: const Icon(Icons.calendar_today),
+                        title: Text(
+                          DateFormat('EEEE, d MMM yyyy').format(dates[index]),
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

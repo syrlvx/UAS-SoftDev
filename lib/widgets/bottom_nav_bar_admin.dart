@@ -51,7 +51,7 @@ class _BottomNavBarAdminState extends State<BottomNavBarAdmin> {
                 type: BottomNavigationBarType.fixed,
                 selectedFontSize: 12,
                 unselectedFontSize: 10,
-                iconSize: 24,
+                iconSize: 26,
                 selectedLabelStyle: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,

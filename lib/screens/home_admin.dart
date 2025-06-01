@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:purelux/screens/akun_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -182,17 +183,18 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                     children: [
                       Text(
                         username ?? 'User',
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         role ?? '',
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
                           color: Colors.white70,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -209,7 +211,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
             color: Colors.white,
             child: TabBar(
               controller: _tabController,
-              indicatorColor: Colors.blue,
+              indicatorColor: Color.fromARGB(255, 127, 157, 195),
               labelColor: Colors.black,
               unselectedLabelColor: Colors.grey,
               tabs: [
@@ -219,135 +221,234 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
+          Expanded(
+            child: Stack(
               children: [
-                PopupMenuButton<String>(
-                  icon: const Row(
-                    children: [
-                      Icon(Icons.sort, color: Colors.blue),
-                      SizedBox(width: 4),
-                      Text(
-                        'Sort',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  onSelected: (value) {
-                    setState(() {
-                      sortAscending = (value == 'Terlama ke Terbaru');
-                    });
-                  },
-                  itemBuilder: (BuildContext context) => [
-                    const PopupMenuItem<String>(
-                        value: 'Terbaru ke Terlama',
-                        child: Text('Terbaru ke Terlama')),
-                    const PopupMenuItem<String>(
-                        value: 'Terlama ke Terbaru',
-                        child: Text('Terlama ke Terbaru')),
+                // TabBarView untuk konten
+                TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildRiwayatTab('Absensi'),
+                    _buildRiwayatTab('Izin & Cuti'),
+                    _buildRiwayatTab('Terlambat'),
                   ],
                 ),
-                const Spacer(),
-                // Only show filter dropdown if not in Terlambat tab
-                if (_currentTabIndex != 2)
-                  Container(
-                    width: 120,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                      borderRadius: BorderRadius.circular(4),
+                // KIRI: Sort
+                Positioned(
+                  left: 16,
+                  top: 1,
+                  child: PopupMenuButton<String>(
+                    icon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.sort,
+                          color: Color.fromARGB(255, 127, 157, 195),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          sortAscending ? 'Terlama' : 'Terbaru',
+                          style: GoogleFonts.poppins(
+                            color: const Color.fromARGB(255, 127, 157, 195),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
-                    child: PopupMenuButton<String>(
-                      initialValue: selectedStatus,
-                      offset: const Offset(0, 40),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
+                    offset: const Offset(0, 30),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    color: Colors.white,
+                    elevation: 4,
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'Terbaru',
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              selectedStatus,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 13,
-                              ),
+                            Icon(
+                              Icons.arrow_upward,
+                              color: !sortAscending
+                                  ? const Color.fromARGB(255, 127, 157, 195)
+                                  : Colors.grey,
+                              size: 18,
                             ),
-                            const Icon(
-                              Icons.arrow_drop_down,
-                              color: Colors.black,
+                            const SizedBox(width: 8),
+                            Text(
+                              'Terbaru',
+                              style: GoogleFonts.poppins(
+                                color: !sortAscending
+                                    ? const Color.fromARGB(255, 127, 157, 195)
+                                    : Colors.grey,
+                                fontWeight: !sortAscending
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      onSelected: (String newValue) {
+                      PopupMenuItem(
+                        value: 'Terlama',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.arrow_downward,
+                              color: sortAscending
+                                  ? const Color.fromARGB(255, 127, 157, 195)
+                                  : Colors.grey,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Terlama',
+                              style: GoogleFonts.poppins(
+                                color: sortAscending
+                                    ? const Color.fromARGB(255, 127, 157, 195)
+                                    : Colors.grey,
+                                fontWeight: sortAscending
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onSelected: (value) {
+                      if (mounted) {
                         setState(() {
-                          selectedStatus = newValue;
+                          sortAscending = (value == 'Terlama');
                         });
-                      },
-                      itemBuilder: (BuildContext context) {
-                        if (_currentTabIndex == 0) {
-                          // Tab Absensi
-                          return [
-                            'Semua',
-                            'Hadir',
-                            'Tidak Hadir',
-                          ].map<PopupMenuItem<String>>((String value) {
-                            return PopupMenuItem<String>(
-                              value: value,
-                              child: Text(
-                                value,
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 13,
+                      }
+                    },
+                  ),
+                ),
+
+                // KANAN: Filter
+                if (_currentTabIndex != 2)
+                  Positioned(
+                    right: 16,
+                    top: 7,
+                    child: SizedBox(
+                      width: 100,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: const Color.fromARGB(255, 127, 157, 195),
+                            width: 1,
+                          ),
+                        ),
+                        child: PopupMenuButton<String>(
+                          initialValue: selectedStatus,
+                          offset: const Offset(0, 30),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    selectedStatus,
+                                    style: GoogleFonts.poppins(
+                                      color: const Color.fromARGB(
+                                          255, 127, 157, 195),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            );
-                          }).toList();
-                        } else if (_currentTabIndex == 1) {
-                          // Tab Izin & Cuti
-                          return [
-                            'Semua',
-                            'Izin',
-                            'Cuti',
-                            'Disetujui',
-                            'Pending',
-                            'Ditolak',
-                          ].map<PopupMenuItem<String>>((String value) {
-                            return PopupMenuItem<String>(
-                              value: value,
-                              child: Text(
-                                value,
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 13,
+                                const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Color.fromARGB(255, 127, 157, 195),
+                                  size: 16,
                                 ),
-                              ),
-                            );
-                          }).toList();
-                        } else {
-                          return const <PopupMenuItem<String>>[];
-                        }
-                      },
+                              ],
+                            ),
+                          ),
+                          itemBuilder: (BuildContext context) {
+                            if (_currentTabIndex == 0) {
+                              return ['Semua', 'Hadir', 'Tidak Hadir']
+                                  .map((value) {
+                                return PopupMenuItem<String>(
+                                  value: value,
+                                  height: 35,
+                                  child: Text(
+                                    value,
+                                    style: GoogleFonts.poppins(
+                                      color: const Color.fromARGB(
+                                          255, 127, 157, 195),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                );
+                              }).toList();
+                            } else if (_currentTabIndex == 1) {
+                              return [
+                                'Semua',
+                                'Izin',
+                                'Cuti',
+                                'Disetujui',
+                                'Pending',
+                                'Ditolak',
+                              ].map((value) {
+                                return PopupMenuItem<String>(
+                                  value: value,
+                                  height: 35,
+                                  child: Text(
+                                    value,
+                                    style: GoogleFonts.poppins(
+                                      color: const Color.fromARGB(
+                                          255, 127, 157, 195),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                );
+                              }).toList();
+                            } else {
+                              return [
+                                'Semua',
+                                'Disetujui',
+                                'Pending',
+                                'Ditolak'
+                              ].map((value) {
+                                return PopupMenuItem<String>(
+                                  value: value,
+                                  height: 35,
+                                  child: Text(
+                                    value,
+                                    style: GoogleFonts.poppins(
+                                      color: const Color.fromARGB(
+                                          255, 127, 157, 195),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                );
+                              }).toList();
+                            }
+                          },
+                          onSelected: (String newValue) {
+                            if (mounted) {
+                              setState(() {
+                                selectedStatus = newValue;
+                              });
+                            }
+                          },
+                        ),
+                      ),
                     ),
                   ),
               ],
-            ),
-          ),
-          Expanded(
-            child: Container(
-              color: Colors.white,
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildRiwayatTab('Absensi'),
-                  _buildRiwayatTab('Izin & Cuti'),
-                  _buildRiwayatTab('Terlambat'),
-                ],
-              ),
             ),
           ),
         ],
@@ -492,13 +593,13 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                 children: [
                   const Icon(
                     Icons.history,
-                    size: 64,
+                    size: 56,
                     color: Colors.grey,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Tidak ada data $jenis hari ini',
-                    style: const TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 18,
                       color: Colors.grey,
                     ),
@@ -513,34 +614,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
             padding: const EdgeInsets.all(6.0),
             child: Column(
               children: [
-                const SizedBox(height: 5),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  color: const Color.fromARGB(255, 227, 241, 253),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Absensi Hari Ini',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 16, 126, 173),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        DateFormat('EEEE, dd MMMM yyyy', 'id_ID')
-                            .format(DateTime.now()),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 45),
                 Expanded(
                   child: ListView.builder(
                     itemCount: filteredList.length,
@@ -587,6 +661,9 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                       return Card(
                         margin: const EdgeInsets.symmetric(vertical: 8),
                         elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
@@ -595,7 +672,13 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                           child: Column(
                             children: [
                               Container(
-                                color: statusColor,
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(12),
+                                    topRight: Radius.circular(12),
+                                  ),
+                                  color: statusColor,
+                                ),
                                 padding: const EdgeInsets.all(8.0),
                                 child: Row(
                                   mainAxisAlignment:
@@ -603,16 +686,16 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                                   children: [
                                     Text(
                                       'Absensi - ${item['status']}',
-                                      style: const TextStyle(
-                                        fontSize: 18,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 17,
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     Text(
                                       item['username'],
-                                      style: const TextStyle(
-                                        fontSize: 16,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 15,
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -621,8 +704,14 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                                 ),
                               ),
                               Container(
+                                decoration: const BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                    bottomLeft: Radius.circular(12),
+                                    bottomRight: Radius.circular(12),
+                                  ),
+                                  color: Colors.white,
+                                ),
                                 padding: const EdgeInsets.all(8.0),
-                                color: Colors.white,
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -643,9 +732,9 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              const Text(
+                                              Text(
                                                 'Waktu Mulai',
-                                                style: TextStyle(
+                                                style: GoogleFonts.poppins(
                                                   fontSize: 12,
                                                   color: Colors.green,
                                                   fontWeight: FontWeight.w500,
@@ -654,7 +743,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                                               const SizedBox(height: 3),
                                               Text(
                                                 waktuMasuk,
-                                                style: const TextStyle(
+                                                style: GoogleFonts.poppins(
                                                   fontSize: 14,
                                                   color: Colors.black54,
                                                 ),
@@ -684,9 +773,9 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              const Text(
+                                              Text(
                                                 'Waktu Selesai',
-                                                style: TextStyle(
+                                                style: GoogleFonts.poppins(
                                                   fontSize: 12,
                                                   color: Color.fromARGB(
                                                       255, 255, 0, 0),
@@ -696,7 +785,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                                               const SizedBox(height: 3),
                                               Text(
                                                 waktuKeluar,
-                                                style: const TextStyle(
+                                                style: GoogleFonts.poppins(
                                                   fontSize: 14,
                                                   color: Colors.black54,
                                                 ),
@@ -783,13 +872,13 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                 children: [
                   const Icon(
                     Icons.history,
-                    size: 64,
+                    size: 56,
                     color: Colors.grey,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Tidak ada pengajuan $jenis hari ini',
-                    style: const TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 18,
                       color: Colors.grey,
                     ),
@@ -810,9 +899,9 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Pengajuan Izin & Cuti Hari Ini',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Color.fromARGB(255, 16, 126, 173),
@@ -822,7 +911,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                       Text(
                         DateFormat('EEEE, dd MMMM yyyy', 'id_ID')
                             .format(DateTime.now()),
-                        style: const TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.black54,
                         ),
@@ -902,52 +991,57 @@ class IzinItem extends StatelessWidget {
             padding: const EdgeInsets.only(left: 16.0, top: 10.0),
             child: Text(
               date,
-              style: const TextStyle(
+              style: GoogleFonts.poppins(
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
           ),
         Card(
-            color: Colors.white, // Card putih
-            margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-            child: ListTile(
-              leading: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.description, color: color),
-                  Text(
-                    type,
-                    style: TextStyle(
-                      color: color,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
+          color: Colors.white,
+          margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ListTile(
+            leading: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.description, color: color),
+                Text(
+                  type,
+                  style: GoogleFonts.poppins(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
                   ),
-                ],
-              ),
-              title: Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.black, // Warna teks hitam
-                  fontWeight: FontWeight.bold,
                 ),
+              ],
+            ),
+            title: Text(
+              title,
+              style: GoogleFonts.poppins(
+                color: Colors.black, // Warna teks hitam
+                fontWeight: FontWeight.bold,
               ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 6),
-                  Text('Nama        : $username',
-                      style: const TextStyle(color: Colors.black)),
-                  const SizedBox(height: 2),
-                  Text('Waktu       : $waktu',
-                      style: const TextStyle(color: Colors.black)),
-                  const SizedBox(height: 2),
-                  Text('Status Izin : $status',
-                      style: const TextStyle(color: Colors.black)),
-                ],
-              ),
-            )),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 6),
+                Text('Nama        : $username',
+                    style: GoogleFonts.poppins(color: Colors.black)),
+                const SizedBox(height: 2),
+                Text('Waktu       : $waktu',
+                    style: GoogleFonts.poppins(color: Colors.black)),
+                const SizedBox(height: 2),
+                Text('Status Izin : $status',
+                    style: GoogleFonts.poppins(color: Colors.black)),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
