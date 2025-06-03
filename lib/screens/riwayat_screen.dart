@@ -873,70 +873,150 @@ class IzinItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (date.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 10.0),
-            child: Text(
-              date,
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-          ),
-        Card(
-          color: Colors.white,
-          margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-          elevation: 2,
-          child: ListTile(
-            leading: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.description, color: color),
-                Text(
-                  type,
-                  style: GoogleFonts.poppins(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-            title: Text(
-              title,
-              style: GoogleFonts.poppins(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 6),
-                Text(
-                  'Waktu         : $waktu',
-                  style: GoogleFonts.poppins(
-                    color: Colors.black,
-                    fontSize: 16,
-                  ),
-                ),
-                Text(
-                  'Status Izin  : $status',
-                  style: GoogleFonts.poppins(
-                    color: Colors.black,
-                    fontSize: 16,
-                  ),
-                )
-              ],
-            ),
-          ),
+    // Determine color based on type only
+    Color statusColor;
+    if (type == 'IZIN') {
+      statusColor = const Color.fromARGB(255, 13, 96, 13);
+    } else if (type == 'CUTI') {
+      statusColor = const Color.fromARGB(255, 200, 106, 13);
+    } else {
+      statusColor = const Color.fromARGB(255, 127, 157, 195);
+    }
+
+    // Determine status icon and color
+    IconData statusIcon;
+    Color statusIconColor;
+    switch (status.toLowerCase()) {
+      case 'disetujui':
+        statusIcon = Icons.check_circle;
+        statusIconColor = Colors.green;
+        break;
+      case 'ditolak':
+        statusIcon = Icons.cancel;
+        statusIconColor = Colors.red;
+        break;
+      case 'pending':
+        statusIcon = Icons.access_time;
+        statusIconColor = Colors.orange;
+        break;
+      default:
+        statusIcon = Icons.info;
+        statusIconColor = Colors.grey;
+    }
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      elevation: 3,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: statusColor,
         ),
-      ],
+        child: Column(
+          children: [
+            Container(
+              color: statusColor,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10.0),
+              child: Text(
+                type,
+                style: GoogleFonts.poppins(
+                  fontSize: 17,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10.0),
+              color: Colors.white,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Status Column (Left)
+                  Container(
+                    height: 50, // Fixed height to match content
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          statusIcon,
+                          color: statusIconColor,
+                          size: 22,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          status,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: statusIconColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Content Column (Right)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Tanggal dan Waktu
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Tanggal & Waktu : ',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              waktu,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 7),
+                        // Keterangan
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Keterangan : ',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                title,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

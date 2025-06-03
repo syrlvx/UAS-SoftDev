@@ -181,13 +181,48 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        username ?? 'User',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('user')
+                            .doc(FirebaseAuth.instance.currentUser!.uid)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Text(
+                              'Loading...',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          }
+
+                          if (!snapshot.hasData || snapshot.data == null) {
+                            return Text(
+                              'User',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          }
+
+                          final data =
+                              snapshot.data!.data() as Map<String, dynamic>;
+                          final username = data['username'] ?? 'User';
+
+                          return Text(
+                            username,
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        },
                       ),
                       Text(
                         role ?? '',

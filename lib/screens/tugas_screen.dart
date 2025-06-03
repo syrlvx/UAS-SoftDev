@@ -158,14 +158,14 @@ class _TugasScreenState extends State<TugasScreen> {
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
-                                  fontSize: 15, // ukuran font 14
+                                  fontSize: 16, // ukuran font 14
                                 ),
                               ),
                               Text(
                                 _getDayName(dateList[index]),
                                 style: GoogleFonts.poppins(
                                   color: Colors.white,
-                                  fontSize: 15, // ukuran font 14
+                                  fontSize: 16, // ukuran font 14
                                 ),
                               ),
                             ],

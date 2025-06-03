@@ -184,19 +184,42 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
   Future<void> _loadCompletedTasks() async {
     try {
       final String userId = widget.data['id'];
+      print('🔍 User ID: $userId');
+
       if (userId != null) {
+        // Hitung batas awal dan akhir bulan ini
+        final DateTime now = DateTime.now();
+        final DateTime firstDay = DateTime(now.year, now.month, 1);
+        final DateTime firstDayNextMonth = (now.month == 12)
+            ? DateTime(now.year + 1, 1, 1)
+            : DateTime(now.year, now.month + 1, 1);
+
+        print('📅 First day of current month: $firstDay');
+        print('📅 First day of next month: $firstDayNextMonth');
+
         final QuerySnapshot tugasSnapshot = await FirebaseFirestore.instance
             .collection('tugas')
             .where('karyawanUid', isEqualTo: userId)
             .where('status', isEqualTo: 'Selesai')
+            .where('tanggal',
+                isGreaterThanOrEqualTo: Timestamp.fromDate(firstDay))
+            .where('tanggal', isLessThan: Timestamp.fromDate(firstDayNextMonth))
             .get();
 
+        print(
+            '✅ Total completed tasks found in Firestore: ${tugasSnapshot.docs.length}');
+
         List<DateTime> tempCompletedTasksDates = [];
+
         for (var doc in tugasSnapshot.docs) {
           final data = doc.data() as Map<String, dynamic>;
-          if (data['tanggal'] != null) {
-            tempCompletedTasksDates
-                .add((data['tanggal'] as Timestamp).toDate());
+          final timestamp = data['tanggal'];
+          if (timestamp != null && timestamp is Timestamp) {
+            final date = timestamp.toDate();
+            tempCompletedTasksDates.add(date);
+            print('📌 Tugas tanggal: $date');
+          } else {
+            print('⚠️ Data tidak valid atau tanggal null');
           }
         }
 
@@ -205,10 +228,13 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
             completedTasksCount = tugasSnapshot.docs.length;
             completedTasksDates = tempCompletedTasksDates;
           });
+
+          print('🎯 completedTasksCount: $completedTasksCount');
+          print('📆 completedTasksDates: $completedTasksDates');
         }
       }
     } catch (e) {
-      print('Error loading completed tasks: $e');
+      print('❌ Error loading completed tasks: $e');
     }
   }
 
@@ -219,15 +245,17 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
         // Get current month's date range
         final now = DateTime.now();
         final firstDay = DateTime(now.year, now.month, 1);
-        final lastDay = DateTime(now.year, now.month + 1, 0);
+        final firstDayNextMonth =
+            DateTime(now.year, now.month + 1, 1); // Awal bulan berikutnya
 
-        // Query all tasks for this month
         final QuerySnapshot tugasSnapshot = await FirebaseFirestore.instance
             .collection('tugas')
             .where('karyawanUid', isEqualTo: userId)
             .where('tanggal',
                 isGreaterThanOrEqualTo: Timestamp.fromDate(firstDay))
-            .where('tanggal', isLessThanOrEqualTo: Timestamp.fromDate(lastDay))
+            .where('tanggal',
+                isLessThan: Timestamp.fromDate(
+                    firstDayNextMonth)) // bukan lessThanOrEqual
             .get();
 
         int tempLateCount = 0;
@@ -559,12 +587,16 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
                     color: Colors.blue,
                     title: 'Tugas Selesai',
                     subtitle: '$completedTasksCount Tugas',
-                    onTap: () => _showDateDetails(
-                      context,
-                      'Tugas Selesai',
-                      completedTasksDates,
-                      Colors.blue,
-                    ),
+                    onTap: () {
+                      print('completedTasksCount: $completedTasksCount');
+                      print('completedTasksDates: $completedTasksDates');
+                      _showDateDetails(
+                        context,
+                        'Tugas Selesai',
+                        completedTasksDates,
+                        Colors.blue,
+                      );
+                    },
                   ),
 
                   _buildInfoCard(
