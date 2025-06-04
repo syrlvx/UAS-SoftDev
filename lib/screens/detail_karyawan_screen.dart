@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:purelux/screens/edit_karyawan.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 
 class DetailKaryawanScreen extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -21,6 +22,9 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
   int lateTasksCount = 0;
   bool isLoading = true;
   int performanceScore = 85;
+  StreamSubscription? _userSubscription;
+  StreamSubscription? _absensiSubscription;
+  StreamSubscription? _tugasSubscription;
 
   // Add missing date list variables
   List<DateTime> hadirDates = [];
@@ -32,291 +36,149 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
   @override
   void initState() {
     super.initState();
-    _loadAbsensiData();
-    _loadCompletedTasks();
-    _loadLateTasks();
-    _loadPerformanceScore();
+    _setupStreams();
   }
 
-  Future<void> _loadAbsensiData() async {
-    try {
-      // Get current month's date range
-      final now = DateTime.now();
-      final firstDay = DateTime(now.year, now.month, 1);
-      final lastDay = DateTime(now.year, now.month + 1, 0);
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    _absensiSubscription?.cancel();
+    _tugasSubscription?.cancel();
+    super.dispose();
+  }
 
-      // Format dates for query
-      final formattedFirstDay = DateFormat('yyyy-MM-dd').format(firstDay);
-      final formattedLastDay = DateFormat('yyyy-MM-dd').format(lastDay);
+  void _setupStreams() {
+    final String userId = widget.data['id'];
+    if (userId == null) return;
 
-      print('Date range: $formattedFirstDay to $formattedLastDay');
-      print('User ID being checked: ${widget.data['id']}');
+    setState(() {
+      isLoading = true;
+    });
 
-      // Full user data for debugging
-      print('Full user data: ${widget.data}');
-
-      // First, let's check what's in the pengajuan collection without filters
-      final allPengajuan =
-          await FirebaseFirestore.instance.collection('pengajuan').get();
-
-      print(
-          'Total pengajuan documents in collection: ${allPengajuan.docs.length}');
-      if (allPengajuan.docs.isNotEmpty) {
-        print('Sample pengajuan document data:');
-        final sampleDoc = allPengajuan.docs.first.data();
-        print('userId: ${sampleDoc['userId']}');
-        print('status: ${sampleDoc['status']}');
-        print('jenis: ${sampleDoc['jenis']}');
-      }
-
-      // Query pengajuan collection for approved izin/cuti
-      final String userId = widget.data['id'];
-      if (userId != null) {
-        // Let's try querying without the status filter first
-        final QuerySnapshot pengajuanSnapshot = await FirebaseFirestore.instance
-            .collection('pengajuan')
-            .where('userId', isEqualTo: userId)
-            .get();
-
-        print(
-            'Found ${pengajuanSnapshot.docs.length} pengajuan documents for userId: $userId');
-
-        // If we found any documents, let's see their status
-        if (pengajuanSnapshot.docs.isNotEmpty) {
-          print('Pengajuan documents found for this user:');
-          for (var doc in pengajuanSnapshot.docs) {
-            final data = doc.data() as Map<String, dynamic>;
-            print('Status: ${data['status']}, Jenis: ${data['jenis']}');
-          }
-        }
-
-        // Count approved izin/cuti within current month
-        int tempIzinCutiCount = 0;
-        List<DateTime> tempIzinCutiDates = [];
-        for (var doc in pengajuanSnapshot.docs) {
-          final data = doc.data() as Map<String, dynamic>;
-          if (data['tanggal'] != null) {
-            final tanggal = (data['tanggal'] as Timestamp).toDate();
-            final formattedTanggal = DateFormat('yyyy-MM-dd').format(tanggal);
-            print(
-                'Document date: $formattedTanggal, jenis: ${data['jenis']}, status: ${data['status']}');
-
-            // Only count if within current month and is either izin or cuti
-            if (formattedTanggal.compareTo(formattedFirstDay) >= 0 &&
-                formattedTanggal.compareTo(formattedLastDay) <= 0 &&
-                (data['jenis'] == 'izin' || data['jenis'] == 'cuti')) {
-              tempIzinCutiCount++;
-              tempIzinCutiDates.add(tanggal);
-              print('Counted izin/cuti! Current count: $tempIzinCutiCount');
-            }
-          }
-        }
-
-        // Query absensi collection
-        final QuerySnapshot absensiSnapshot = await FirebaseFirestore.instance
-            .collection('absensi')
-            .where('user_id', isEqualTo: userId)
-            .get();
-
-        print('Found ${absensiSnapshot.docs.length} absensi documents');
-
-        // Count attendance and late attendance within current month
-        int tempHadirCount = 0;
-        int tempTerlambatCount = 0;
-        List<DateTime> tempHadirDates = [];
-        List<DateTime> tempTerlambatDates = [];
-        for (var doc in absensiSnapshot.docs) {
-          final data = doc.data() as Map<String, dynamic>;
-          final tanggal = data['tanggal'] as String;
-          final waktuMasuk = data['waktu_masuk'] as Timestamp;
-          final waktuMasukDate = waktuMasuk.toDate();
-          print(
-              'Checking absensi date: $tanggal, waktu: ${waktuMasukDate.hour}:${waktuMasukDate.minute}');
-
-          // Only count if within current month
-          if (tanggal.compareTo(formattedFirstDay) >= 0 &&
-              tanggal.compareTo(formattedLastDay) <= 0) {
-            tempHadirCount++;
-            tempHadirDates.add(waktuMasukDate);
-
-            // Check if late (after 8:15 AM)
-            if (waktuMasukDate.hour > 8 ||
-                (waktuMasukDate.hour == 8 && waktuMasukDate.minute > 15)) {
-              tempTerlambatCount++;
-              tempTerlambatDates.add(waktuMasukDate);
-              print(
-                  'Counted late attendance! Current count: $tempTerlambatCount');
-            }
-
-            print('Counted attendance! Current count: $tempHadirCount');
-          }
-        }
-
+    // Stream for user data (performance score)
+    _userSubscription = FirebaseFirestore.instance
+        .collection('user')
+        .doc(userId)
+        .snapshots()
+        .listen((doc) {
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
         if (mounted) {
           setState(() {
-            hadirCount = tempHadirCount;
-            izinCutiCount = tempIzinCutiCount;
-            terlambatCount = tempTerlambatCount;
-            hadirDates = tempHadirDates;
-            izinCutiDates = tempIzinCutiDates;
-            terlambatDates = tempTerlambatDates;
-            isLoading = false;
-          });
-        }
-      } else {
-        print('Error: userId is null');
-        if (mounted) {
-          setState(() {
+            performanceScore = data['score'] ?? 0;
+            // Update widget.data with new values
+            widget.data['username'] = data['username'];
+            widget.data['email'] = data['email'];
+            widget.data['role'] = data['role'];
+            widget.data['notes'] = data['notes'];
             isLoading = false;
           });
         }
       }
-    } catch (e) {
-      print('Error loading absensi data: $e');
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
+    });
+
+    // Stream for absensi data
+    _absensiSubscription = FirebaseFirestore.instance
+        .collection('absensi')
+        .where('user_id', isEqualTo: userId)
+        .snapshots()
+        .listen((snapshot) {
+      _processAbsensiData(snapshot.docs);
+    });
+
+    // Stream for tugas data
+    _tugasSubscription = FirebaseFirestore.instance
+        .collection('tugas')
+        .where('karyawanUid', isEqualTo: userId)
+        .snapshots()
+        .listen((snapshot) {
+      _processTugasData(snapshot.docs);
+    });
+  }
+
+  void _processAbsensiData(List<QueryDocumentSnapshot> docs) {
+    final now = DateTime.now();
+    final firstDay = DateTime(now.year, now.month, 1);
+    final lastDay = DateTime(now.year, now.month + 1, 0);
+
+    int tempHadirCount = 0;
+    int tempTerlambatCount = 0;
+    List<DateTime> tempHadirDates = [];
+    List<DateTime> tempTerlambatDates = [];
+
+    for (var doc in docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final tanggal = data['tanggal'] as String;
+      final waktuMasuk = data['waktu_masuk'] as Timestamp;
+      final waktuMasukDate = waktuMasuk.toDate();
+
+      if (tanggal.compareTo(DateFormat('yyyy-MM-dd').format(firstDay)) >= 0 &&
+          tanggal.compareTo(DateFormat('yyyy-MM-dd').format(lastDay)) <= 0) {
+        tempHadirCount++;
+        tempHadirDates.add(waktuMasukDate);
+
+        if (waktuMasukDate.hour > 8 ||
+            (waktuMasukDate.hour == 8 && waktuMasukDate.minute > 15)) {
+          tempTerlambatCount++;
+          tempTerlambatDates.add(waktuMasukDate);
+        }
       }
+    }
+
+    if (mounted) {
+      setState(() {
+        hadirCount = tempHadirCount;
+        terlambatCount = tempTerlambatCount;
+        hadirDates = tempHadirDates;
+        terlambatDates = tempTerlambatDates;
+      });
     }
   }
 
-  Future<void> _loadCompletedTasks() async {
-    try {
-      final String userId = widget.data['id'];
-      print('🔍 User ID: $userId');
+  void _processTugasData(List<QueryDocumentSnapshot> docs) {
+    final now = DateTime.now();
+    final firstDay = DateTime(now.year, now.month, 1);
+    final firstDayNextMonth = DateTime(now.year, now.month + 1, 1);
 
-      if (userId != null) {
-        // Hitung batas awal dan akhir bulan ini
-        final DateTime now = DateTime.now();
-        final DateTime firstDay = DateTime(now.year, now.month, 1);
-        final DateTime firstDayNextMonth = (now.month == 12)
-            ? DateTime(now.year + 1, 1, 1)
-            : DateTime(now.year, now.month + 1, 1);
+    int tempCompletedCount = 0;
+    int tempLateCount = 0;
+    List<DateTime> tempCompletedDates = [];
+    List<DateTime> tempLateDates = [];
 
-        print('📅 First day of current month: $firstDay');
-        print('📅 First day of next month: $firstDayNextMonth');
+    for (var doc in docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final status = data['status'] as String? ?? 'belum_dikerjakan';
+      final timestamp = data['tanggal'] as Timestamp?;
 
-        final QuerySnapshot tugasSnapshot = await FirebaseFirestore.instance
-            .collection('tugas')
-            .where('karyawanUid', isEqualTo: userId)
-            .where('status', isEqualTo: 'Selesai')
-            .where('tanggal',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(firstDay))
-            .where('tanggal', isLessThan: Timestamp.fromDate(firstDayNextMonth))
-            .get();
+      if (timestamp == null) continue;
+      final date = timestamp.toDate();
 
-        print(
-            '✅ Total completed tasks found in Firestore: ${tugasSnapshot.docs.length}');
+      if (date.isAfter(firstDay) && date.isBefore(firstDayNextMonth)) {
+        if (status == 'Selesai') {
+          tempCompletedCount++;
+          tempCompletedDates.add(date);
 
-        List<DateTime> tempCompletedTasksDates = [];
-
-        for (var doc in tugasSnapshot.docs) {
-          final data = doc.data() as Map<String, dynamic>;
-          final timestamp = data['tanggal'];
-          if (timestamp != null && timestamp is Timestamp) {
-            final date = timestamp.toDate();
-            tempCompletedTasksDates.add(date);
-            print('📌 Tugas tanggal: $date');
-          } else {
-            print('⚠️ Data tidak valid atau tanggal null');
+          if (data['isLate'] == true) {
+            tempLateCount++;
+            tempLateDates.add(date);
+          }
+        } else {
+          final waktuSelesai = data['waktuSelesai'] as Timestamp;
+          if (waktuSelesai.toDate().isBefore(now)) {
+            tempLateCount++;
+            tempLateDates.add(waktuSelesai.toDate());
           }
         }
-
-        if (mounted) {
-          setState(() {
-            completedTasksCount = tugasSnapshot.docs.length;
-            completedTasksDates = tempCompletedTasksDates;
-          });
-
-          print('🎯 completedTasksCount: $completedTasksCount');
-          print('📆 completedTasksDates: $completedTasksDates');
-        }
       }
-    } catch (e) {
-      print('❌ Error loading completed tasks: $e');
     }
-  }
 
-  Future<void> _loadLateTasks() async {
-    try {
-      final String userId = widget.data['id'];
-      if (userId != null) {
-        // Get current month's date range
-        final now = DateTime.now();
-        final firstDay = DateTime(now.year, now.month, 1);
-        final firstDayNextMonth =
-            DateTime(now.year, now.month + 1, 1); // Awal bulan berikutnya
-
-        final QuerySnapshot tugasSnapshot = await FirebaseFirestore.instance
-            .collection('tugas')
-            .where('karyawanUid', isEqualTo: userId)
-            .where('tanggal',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(firstDay))
-            .where('tanggal',
-                isLessThan: Timestamp.fromDate(
-                    firstDayNextMonth)) // bukan lessThanOrEqual
-            .get();
-
-        int tempLateCount = 0;
-        List<DateTime> tempLateTasksDates = [];
-        for (var doc in tugasSnapshot.docs) {
-          final data = doc.data() as Map<String, dynamic>;
-          final status = data['status'] as String? ?? 'belum_dikerjakan';
-
-          // Count as late if:
-          // 1. Task is completed and was completed late (isLate is true)
-          // 2. Task is not completed and deadline has passed
-          if (status == 'Selesai') {
-            // Check if the task was submitted late
-            if (data['isLate'] == true) {
-              tempLateCount++;
-              if (data['tanggal'] != null) {
-                tempLateTasksDates.add((data['tanggal'] as Timestamp).toDate());
-              }
-            }
-          } else {
-            // For incomplete tasks, check if deadline has passed
-            final waktuSelesai = data['waktuSelesai'] as Timestamp;
-            if (waktuSelesai.toDate().isBefore(now)) {
-              tempLateCount++;
-              tempLateTasksDates.add(waktuSelesai.toDate());
-            }
-          }
-        }
-
-        if (mounted) {
-          setState(() {
-            lateTasksCount = tempLateCount;
-            lateTasksDates = tempLateTasksDates;
-          });
-        }
-      }
-    } catch (e) {
-      print('Error loading late tasks: $e');
-    }
-  }
-
-  Future<void> _loadPerformanceScore() async {
-    try {
-      final String userId = widget.data['id'];
-      if (userId != null) {
-        final docSnapshot = await FirebaseFirestore.instance
-            .collection('user')
-            .doc(userId)
-            .get();
-
-        if (docSnapshot.exists) {
-          final data = docSnapshot.data() as Map<String, dynamic>;
-          if (mounted) {
-            setState(() {
-              performanceScore = data['score'] ?? 0;
-            });
-          }
-        }
-      }
-    } catch (e) {
-      print('Error loading performance score: $e');
+    if (mounted) {
+      setState(() {
+        completedTasksCount = tempCompletedCount;
+        lateTasksCount = tempLateCount;
+        completedTasksDates = tempCompletedDates;
+        lateTasksDates = tempLateDates;
+      });
     }
   }
 
@@ -342,7 +204,7 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
             ),
           ),
           child: AppBar(
-            automaticallyImplyLeading: false, // Supaya leading manual dipakai
+            automaticallyImplyLeading: false,
             backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
             elevation: 0,
@@ -362,25 +224,36 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
             actions: [
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert),
-                onSelected: (value) {
+                onSelected: (value) async {
                   if (value == 'edit') {
-                    Navigator.push(
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => EditKaryawanScreen(data: widget.data),
                       ),
                     );
+
+                    if (result == true) {
+                      setState(() {
+                        isLoading = true;
+                      });
+                      _setupStreams();
+                    }
                   } else if (value == 'delete') {
+                    // Store the context before showing dialog
+                    final scaffoldMessenger = ScaffoldMessenger.of(context);
+                    final navigator = Navigator.of(context);
+
                     showDialog(
                       context: context,
-                      builder: (context) => AlertDialog(
+                      builder: (dialogContext) => AlertDialog(
                         backgroundColor: Colors.white,
                         title: Text("Hapus Karyawan?",
                             style: GoogleFonts.poppins(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold)),
                         content: Text(
-                          "Apakah kamu yakin ingin menghapus ${widget.data['name']}?",
+                          "Apakah kamu yakin ingin menghapus $name?",
                           style: GoogleFonts.poppins(color: Colors.black),
                         ),
                         actions: [
@@ -388,15 +261,14 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
                             child: Text("Batal",
                                 style:
                                     GoogleFonts.poppins(color: Colors.black)),
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () => Navigator.pop(dialogContext),
                           ),
                           TextButton(
                             child: Text("Hapus",
                                 style: GoogleFonts.poppins(color: Colors.red)),
                             onPressed: () {
+                              Navigator.pop(dialogContext); // Close dialog
                               deleteKaryawan(widget.data['id'], context);
-                              Navigator.pop(context);
-                              Navigator.pop(context);
                             },
                           ),
                         ],
@@ -739,15 +611,39 @@ class _DetailKaryawanScreenState extends State<DetailKaryawanScreen> {
   }
 
   void deleteKaryawan(String id, BuildContext context) async {
+    // Store the context before any async operations
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
     try {
-      await FirebaseFirestore.instance.collection('karyawan').doc(id).delete();
-      ScaffoldMessenger.of(context).showSnackBar(
+      // Cancel all subscriptions before deletion
+      _userSubscription?.cancel();
+      _absensiSubscription?.cancel();
+      _tugasSubscription?.cancel();
+
+      // Delete the user document
+      await FirebaseFirestore.instance.collection('user').doc(id).delete();
+
+      // Use stored context references
+      scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text('Karyawan berhasil dihapus')),
       );
+
+      // Navigate back to previous screen
+      navigator.pop(true);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      // Use stored context references
+      scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Gagal menghapus karyawan: $e')),
       );
     }
+  }
+
+  // Add refresh method
+  Future<void> refreshData() async {
+    setState(() {
+      isLoading = true;
+    });
+    _setupStreams();
   }
 }

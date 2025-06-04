@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:purelux/widgets/bottom_nav_bar_admin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart'; // Tambahkan package ini untuk generate uid
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class TambahTugasScreen extends StatefulWidget {
   const TambahTugasScreen({Key? key}) : super(key: key);
@@ -111,7 +113,25 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
     return null;
   }
 
-  // Fungsi untuk menambahkan tugas ke Firestore
+  Future<void> sendOneSignalNotification(
+      String playerId, String title, String message) async {
+    var response = await http.post(
+      Uri.parse('https://onesignal.com/api/v1/notifications'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization':
+            'Basic os_v2_app_6fpbl7nmavh2rigyk3jckrvdz4npvshcwv5uurfnwf56fscssigsmu57npipetjzfxniautukvwg6c3ssklqfduu7cvfue3qgynbzoa',
+      },
+      body: jsonEncode({
+        'app_id': 'f15e15fd-ac05-4fa8-a0d8-56d22546a3cf',
+        'include_player_ids': [playerId],
+        'headings': {'en': title},
+        'contents': {'en': message},
+      }),
+    );
+    print(response.body);
+  }
+
   Future<void> saveTugasToFirestore() async {
     if (selectedTasks.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -175,6 +195,34 @@ class _TambahTugasScreenState extends State<TambahTugasScreen> {
           .collection('tugas')
           .doc(tugasId)
           .set(tugasData);
+
+      // Get user's OneSignal playerId
+      final userDoc = await FirebaseFirestore.instance
+          .collection('user')
+          .doc(karyawanUid)
+          .get();
+
+      final playerId = userDoc.data()?['onesignalPlayerId'];
+
+      // Create notification data
+      String title = 'Tugas Baru';
+      String message = 'Anda memiliki tugas baru: ${selectedTasks.join(", ")}';
+
+      // Save notification to Firestore
+      await FirebaseFirestore.instance.collection('notifications').add({
+        'userId': karyawanUid,
+        'title': title,
+        'message': message,
+        'createdAt': FieldValue.serverTimestamp(),
+        'category': 'tugas',
+        'read': false,
+        'archived': false,
+      });
+
+      // Send OneSignal notification
+      if (playerId != null) {
+        await sendOneSignalNotification(playerId, title, message);
+      }
 
       setState(() {
         isLoading = false;

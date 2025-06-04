@@ -44,6 +44,7 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
         return;
       }
 
+      // Update data in Firestore
       await FirebaseFirestore.instance
           .collection('user')
           .doc(widget.data['id'])
@@ -55,11 +56,17 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
         'notes': notesController.text.trim(),
       });
 
+      // Show success message
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Data berhasil diperbarui')),
       );
-      Navigator.pop(context);
+
+      // Return true to indicate successful update and trigger refresh
+      if (!mounted) return;
+      Navigator.pop(context, true);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal update data: $e')),
       );

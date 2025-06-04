@@ -928,33 +928,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
             child: Column(
               children: [
                 const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  color: const Color.fromARGB(255, 227, 241, 253),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Pengajuan Izin & Cuti Hari Ini',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 16, 126, 173),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        DateFormat('EEEE, dd MMMM yyyy', 'id_ID')
-                            .format(DateTime.now()),
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 40),
                 Flexible(
                   child: ListView.builder(
                     itemCount: docs.length,
@@ -1057,22 +1031,25 @@ class IzinItem extends StatelessWidget {
             title: Text(
               title,
               style: GoogleFonts.poppins(
-                color: Colors.black, // Warna teks hitam
-                fontWeight: FontWeight.bold,
-              ),
+                  color: Colors.black, // Warna teks hitam
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 6),
                 Text('Nama        : $username',
-                    style: GoogleFonts.poppins(color: Colors.black)),
+                    style:
+                        GoogleFonts.poppins(color: Colors.black, fontSize: 16)),
                 const SizedBox(height: 2),
                 Text('Waktu       : $waktu',
-                    style: GoogleFonts.poppins(color: Colors.black)),
+                    style:
+                        GoogleFonts.poppins(color: Colors.black, fontSize: 16)),
                 const SizedBox(height: 2),
                 Text('Status Izin : $status',
-                    style: GoogleFonts.poppins(color: Colors.black)),
+                    style:
+                        GoogleFonts.poppins(color: Colors.black, fontSize: 16)),
               ],
             ),
           ),

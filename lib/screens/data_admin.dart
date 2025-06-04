@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'dart:async';
 
 class DataAdminScreen extends StatefulWidget {
   const DataAdminScreen({super.key});
@@ -20,16 +21,43 @@ class _DataAdminScreenState extends State<DataAdminScreen> {
   List<Map<String, dynamic>> employees = [];
   bool _isLoading = false;
   String? _errorMessage;
+  StreamSubscription? _employeesSubscription;
 
   @override
   void initState() {
     super.initState();
-    _loadEmployees();
+    _setupEmployeesStream();
   }
 
   @override
   void dispose() {
+    _employeesSubscription?.cancel();
     super.dispose();
+  }
+
+  void _setupEmployeesStream() {
+    _employeesSubscription =
+        _firestore.collection('user').snapshots().listen((snapshot) {
+      if (!mounted) return;
+
+      setState(() {
+        employees = snapshot.docs
+            .map((doc) => {
+                  'id': doc.id,
+                  ...doc.data(),
+                })
+            .toList();
+        _isLoading = false;
+      });
+    }, onError: (error) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+        _errorMessage =
+            'Terjadi kesalahan saat memuat data. Silakan coba lagi.';
+      });
+    });
   }
 
   Future<void> _loadEmployees() async {
@@ -41,8 +69,11 @@ class _DataAdminScreenState extends State<DataAdminScreen> {
     });
 
     try {
-      final QuerySnapshot querySnapshot =
-          await _firestore.collection('user').get();
+      // Force a refresh by getting the latest data
+      final QuerySnapshot querySnapshot = await _firestore
+          .collection('user')
+          .get(const GetOptions(source: Source.server));
+
       if (!mounted) return;
 
       setState(() {
@@ -55,8 +86,6 @@ class _DataAdminScreenState extends State<DataAdminScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      // ignore: avoid_print
-      print('Error loading employees: $e');
       if (!mounted) return;
 
       setState(() {
@@ -368,14 +397,19 @@ class _DataAdminScreenState extends State<DataAdminScreen> {
                                 ),
                                 trailing: const Icon(Icons.arrow_forward_ios,
                                     size: 16, color: Colors.black),
-                                onTap: () {
-                                  Navigator.push(
+                                onTap: () async {
+                                  final result = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
                                           DetailKaryawanScreen(data: employee),
                                     ),
                                   );
+
+                                  // If we got a result (true) from edit_karyawan.dart, refresh the list
+                                  if (result == true) {
+                                    _loadEmployees();
+                                  }
                                 },
                               ),
                             );
