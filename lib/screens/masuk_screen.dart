@@ -222,21 +222,6 @@ class _MasukScreenState extends State<MasukScreen> {
     });
 
     try {
-      // Check if current time is after 5 PM
-      final now = DateTime.now();
-      if (now.hour >= 17) {
-        setState(() {
-          _loading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Absensi tidak dapat dilakukan setelah jam 5 sore'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
       User? user = FirebaseAuth.instance.currentUser;
       if (user == null || _currentDate == null) {
         setState(() {
@@ -279,8 +264,7 @@ class _MasukScreenState extends State<MasukScreen> {
             'tanggal': _currentDate,
             'waktu_masuk': Timestamp.fromDate(DateTime.now()),
             'lokasi_masuk': _location,
-            'keterangan':
-                'Tepat waktu', // Bisa ditambahkan logika untuk menentukan status
+            'keterangan': 'Tepat waktu',
           };
 
           await FirebaseFirestore.instance.collection('absensi').add(absenData);
@@ -328,20 +312,19 @@ class _MasukScreenState extends State<MasukScreen> {
   }
 
   bool _isWithinWorkingHours() {
-    final now = DateTime.now();
-    return now.hour >= 8 && now.hour < 17;
+    return true; // Selalu return true untuk testing
   }
 
   Color _getButtonColor() {
-    if (!_isWithinWorkingHours()) {
-      return Colors.grey;
+    if (_sudahMasuk) {
+      return Colors.red; // Warna merah untuk tombol keluar
     }
-    return Colors.green;
+    return Colors.green; // Warna hijau untuk tombol masuk
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isButtonEnabled = _isWithinWorkingHours() && !_sudahKeluar;
+    final bool isButtonEnabled = !_sudahKeluar;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -449,7 +432,7 @@ class _MasukScreenState extends State<MasukScreen> {
                               if (_waktuMasuk != null)
                                 Row(
                                   children: [
-                                    Icon(Icons.login, color: Colors.grey),
+                                    Icon(Icons.login, color: Colors.green),
                                     SizedBox(width: 10),
                                     Text(
                                       'Jam Masuk: $_waktuMasuk',
@@ -464,7 +447,7 @@ class _MasukScreenState extends State<MasukScreen> {
                               if (_waktuKeluar != null)
                                 Row(
                                   children: [
-                                    Icon(Icons.logout, color: Colors.grey),
+                                    Icon(Icons.logout, color: Colors.red),
                                     SizedBox(width: 10),
                                     Text(
                                       'Jam Keluar: $_waktuKeluar',

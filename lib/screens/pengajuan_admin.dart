@@ -88,34 +88,43 @@ class PengajuanList extends StatefulWidget {
 class _PengajuanListState extends State<PengajuanList> {
   Future<void> updateStatus(String docId, String status) async {
     try {
+      print('Starting status update for document: $docId');
+
       // Update status in Firestore
       await FirebaseFirestore.instance
           .collection('pengajuan')
           .doc(docId)
           .update({'status': status});
+      print('Status updated in Firestore');
 
       // Get the document data
       final doc = await FirebaseFirestore.instance
           .collection('pengajuan')
           .doc(docId)
           .get();
+      print('Retrieved document data');
 
       final data = doc.data() as Map<String, dynamic>;
       final userId = data['userId'];
       final jenis = data['jenis'];
       final nama = data['nama'];
+      print('Document data - userId: $userId, jenis: $jenis, nama: $nama');
 
       // Get user's OneSignal playerId
       final userDoc =
           await FirebaseFirestore.instance.collection('user').doc(userId).get();
+      print('Retrieved user document');
 
       final playerId = userDoc.data()?['onesignalPlayerId'];
+      print('PlayerId: $playerId');
 
-      // Create notification data
-      String title = 'Status Pengajuan $jenis';
-      String message = 'Pengajuan $jenis Anda telah $status';
+      // Create notification data with more detailed message
+      String title = 'Status Pengajuan ${jenis.toUpperCase()}';
+      String message =
+          'Pengajuan ${jenis.toUpperCase()} dari $nama telah $status';
+      print('Created notification - Title: $title, Message: $message');
 
-      // Save notification to Firestore
+      // Save notification to Firestore with more details
       await FirebaseFirestore.instance.collection('notifications').add({
         'userId': userId,
         'title': title,
@@ -124,11 +133,24 @@ class _PengajuanListState extends State<PengajuanList> {
         'category': 'pengajuan',
         'read': false,
         'archived': false,
+        'jenis': jenis,
+        'status': status,
+        'nama': nama,
       });
+      print('Notification saved to Firestore');
 
-      // Send OneSignal notification
-      if (playerId != null) {
-        await sendOneSignalNotification(playerId, title, message);
+      // Send OneSignal notification with improved error handling
+      if (playerId != null && playerId.isNotEmpty) {
+        try {
+          print('Attempting to send OneSignal notification...');
+          await sendOneSignalNotification(playerId, title, message);
+          print('OneSignal notification sent successfully');
+        } catch (e) {
+          print('Error sending OneSignal notification: $e');
+          print('Error details: ${e.toString()}');
+        }
+      } else {
+        print('No valid playerId found for user $userId');
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -138,7 +160,8 @@ class _PengajuanListState extends State<PengajuanList> {
         ),
       );
     } catch (e) {
-      print('Error updating status: $e');
+      print('Error in updateStatus: $e');
+      print('Error details: ${e.toString()}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Gagal memperbarui status'),
@@ -168,10 +191,20 @@ class _PengajuanListState extends State<PengajuanList> {
           return Center(child: Text('Tidak ada pengajuan ${widget.jenis}'));
         }
 
+        // Sort documents by tanggal in descending order
+        final sortedDocs = snapshot.data!.docs.toList()
+          ..sort((a, b) {
+            final aData = a.data() as Map<String, dynamic>;
+            final bData = b.data() as Map<String, dynamic>;
+            final aDate = (aData['tanggal'] as Timestamp).toDate();
+            final bDate = (bData['tanggal'] as Timestamp).toDate();
+            return bDate.compareTo(aDate); // Descending order
+          });
+
         return ListView.builder(
-          itemCount: snapshot.data!.docs.length,
+          itemCount: sortedDocs.length,
           itemBuilder: (context, index) {
-            final doc = snapshot.data!.docs[index];
+            final doc = sortedDocs[index];
             final data = doc.data() as Map<String, dynamic>;
             final status = data['status'] ?? 'Pending';
 

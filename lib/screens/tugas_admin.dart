@@ -226,53 +226,70 @@ class _TugasAdminScreenState extends State<TugasAdminScreen> {
                         );
                       }
 
-                      return ListView(
-                        children: snapshot.data!.docs.map((doc) {
-                          final data = doc.data() as Map<String, dynamic>;
-                          List<String> jenisTugasList =
-                              List<String>.from(data['jenisTugas'] ?? []);
-                          Timestamp timestampTanggal = data['tanggal'];
-                          Timestamp timestampWaktuMulai = data['waktuMulai'];
-                          Timestamp timestampWaktuSelesai =
-                              data['waktuSelesai'];
+                      // Sort documents by status and time
+                      final sortedDocs = snapshot.data!.docs.toList()
+                        ..sort((a, b) {
+                          final aData = a.data() as Map<String, dynamic>;
+                          final bData = b.data() as Map<String, dynamic>;
 
-                          DateTime deadlineDate = timestampTanggal.toDate();
-                          DateTime startTime = timestampWaktuMulai.toDate();
-                          DateTime waktuSelesaiDate =
-                              timestampWaktuSelesai.toDate();
-
-                          if (deadlineDate.year !=
-                                  dateList[selectedDateIndex].year ||
-                              deadlineDate.month !=
-                                  dateList[selectedDateIndex].month ||
-                              deadlineDate.day !=
-                                  dateList[selectedDateIndex].day) {
-                            return const SizedBox.shrink();
+                          // Sort by status first (Pending before Selesai)
+                          if (aData['status'] != bData['status']) {
+                            return aData['status'] == 'Pending' ? -1 : 1;
                           }
 
-                          String formattedDeadline =
-                              DateFormat('d MMM yyyy').format(deadlineDate);
-                          String formattedStartTime =
-                              DateFormat('HH:mm').format(startTime);
-                          String formattedEndTime =
-                              DateFormat('HH:mm').format(waktuSelesaiDate);
+                          // If status is the same, sort by time
+                          final aTime =
+                              (aData['waktuSelesai'] as Timestamp).toDate();
+                          final bTime =
+                              (bData['waktuSelesai'] as Timestamp).toDate();
+                          return aTime.compareTo(bTime);
+                        });
 
-                          bool isLate =
-                              waktuSelesaiDate.isBefore(DateTime.now()) &&
-                                  (data['status'] != 'Selesai');
+                      return ListView(
+                          children: sortedDocs.map((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        List<String> jenisTugasList =
+                            List<String>.from(data['jenisTugas'] ?? []);
+                        Timestamp timestampTanggal = data['tanggal'];
+                        Timestamp timestampWaktuMulai = data['waktuMulai'];
+                        Timestamp timestampWaktuSelesai = data['waktuSelesai'];
 
-                          return TaskCard(
-                            employeeName: data['karyawanNama'] ?? 'Unknown',
-                            jenisTugasList: jenisTugasList,
-                            deadline: formattedDeadline,
-                            deadlineTime: formattedEndTime,
-                            status: data['status'] ?? 'Pending',
-                            isLate: isLate,
-                            isLateForSelesai:
-                                waktuSelesaiDate.isBefore(DateTime.now()),
-                          );
-                        }).toList(),
-                      );
+                        DateTime deadlineDate = timestampTanggal.toDate();
+                        DateTime startTime = timestampWaktuMulai.toDate();
+                        DateTime waktuSelesaiDate =
+                            timestampWaktuSelesai.toDate();
+
+                        if (deadlineDate.year !=
+                                dateList[selectedDateIndex].year ||
+                            deadlineDate.month !=
+                                dateList[selectedDateIndex].month ||
+                            deadlineDate.day !=
+                                dateList[selectedDateIndex].day) {
+                          return const SizedBox.shrink();
+                        }
+
+                        String formattedDeadline =
+                            DateFormat('d MMM yyyy').format(deadlineDate);
+                        String formattedStartTime =
+                            DateFormat('HH:mm').format(startTime);
+                        String formattedEndTime =
+                            DateFormat('HH:mm').format(waktuSelesaiDate);
+
+                        bool isLate =
+                            waktuSelesaiDate.isBefore(DateTime.now()) &&
+                                (data['status'] != 'Selesai');
+
+                        return TaskCard(
+                          employeeName: data['karyawanNama'] ?? 'Unknown',
+                          jenisTugasList: jenisTugasList,
+                          deadline: formattedDeadline,
+                          deadlineTime: formattedEndTime,
+                          status: data['status'] ?? 'Pending',
+                          isLate: isLate,
+                          isLateForSelesai:
+                              waktuSelesaiDate.isBefore(DateTime.now()),
+                        );
+                      }).toList());
                     },
                   ),
                 ),

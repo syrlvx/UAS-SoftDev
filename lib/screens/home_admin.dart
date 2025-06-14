@@ -181,55 +181,19 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      StreamBuilder<DocumentSnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('user')
-                            .doc(FirebaseAuth.instance.currentUser!.uid)
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Text(
-                              'Loading...',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            );
-                          }
-
-                          if (!snapshot.hasData || snapshot.data == null) {
-                            return Text(
-                              'User',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            );
-                          }
-
-                          final data =
-                              snapshot.data!.data() as Map<String, dynamic>;
-                          final username = data['username'] ?? 'User';
-
-                          return Text(
-                            username,
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          );
-                        },
+                      Text(
+                        username ?? 'User',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Text(
                         role ?? '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
+                        style: const TextStyle(
+                          fontSize: 18,
                           color: Colors.white70,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -246,7 +210,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
             color: Colors.white,
             child: TabBar(
               controller: _tabController,
-              indicatorColor: Color.fromARGB(255, 127, 157, 195),
+              indicatorColor: Colors.blue,
               labelColor: Colors.black,
               unselectedLabelColor: Colors.grey,
               tabs: [
@@ -634,7 +598,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                   const SizedBox(height: 16),
                   Text(
                     'Tidak ada data $jenis hari ini',
-                    style: GoogleFonts.poppins(
+                    style: const TextStyle(
                       fontSize: 18,
                       color: Colors.grey,
                     ),
@@ -649,7 +613,8 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
             padding: const EdgeInsets.all(6.0),
             child: Column(
               children: [
-                const SizedBox(height: 45),
+                const SizedBox(height: 25),
+                const SizedBox(height: 10),
                 Expanded(
                   child: ListView.builder(
                     itemCount: filteredList.length,
@@ -721,16 +686,16 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                                   children: [
                                     Text(
                                       'Absensi - ${item['status']}',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 17,
+                                      style: const TextStyle(
+                                        fontSize: 18,
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     Text(
                                       item['username'],
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 15,
+                                      style: const TextStyle(
+                                        fontSize: 16,
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -767,9 +732,9 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(
+                                              const Text(
                                                 'Waktu Mulai',
-                                                style: GoogleFonts.poppins(
+                                                style: TextStyle(
                                                   fontSize: 12,
                                                   color: Colors.green,
                                                   fontWeight: FontWeight.w500,
@@ -778,7 +743,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                                               const SizedBox(height: 3),
                                               Text(
                                                 waktuMasuk,
-                                                style: GoogleFonts.poppins(
+                                                style: const TextStyle(
                                                   fontSize: 14,
                                                   color: Colors.black54,
                                                 ),
@@ -808,9 +773,9 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(
+                                              const Text(
                                                 'Waktu Selesai',
-                                                style: GoogleFonts.poppins(
+                                                style: TextStyle(
                                                   fontSize: 12,
                                                   color: Color.fromARGB(
                                                       255, 255, 0, 0),
@@ -820,7 +785,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                                               const SizedBox(height: 3),
                                               Text(
                                                 waktuKeluar,
-                                                style: GoogleFonts.poppins(
+                                                style: const TextStyle(
                                                   fontSize: 14,
                                                   color: Colors.black54,
                                                 ),
@@ -913,7 +878,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                   const SizedBox(height: 16),
                   Text(
                     'Tidak ada pengajuan $jenis hari ini',
-                    style: GoogleFonts.poppins(
+                    style: const TextStyle(
                       fontSize: 18,
                       color: Colors.grey,
                     ),
@@ -928,7 +893,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
             child: Column(
               children: [
                 const SizedBox(height: 10),
-                const SizedBox(height: 40),
+                const SizedBox(height: 25),
                 Flexible(
                   child: ListView.builder(
                     itemCount: docs.length,
@@ -942,18 +907,44 @@ class _HomeAdminScreenState extends State<HomeAdminScreen>
                       final formattedWaktu =
                           DateFormat('dd/MM/yyyy').format(tanggal);
 
-                      return IzinItem(
-                        date: formattedDate,
-                        title: data['keterangan'] ??
-                            data['linkFile'] ??
-                            'Tidak ada keterangan',
-                        color: data['jenis'] == 'cuti'
-                            ? Colors.purple
-                            : Colors.green,
-                        type: data['jenis'] == 'cuti' ? 'CUTI' : 'IZIN',
-                        waktu: formattedWaktu,
-                        status: data['status'] ?? 'Pending',
-                        username: data['nama'] ?? 'Unknown User',
+                      // Check if this is the first item or if the date is different from the previous item
+                      bool showDateHeader = index == 0 ||
+                          DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(
+                                  (docs[index - 1].data()
+                                          as Map<String, dynamic>)['tanggal']
+                                      .toDate()) !=
+                              formattedDate;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (showDateHeader)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 16.0, top: 10.0),
+                              child: Text(
+                                formattedDate,
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          IzinItem(
+                            date:
+                                '', // Remove date from IzinItem since we're handling it here
+                            title: data['keterangan'] ??
+                                data['linkFile'] ??
+                                'Tidak ada keterangan',
+                            color: data['jenis'] == 'cuti'
+                                ? Colors.purple
+                                : Colors.green,
+                            type: data['jenis'] == 'cuti' ? 'CUTI' : 'IZIN',
+                            waktu: formattedWaktu,
+                            status: data['status'] ?? 'Pending',
+                            username: data['nama'] ?? 'Unknown User',
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -1020,7 +1011,7 @@ class IzinItem extends StatelessWidget {
                 Icon(Icons.description, color: color),
                 Text(
                   type,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     color: color,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
@@ -1030,26 +1021,27 @@ class IzinItem extends StatelessWidget {
             ),
             title: Text(
               title,
-              style: GoogleFonts.poppins(
-                  color: Colors.black, // Warna teks hitam
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20),
+              style: const TextStyle(
+                color: Colors.black, // Warna teks hitam
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+              ),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 6),
                 Text('Nama        : $username',
-                    style:
-                        GoogleFonts.poppins(color: Colors.black, fontSize: 16)),
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                    )),
                 const SizedBox(height: 2),
                 Text('Waktu       : $waktu',
-                    style:
-                        GoogleFonts.poppins(color: Colors.black, fontSize: 16)),
+                    style: const TextStyle(color: Colors.black, fontSize: 18)),
                 const SizedBox(height: 2),
                 Text('Status Izin : $status',
-                    style:
-                        GoogleFonts.poppins(color: Colors.black, fontSize: 16)),
+                    style: const TextStyle(color: Colors.black, fontSize: 18)),
               ],
             ),
           ),

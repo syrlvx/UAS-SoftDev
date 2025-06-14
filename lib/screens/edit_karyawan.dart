@@ -13,8 +13,8 @@ class EditKaryawanScreen extends StatefulWidget {
 class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
   late TextEditingController nameController;
   late TextEditingController emailController;
-  late TextEditingController performanceScoreController;
   late TextEditingController notesController;
+  bool isLoading = true;
 
   String? selectedPosition;
 
@@ -25,26 +25,20 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
     super.initState();
     nameController = TextEditingController(text: widget.data['username'] ?? '');
     emailController = TextEditingController(text: widget.data['email'] ?? '');
-    performanceScoreController =
-        TextEditingController(text: '${widget.data['score'] ?? 0}');
     notesController = TextEditingController(text: widget.data['notes'] ?? '');
 
     // Set initial position value, defaulting to 'karyawan' if not found
     selectedPosition = widget.data['role']?.toLowerCase() ?? 'karyawan';
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> updateKaryawan() async {
     try {
-      // Validate score
-      int score = int.tryParse(performanceScoreController.text) ?? 0;
-      if (score < 0 || score > 100) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Skor kinerja harus antara 0-100')),
-        );
-        return;
-      }
+      print('Updating user data for ID: ${widget.data['id']}');
 
-      // Update data in Firestore
+      // Update user data in Firestore
       await FirebaseFirestore.instance
           .collection('user')
           .doc(widget.data['id'])
@@ -52,23 +46,27 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
         'username': nameController.text.trim(),
         'email': emailController.text.trim(),
         'role': selectedPosition,
-        'score': score,
         'notes': notesController.text.trim(),
       });
 
-      // Show success message
-      if (!mounted) return;
+      print('User data updated successfully');
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data berhasil diperbarui')),
+        const SnackBar(
+          content: Text('Data berhasil diperbarui'),
+          backgroundColor: Colors.green,
+        ),
       );
 
-      // Return true to indicate successful update and trigger refresh
-      if (!mounted) return;
-      Navigator.pop(context, true);
+      // Pop back to previous screen
+      Navigator.pop(context);
     } catch (e) {
-      if (!mounted) return;
+      print('Error updating user data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal update data: $e')),
+        SnackBar(
+          content: Text('Gagal update data: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -80,7 +78,7 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70), // Tinggi 70
+        preferredSize: const Size.fromHeight(70),
         child: AppBar(
           automaticallyImplyLeading: true,
           elevation: 0,
@@ -94,7 +92,7 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
             ),
           ),
           title: Padding(
-            padding: const EdgeInsets.only(top: 10), // supaya teks agak turun
+            padding: const EdgeInsets.only(top: 10),
             child: Text(
               'Edit Karyawan',
               style: GoogleFonts.poppins(
@@ -106,43 +104,43 @@ class _EditKaryawanScreenState extends State<EditKaryawanScreen> {
           ),
           iconTheme: const IconThemeData(color: Colors.white),
           centerTitle: true,
-          backgroundColor: Colors.transparent, // Biar gradasinya terlihat
+          backgroundColor: Colors.transparent,
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildTextField(label: 'Nama', controller: nameController),
-            _buildTextField(
-                label: 'Email',
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress),
-            _buildDropdownPosition(),
-            _buildTextField(
-                label: 'Skor Kinerja (0-100)',
-                controller: performanceScoreController,
-                keyboardType: TextInputType.number),
-            _buildTextField(
-                label: 'Catatan', controller: notesController, maxLines: 3),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: updateKaryawan,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: navyColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: Text(
-                  'Simpan Perubahan',
-                  style: GoogleFonts.poppins(color: Colors.white),
-                ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildTextField(label: 'Nama', controller: nameController),
+                  _buildTextField(
+                      label: 'Email',
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress),
+                  _buildDropdownPosition(),
+                  _buildTextField(
+                      label: 'Catatan',
+                      controller: notesController,
+                      maxLines: 3),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: updateKaryawan,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: navyColor,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Text(
+                        'Simpan Perubahan',
+                        style: GoogleFonts.poppins(color: Colors.white),
+                      ),
+                    ),
+                  )
+                ],
               ),
-            )
-          ],
-        ),
-      ),
+            ),
     );
   }
 

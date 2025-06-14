@@ -278,14 +278,22 @@ class _LoginScreenState extends State<LoginScreen> {
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
+                keyboardType: TextInputType.visiblePassword,
+                textInputAction: TextInputAction.done,
+                maxLines: 1,
+                minLines: 1,
                 decoration: InputDecoration(
                   labelText: 'Password',
                   labelStyle: GoogleFonts.poppins(
                     color: Colors.black,
-                    fontWeight: FontWeight.w500, // bisa kamu sesuaikan
+                    fontWeight: FontWeight.w500,
                   ),
                   border: const OutlineInputBorder(),
                   prefixIcon: const Icon(Icons.lock, color: Colors.black),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 15),
                 ),
                 style: GoogleFonts.poppins(
                   color: Colors.black,

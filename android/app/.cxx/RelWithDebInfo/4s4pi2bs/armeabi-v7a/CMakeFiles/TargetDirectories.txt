@@ -1,0 +1,2 @@
+C:/Users/syr/OneDrive/Documents/softdev/purelux/android/app/.cxx/RelWithDebInfo/4s4pi2bs/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/syr/OneDrive/Documents/softdev/purelux/android/app/.cxx/RelWithDebInfo/4s4pi2bs/armeabi-v7a/CMakeFiles/rebuild_cache.dir
